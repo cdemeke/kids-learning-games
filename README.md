@@ -1,6 +1,8 @@
 # Penny and Theo's Fun Learning Games
 
-A collection of interactive educational games for kids, created with AI assistance.
+**[Play Now](https://cdemeke.github.io/kids-learning-games/)**
+
+This repository features interactive games created by my kids Penny and Theo. Every game was built using AI assistance, with my help to set up the environment so they could focus on creativity and testing.
 
 ## Games
 
@@ -11,8 +13,4 @@ A collection of interactive educational games for kids, created with AI assistan
 
 ## How to Play
 
-Simply open `index.html` in any web browser to access all games.
-
-## Created By
-
-Kids with ideas, powered by AI - no manual code written!
+Visit **https://cdemeke.github.io/kids-learning-games/** and pick a game!
