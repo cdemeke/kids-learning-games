@@ -1,0 +1,1020 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Water Maker - Learn How Water is Made!</title>
+    <link href="https://fonts.googleapis.com/css2?family=Bubblegum+Sans&family=Nunito:wght@600;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Nunito', sans-serif;
+            background: linear-gradient(180deg, #74b9ff 0%, #81ecec 50%, #55efc4 100%);
+            min-height: 100vh;
+            overflow: hidden;
+            touch-action: manipulation;
+        }
+
+        .game-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            max-width: 900px;
+            margin: 0 auto;
+            background: linear-gradient(180deg,
+                #74b9ff 0%,
+                #81ecec 35%,
+                #a8e6cf 70%,
+                #55efc4 100%
+            );
+            overflow: hidden;
+        }
+
+        /* Sun */
+        .sun {
+            position: absolute;
+            top: 15px;
+            right: 40px;
+            width: 85px;
+            height: 85px;
+            background: radial-gradient(circle at 35% 35%, #fff9c4, #ffd93d, #f39c12);
+            border-radius: 50%;
+            box-shadow:
+                0 0 60px rgba(255, 217, 61, 0.9),
+                0 0 120px rgba(255, 217, 61, 0.5);
+            animation: sunRotate 20s linear infinite;
+        }
+
+        .sun::before {
+            content: '☀️';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 3.5rem;
+        }
+
+        @keyframes sunRotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        /* Clouds */
+        .cloud {
+            position: absolute;
+            background: white;
+            border-radius: 50px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+            animation: floatCloud 25s linear infinite;
+        }
+
+        .cloud::before, .cloud::after {
+            content: '';
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+        }
+
+        .cloud-1 { width: 110px; height: 45px; top: 55px; left: -150px; }
+        .cloud-1::before { width: 60px; height: 60px; top: -30px; left: 18px; }
+        .cloud-1::after { width: 45px; height: 45px; top: -18px; left: 60px; }
+
+        .cloud-2 { width: 90px; height: 38px; top: 110px; left: -250px; animation-delay: -12s; }
+        .cloud-2::before { width: 50px; height: 50px; top: -25px; left: 12px; }
+        .cloud-2::after { width: 38px; height: 38px; top: -12px; left: 48px; }
+
+        @keyframes floatCloud {
+            from { transform: translateX(0); }
+            to { transform: translateX(calc(100vw + 300px)); }
+        }
+
+        /* Title */
+        h1 {
+            position: absolute;
+            top: 12px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-family: 'Bubblegum Sans', cursive;
+            color: #0984e3;
+            font-size: clamp(1.6rem, 6vw, 2.5rem);
+            text-shadow:
+                0 3px 0 white,
+                0 6px 15px rgba(9, 132, 227, 0.2);
+            white-space: nowrap;
+        }
+
+        /* Level badge */
+        .level-badge {
+            position: absolute;
+            top: 55px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, #ffeaa7, #fdcb6e);
+            color: #d35400;
+            padding: 8px clamp(20px, 5vw, 30px);
+            border-radius: 30px;
+            font-size: clamp(0.9rem, 3vw, 1.2rem);
+            font-weight: 800;
+            box-shadow: 0 4px 20px rgba(253, 203, 110, 0.5);
+        }
+
+        /* Fact bubble */
+        .fact-bubble {
+            position: absolute;
+            top: 95px;
+            left: clamp(15px, 4vw, 35px);
+            background: linear-gradient(180deg, #fff, #f8f9fa);
+            padding: clamp(12px, 3vw, 18px);
+            border-radius: 20px;
+            max-width: clamp(180px, 40vw, 230px);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.1);
+            font-size: clamp(0.75rem, 2vw, 0.95rem);
+            line-height: 1.4;
+            font-weight: 600;
+        }
+
+        .fact-bubble::after {
+            content: '';
+            position: absolute;
+            bottom: -12px;
+            left: 30px;
+            border: 8px solid transparent;
+            border-top-color: #f8f9fa;
+        }
+
+        .fact-title {
+            color: #0984e3;
+            font-weight: 800;
+            margin-bottom: 5px;
+            font-size: clamp(0.8rem, 2.2vw, 1rem);
+        }
+
+        /* Mascot */
+        .mascot {
+            position: absolute;
+            top: clamp(200px, 35vh, 260px);
+            left: clamp(30px, 8vw, 70px);
+            font-size: clamp(2.5rem, 9vw, 4rem);
+            animation: mascotBounce 2s ease-in-out infinite;
+            filter: drop-shadow(0 8px 15px rgba(0,0,0,0.2));
+        }
+
+        @keyframes mascotBounce {
+            0%, 100% { transform: translateY(0) rotate(-8deg); }
+            50% { transform: translateY(-15px) rotate(8deg); }
+        }
+
+        /* Mixing area */
+        .mixing-area {
+            position: absolute;
+            left: 50%;
+            top: 38%;
+            transform: translate(-50%, -50%);
+            width: clamp(200px, 50vw, 260px);
+            height: clamp(150px, 35vw, 200px);
+            background: linear-gradient(180deg, rgba(255,255,255,0.95), rgba(255,255,255,0.8));
+            border-radius: 35px;
+            border: 5px solid #74b9ff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            box-shadow:
+                0 15px 50px rgba(116, 185, 255, 0.3),
+                inset 0 2px 0 rgba(255,255,255,1);
+        }
+
+        .mixing-area.flash {
+            animation: mixFlash 0.5s ease-out;
+        }
+
+        @keyframes mixFlash {
+            0% { background: linear-gradient(180deg, rgba(85, 239, 196, 0.95), rgba(129, 236, 236, 0.8)); transform: translate(-50%, -50%) scale(1.08); }
+            100% { background: linear-gradient(180deg, rgba(255,255,255,0.95), rgba(255,255,255,0.8)); transform: translate(-50%, -50%) scale(1); }
+        }
+
+        .mixing-contents {
+            display: flex;
+            gap: clamp(8px, 2vw, 14px);
+            margin-bottom: 15px;
+            min-height: clamp(50px, 12vw, 70px);
+            align-items: center;
+        }
+
+        .mini-bubble {
+            width: clamp(45px, 12vw, 60px);
+            height: clamp(45px, 12vw, 60px);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: clamp(1.2rem, 4vw, 1.6rem);
+            color: white;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            animation: bubblePopIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .mini-bubble.h {
+            background: radial-gradient(circle at 30% 30%, #ff9ff3, #f368e0);
+            box-shadow: 0 5px 20px rgba(243, 104, 224, 0.5);
+        }
+
+        .mini-bubble.o {
+            background: radial-gradient(circle at 30% 30%, #74b9ff, #0984e3);
+            box-shadow: 0 5px 20px rgba(9, 132, 227, 0.5);
+        }
+
+        @keyframes bubblePopIn {
+            0% { transform: scale(0) rotate(-180deg); }
+            70% { transform: scale(1.2) rotate(10deg); }
+            100% { transform: scale(1) rotate(0deg); }
+        }
+
+        .formula {
+            font-family: 'Bubblegum Sans', cursive;
+            font-size: clamp(1.1rem, 3.5vw, 1.5rem);
+            color: #0984e3;
+        }
+
+        /* Water Tower */
+        .water-tower {
+            position: absolute;
+            right: clamp(30px, 6vw, 70px);
+            bottom: clamp(90px, 18vh, 120px);
+        }
+
+        .tower-tank {
+            width: clamp(90px, 22vw, 130px);
+            height: clamp(120px, 28vw, 165px);
+            background: linear-gradient(90deg, #a8a8a8, #e8e8e8, #a8a8a8);
+            border-radius: 12px 12px 25px 25px;
+            position: relative;
+            overflow: hidden;
+            border: 4px solid #888;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .tower-water {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(180deg, #74b9ff 0%, #0984e3 50%, #0652dd 100%);
+            transition: height 0.6s ease-out;
+            border-radius: 0 0 20px 20px;
+        }
+
+        .tower-water::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 18px;
+            background: linear-gradient(180deg, rgba(255,255,255,0.6), transparent);
+            animation: waveMove 2s ease-in-out infinite;
+        }
+
+        @keyframes waveMove {
+            0%, 100% { transform: translateX(-6px) scaleY(0.8); }
+            50% { transform: translateX(6px) scaleY(1.2); }
+        }
+
+        .tower-legs {
+            display: flex;
+            justify-content: space-between;
+            padding: 0 10px;
+        }
+
+        .tower-leg {
+            width: clamp(12px, 3vw, 18px);
+            height: clamp(70px, 16vw, 100px);
+            background: linear-gradient(90deg, #666, #999, #666);
+        }
+
+        .tower-cross {
+            position: absolute;
+            width: clamp(60px, 15vw, 95px);
+            height: 8px;
+            background: #777;
+            top: 50px;
+            left: clamp(15px, 3vw, 20px);
+            transform: rotate(25deg);
+        }
+
+        .tower-cross-2 { transform: rotate(-25deg); }
+
+        .progress-label {
+            text-align: center;
+            color: #0984e3;
+            font-size: clamp(0.9rem, 2.5vw, 1.1rem);
+            margin-top: 10px;
+            font-weight: 800;
+        }
+
+        /* Keyboard buttons */
+        .keyboard-controls {
+            position: absolute;
+            bottom: clamp(100px, 20vh, 130px);
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: clamp(25px, 8vw, 50px);
+        }
+
+        .key-button {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
+
+        .key-button.pressed .key-cap {
+            transform: translateY(6px);
+        }
+
+        .key-cap {
+            width: clamp(85px, 22vw, 125px);
+            height: clamp(85px, 22vw, 125px);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: clamp(2.2rem, 7vw, 3.2rem);
+            font-weight: bold;
+            color: white;
+            text-shadow: 0 3px 0 rgba(0,0,0,0.2);
+            position: relative;
+            cursor: pointer;
+            transition: transform 0.1s, box-shadow 0.1s;
+        }
+
+        .key-cap::after {
+            content: '';
+            position: absolute;
+            width: 40%;
+            height: 20%;
+            background: rgba(255,255,255,0.4);
+            border-radius: 12px;
+            top: 14px;
+            left: 18%;
+        }
+
+        .key-hydrogen .key-cap {
+            background: linear-gradient(180deg, #ff9ff3, #f368e0);
+            box-shadow: 0 8px 0 #be2edd, 0 14px 35px rgba(243, 104, 224, 0.5);
+        }
+
+        .key-hydrogen.pressed .key-cap {
+            box-shadow: 0 3px 0 #be2edd, 0 8px 25px rgba(243, 104, 224, 0.5);
+        }
+
+        .key-oxygen .key-cap {
+            background: linear-gradient(180deg, #74b9ff, #0984e3);
+            box-shadow: 0 8px 0 #065a9e, 0 14px 35px rgba(9, 132, 227, 0.5);
+        }
+
+        .key-oxygen.pressed .key-cap {
+            box-shadow: 0 3px 0 #065a9e, 0 8px 25px rgba(9, 132, 227, 0.5);
+        }
+
+        .key-label {
+            margin-top: 12px;
+            font-size: clamp(1rem, 3vw, 1.3rem);
+            color: #2d3436;
+            font-weight: 800;
+        }
+
+        .key-hint {
+            font-size: clamp(0.7rem, 2vw, 0.9rem);
+            color: #636e72;
+            margin-top: 4px;
+            font-weight: 600;
+        }
+
+        /* Instructions */
+        .instructions {
+            position: absolute;
+            bottom: clamp(20px, 5vh, 40px);
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255,255,255,0.95);
+            padding: 12px clamp(20px, 6vw, 35px);
+            border-radius: 35px;
+            color: #0984e3;
+            font-size: clamp(0.85rem, 2.5vw, 1.1rem);
+            box-shadow: 0 5px 25px rgba(0,0,0,0.1);
+            text-align: center;
+            font-weight: 700;
+        }
+
+        /* Water drop animation */
+        .water-drop {
+            position: absolute;
+            width: clamp(35px, 9vw, 50px);
+            height: clamp(45px, 11vw, 60px);
+            background: linear-gradient(180deg, #74b9ff, #0984e3);
+            border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+            z-index: 50;
+            pointer-events: none;
+            filter: drop-shadow(0 5px 15px rgba(9, 132, 227, 0.4));
+        }
+
+        .water-drop::before {
+            content: '';
+            position: absolute;
+            width: 14px;
+            height: 14px;
+            background: rgba(255,255,255,0.6);
+            border-radius: 50%;
+            top: 14px;
+            left: 12px;
+        }
+
+        /* Success message */
+        .success-message {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-family: 'Bubblegum Sans', cursive;
+            font-size: clamp(2rem, 8vw, 3rem);
+            color: #00b894;
+            text-shadow:
+                0 4px 0 white,
+                0 0 30px rgba(0, 184, 148, 0.6);
+            pointer-events: none;
+            animation: successPop 1.2s ease-out forwards;
+            z-index: 100;
+        }
+
+        @keyframes successPop {
+            0% { transform: translate(-50%, -50%) scale(0); opacity: 1; }
+            40% { transform: translate(-50%, -50%) scale(1.3); opacity: 1; }
+            100% { transform: translate(-50%, -80%) scale(1); opacity: 0; }
+        }
+
+        /* Celebration */
+        .celebration {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            background: linear-gradient(180deg, #74b9ff 0%, #81ecec 50%, #55efc4 100%);
+            z-index: 1000;
+        }
+
+        .celebration h2 {
+            font-family: 'Bubblegum Sans', cursive;
+            font-size: clamp(2.2rem, 8vw, 3.5rem);
+            color: #0984e3;
+            text-shadow: 0 4px 0 white;
+            animation: celebrateBounce 0.6s ease infinite;
+            text-align: center;
+        }
+
+        .celebration .water-emoji {
+            font-size: clamp(4rem, 15vw, 7rem);
+            margin: 25px 0;
+            animation: waterSpin 2s ease-in-out infinite;
+        }
+
+        @keyframes waterSpin {
+            0%, 100% { transform: rotate(-10deg) scale(1); }
+            50% { transform: rotate(10deg) scale(1.1); }
+        }
+
+        .celebration p {
+            font-size: clamp(1.2rem, 4vw, 1.6rem);
+            color: #0984e3;
+            margin: 15px 0 25px;
+            font-weight: 700;
+        }
+
+        .celebration .btn {
+            background: linear-gradient(180deg, #74b9ff, #0984e3);
+            color: white;
+            border: none;
+            padding: clamp(16px, 4vw, 22px) clamp(40px, 12vw, 60px);
+            font-size: clamp(1.4rem, 5vw, 2rem);
+            border-radius: 50px;
+            cursor: pointer;
+            font-family: 'Bubblegum Sans', cursive;
+            box-shadow: 0 6px 0 #065a9e, 0 12px 35px rgba(9, 132, 227, 0.4);
+            transition: transform 0.2s;
+            text-shadow: 0 2px 0 rgba(0,0,0,0.2);
+        }
+
+        .celebration .btn:hover { transform: translateY(-4px); }
+        .celebration .btn:active {
+            transform: translateY(4px);
+            box-shadow: 0 2px 0 #065a9e;
+        }
+
+        @keyframes celebrateBounce {
+            0%, 100% { transform: scale(1) rotate(-2deg); }
+            50% { transform: scale(1.05) rotate(2deg); }
+        }
+
+        /* Confetti */
+        .confetti {
+            position: absolute;
+            width: 14px;
+            height: 14px;
+            animation: confettiFall 3s linear forwards;
+        }
+
+        @keyframes confettiFall {
+            0% { transform: translateY(-100px) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+        }
+
+        /* Sparkles */
+        .sparkle {
+            position: absolute;
+            width: 28px;
+            height: 28px;
+            pointer-events: none;
+            animation: sparkleAnim 0.6s ease-out forwards;
+        }
+
+        .sparkle::before, .sparkle::after {
+            content: '';
+            position: absolute;
+            background: #ffd700;
+            border-radius: 3px;
+        }
+
+        .sparkle::before { width: 100%; height: 5px; top: 50%; transform: translateY(-50%); }
+        .sparkle::after { width: 5px; height: 100%; left: 50%; transform: translateX(-50%); }
+
+        @keyframes sparkleAnim {
+            0% { transform: scale(0) rotate(0deg); opacity: 1; }
+            100% { transform: scale(2) rotate(45deg); opacity: 0; }
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* Sound toggle */
+        .sound-toggle {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.95);
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            z-index: 2000;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+        }
+
+        .sound-toggle.muted { opacity: 0.5; }
+
+        /* Grass */
+        .grass {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: clamp(60px, 12vh, 90px);
+            background: linear-gradient(180deg, #55efc4, #00b894);
+        }
+
+        /* Hills */
+        .hill {
+            position: absolute;
+            bottom: clamp(50px, 10vh, 80px);
+            background: #55efc4;
+            border-radius: 50% 50% 0 0;
+        }
+
+        .hill-1 { width: 200px; height: 80px; left: -50px; }
+        .hill-2 { width: 250px; height: 100px; right: -60px; }
+
+        .home-btn {
+            position: fixed;
+            top: 15px;
+            left: 15px;
+            z-index: 1000;
+            background: linear-gradient(135deg, rgba(255,255,255,0.9), rgba(255,255,255,0.8));
+            border: 3px solid #74b9ff;
+            color: #2d3436;
+            padding: 10px 18px;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: 700;
+            text-decoration: none;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .home-btn:hover {
+            background: white;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+        }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="home-btn">🏠 Home</a>
+    <button class="sound-toggle" id="soundToggle" onclick="toggleSound()">🔊</button>
+
+    <div class="game-container" id="gameContainer">
+        <!-- Sky elements -->
+        <div class="sun"></div>
+        <div class="cloud cloud-1"></div>
+        <div class="cloud cloud-2"></div>
+
+        <h1>Let's Make Water!</h1>
+        <div class="level-badge" id="levelBadge">Level 1</div>
+
+        <!-- Fact bubble -->
+        <div class="fact-bubble" id="factBubble">
+            <div class="fact-title">Did you know?</div>
+            <span id="factText">Water is made of tiny things called hydrogen and oxygen!</span>
+        </div>
+
+        <!-- Mascot -->
+        <div class="mascot" id="mascot">💧</div>
+
+        <!-- Mixing area -->
+        <div class="mixing-area" id="mixingArea">
+            <div class="mixing-contents" id="mixingContents"></div>
+            <div class="formula">H + H + O = Water!</div>
+        </div>
+
+        <!-- Hills & Grass -->
+        <div class="hill hill-1"></div>
+        <div class="hill hill-2"></div>
+        <div class="grass"></div>
+
+        <!-- Water Tower -->
+        <div class="water-tower">
+            <div class="tower-tank">
+                <div class="tower-water" id="towerWater" style="height: 0%"></div>
+            </div>
+            <div class="tower-legs">
+                <div class="tower-leg"></div>
+                <div class="tower-leg"></div>
+            </div>
+            <div class="tower-cross"></div>
+            <div class="tower-cross tower-cross-2"></div>
+            <div class="progress-label">
+                <span id="waterPercent">0</span>% Full
+            </div>
+        </div>
+
+        <!-- Keyboard Buttons -->
+        <div class="keyboard-controls">
+            <div class="key-button key-hydrogen" id="keyH" onclick="addElement('h')">
+                <div class="key-cap">H</div>
+                <div class="key-label">Hydrogen</div>
+                <div class="key-hint">Press H or Left</div>
+            </div>
+
+            <div class="key-button key-oxygen" id="keyO" onclick="addElement('o')">
+                <div class="key-cap">O</div>
+                <div class="key-label">Oxygen</div>
+                <div class="key-hint">Press O or Right</div>
+            </div>
+        </div>
+
+        <!-- Instructions -->
+        <div class="instructions" id="instructions">
+            Press <strong>H</strong> twice and <strong>O</strong> once to make water!
+        </div>
+    </div>
+
+    <!-- Celebration screen -->
+    <div class="celebration hidden" id="celebration">
+        <h2>Amazing Job!</h2>
+        <div class="water-emoji">💧</div>
+        <p id="celebrationText">You filled the water tower!</p>
+        <button class="btn" onclick="nextLevel()">Next Level!</button>
+    </div>
+
+    <script>
+        // Audio
+        let audioCtx = null;
+        let soundEnabled = true;
+
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+        }
+
+        function playSound(type) {
+            if (!soundEnabled || !audioCtx) return;
+
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            switch(type) {
+                case 'bubble':
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(600 + Math.random() * 200, audioCtx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(400, audioCtx.currentTime + 0.15);
+                    gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.15);
+                    break;
+                case 'water':
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(523, audioCtx.currentTime);
+                    osc.frequency.setValueAtTime(659, audioCtx.currentTime + 0.1);
+                    osc.frequency.setValueAtTime(784, audioCtx.currentTime + 0.2);
+                    osc.frequency.setValueAtTime(1047, audioCtx.currentTime + 0.3);
+                    gain.gain.setValueAtTime(0.25, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.5);
+                    break;
+                case 'levelup':
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(440, audioCtx.currentTime);
+                    osc.frequency.setValueAtTime(554, audioCtx.currentTime + 0.15);
+                    osc.frequency.setValueAtTime(659, audioCtx.currentTime + 0.3);
+                    osc.frequency.setValueAtTime(880, audioCtx.currentTime + 0.45);
+                    gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.7);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.7);
+                    break;
+                case 'splash':
+                    // Create multiple oscillators for splash sound
+                    for (let i = 0; i < 3; i++) {
+                        const splashOsc = audioCtx.createOscillator();
+                        const splashGain = audioCtx.createGain();
+                        splashOsc.connect(splashGain);
+                        splashGain.connect(audioCtx.destination);
+                        splashOsc.type = 'sine';
+                        splashOsc.frequency.setValueAtTime(300 + i * 100, audioCtx.currentTime + i * 0.05);
+                        splashOsc.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.3 + i * 0.05);
+                        splashGain.gain.setValueAtTime(0.1, audioCtx.currentTime + i * 0.05);
+                        splashGain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3 + i * 0.05);
+                        splashOsc.start(audioCtx.currentTime + i * 0.05);
+                        splashOsc.stop(audioCtx.currentTime + 0.4 + i * 0.05);
+                    }
+                    break;
+            }
+        }
+
+        function toggleSound() {
+            soundEnabled = !soundEnabled;
+            const btn = document.getElementById('soundToggle');
+            btn.textContent = soundEnabled ? '🔊' : '🔇';
+            btn.classList.toggle('muted', !soundEnabled);
+        }
+
+        // Game state
+        let hydrogenCount = 0;
+        let oxygenCount = 0;
+        let waterMade = 0;
+        let level = 1;
+        let waterNeeded = 5;
+
+        const container = document.getElementById('gameContainer');
+        const mixingArea = document.getElementById('mixingArea');
+        const mixingContents = document.getElementById('mixingContents');
+
+        const facts = [
+            "Water is made of tiny things called hydrogen and oxygen!",
+            "H₂O means 2 hydrogen and 1 oxygen together!",
+            "All living things need water to live!",
+            "Most of planet Earth is covered in water!",
+            "Water can be liquid, ice, or steam!",
+            "Fish breathe oxygen from water!",
+            "Clouds are made of tiny water drops!",
+            "Your body is mostly made of water!",
+            "Rain is water falling from clouds!",
+            "Rivers carry water to the ocean!",
+            "Plants drink water through their roots!",
+            "Water helps keep us healthy and cool!"
+        ];
+
+        function addElement(type) {
+            initAudio();
+
+            const keyEl = type === 'h' ? document.getElementById('keyH') : document.getElementById('keyO');
+            keyEl.classList.add('pressed');
+            setTimeout(() => keyEl.classList.remove('pressed'), 150);
+
+            // Check if we can add more
+            if (type === 'h' && hydrogenCount >= 2) return;
+            if (type === 'o' && oxygenCount >= 1) return;
+
+            // Add to count
+            if (type === 'h') {
+                hydrogenCount++;
+            } else {
+                oxygenCount++;
+            }
+
+            // Add bubble to mixing area
+            const bubble = document.createElement('div');
+            bubble.className = `mini-bubble ${type}`;
+            bubble.textContent = type.toUpperCase();
+            bubble.dataset.type = type;
+            mixingContents.appendChild(bubble);
+
+            playSound('bubble');
+            createSparkle(mixingArea);
+
+            // Check if we can make water
+            checkWaterMaking();
+        }
+
+        function createSparkle(element) {
+            const rect = element.getBoundingClientRect();
+            const containerRect = container.getBoundingClientRect();
+
+            for (let i = 0; i < 4; i++) {
+                setTimeout(() => {
+                    const sparkle = document.createElement('div');
+                    sparkle.className = 'sparkle';
+                    sparkle.style.left = (rect.left - containerRect.left + rect.width/2 + (Math.random() - 0.5) * 80) + 'px';
+                    sparkle.style.top = (rect.top - containerRect.top + rect.height/2 + (Math.random() - 0.5) * 80) + 'px';
+                    container.appendChild(sparkle);
+                    setTimeout(() => sparkle.remove(), 600);
+                }, i * 60);
+            }
+        }
+
+        function checkWaterMaking() {
+            if (hydrogenCount >= 2 && oxygenCount >= 1) {
+                setTimeout(() => {
+                    // Flash mixing area
+                    mixingArea.classList.add('flash');
+                    setTimeout(() => mixingArea.classList.remove('flash'), 500);
+
+                    showSuccessMessage();
+                    playSound('water');
+
+                    // Clear mixing area
+                    mixingContents.innerHTML = '';
+                    hydrogenCount = 0;
+                    oxygenCount = 0;
+
+                    // Increment water
+                    waterMade++;
+
+                    // Animate water drop to tower
+                    createWaterDrop();
+
+                    // Update water level
+                    const percent = Math.min(100, (waterMade / waterNeeded) * 100);
+                    document.getElementById('towerWater').style.height = percent + '%';
+                    document.getElementById('waterPercent').textContent = Math.round(percent);
+
+                    // Update fact
+                    document.getElementById('factText').textContent =
+                        facts[Math.floor(Math.random() * facts.length)];
+
+                    // Bounce mascot
+                    const mascot = document.getElementById('mascot');
+                    mascot.style.animation = 'none';
+                    mascot.offsetHeight;
+                    mascot.style.animation = 'mascotBounce 0.25s ease 4';
+                    setTimeout(() => mascot.style.animation = 'mascotBounce 2s ease-in-out infinite', 1000);
+
+                    // Check for level complete
+                    if (waterMade >= waterNeeded) {
+                        setTimeout(showCelebration, 1200);
+                    }
+                }, 350);
+            }
+        }
+
+        function showSuccessMessage() {
+            const msg = document.createElement('div');
+            msg.className = 'success-message';
+            msg.textContent = 'Water Made! 💧';
+            container.appendChild(msg);
+            setTimeout(() => msg.remove(), 1200);
+        }
+
+        function createWaterDrop() {
+            const drop = document.createElement('div');
+            drop.className = 'water-drop';
+
+            const mixRect = mixingArea.getBoundingClientRect();
+            const containerRect = container.getBoundingClientRect();
+
+            const startX = mixRect.left - containerRect.left + mixRect.width/2 - 22;
+            const startY = mixRect.top - containerRect.top + mixRect.height/2 - 28;
+
+            drop.style.left = startX + 'px';
+            drop.style.top = startY + 'px';
+
+            const towerX = container.offsetWidth - 115;
+            const towerY = container.offsetHeight - 230;
+
+            container.appendChild(drop);
+
+            drop.animate([
+                { transform: 'translate(0, 0) scale(1) rotate(0deg)', opacity: 1 },
+                { transform: `translate(${towerX - startX}px, ${towerY - startY}px) scale(0.5) rotate(360deg)`, opacity: 0.8 }
+            ], {
+                duration: 900,
+                easing: 'ease-in'
+            });
+
+            setTimeout(() => {
+                drop.remove();
+                playSound('splash');
+            }, 900);
+        }
+
+        function showCelebration() {
+            const celebration = document.getElementById('celebration');
+            celebration.classList.remove('hidden');
+            playSound('levelup');
+
+            document.getElementById('celebrationText').textContent =
+                level >= 3 ? "You're a Water Making Champion!" : `You filled the tank with ${waterMade} drops!`;
+
+            const colors = ['#74b9ff', '#ff9ff3', '#ffeaa7', '#55efc4', '#a29bfe', '#fd79a8'];
+            for (let i = 0; i < 70; i++) {
+                setTimeout(() => {
+                    const confetti = document.createElement('div');
+                    confetti.className = 'confetti';
+                    confetti.style.left = Math.random() * 100 + '%';
+                    confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
+                    confetti.style.borderRadius = Math.random() > 0.5 ? '50%' : '0';
+                    confetti.style.animationDelay = (Math.random() * 0.5) + 's';
+                    celebration.appendChild(confetti);
+                    setTimeout(() => confetti.remove(), 3000);
+                }, i * 40);
+            }
+        }
+
+        function nextLevel() {
+            level++;
+            waterNeeded = 5 + level * 2;
+            waterMade = 0;
+            hydrogenCount = 0;
+            oxygenCount = 0;
+
+            document.getElementById('celebration').classList.add('hidden');
+            document.getElementById('levelBadge').textContent = 'Level ' + level;
+            document.getElementById('towerWater').style.height = '0%';
+            document.getElementById('waterPercent').textContent = '0';
+            mixingContents.innerHTML = '';
+
+            document.getElementById('instructions').innerHTML =
+                `Level ${level}: Make <strong>${waterNeeded}</strong> water drops!`;
+        }
+
+        // Keyboard controls
+        document.addEventListener('keydown', (e) => {
+            if (['h', 'o', 'ArrowLeft', 'ArrowRight', ' '].includes(e.key.toLowerCase()) ||
+                ['ArrowLeft', 'ArrowRight'].includes(e.key)) {
+                e.preventDefault();
+            }
+
+            const key = e.key.toLowerCase();
+
+            // H key or Left arrow for Hydrogen
+            if (key === 'h' || e.key === 'ArrowLeft') {
+                addElement('h');
+            }
+
+            // O key or Right arrow for Oxygen
+            if (key === 'o' || e.key === 'ArrowRight') {
+                addElement('o');
+            }
+
+            // Space or Enter to continue on celebration screen
+            if ((key === ' ' || key === 'enter') && !document.getElementById('celebration').classList.contains('hidden')) {
+                nextLevel();
+            }
+        });
+    </script>
+</body>
+</html>

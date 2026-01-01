@@ -1,0 +1,1278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Car Garage - Sort the Cars!</title>
+    <link href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Quicksand:wght@600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Quicksand', sans-serif;
+            background: linear-gradient(180deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+            min-height: 100vh;
+            overflow: hidden;
+            touch-action: manipulation;
+        }
+
+        .game-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            max-width: 900px;
+            margin: 0 auto;
+            background: linear-gradient(180deg,
+                #1a1a3e 0%,
+                #2d2d5a 30%,
+                #3d3d6a 45%,
+                #4a4a4a 45%,
+                #3a3a3a 100%
+            );
+            overflow: hidden;
+        }
+
+        /* Animated stars */
+        .stars-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 45%;
+            overflow: hidden;
+            pointer-events: none;
+        }
+
+        .star {
+            position: absolute;
+            border-radius: 50%;
+            animation: twinkle 2s ease-in-out infinite;
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.3; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.4); }
+        }
+
+        /* Moon */
+        .moon {
+            position: absolute;
+            top: 25px;
+            right: 50px;
+            width: 60px;
+            height: 60px;
+            background: radial-gradient(circle at 30% 30%, #fffde7, #ffd54f);
+            border-radius: 50%;
+            box-shadow:
+                0 0 40px rgba(255, 253, 231, 0.6),
+                0 0 80px rgba(255, 213, 79, 0.3),
+                inset -8px -8px 20px rgba(0,0,0,0.1);
+        }
+
+        .moon::before {
+            content: '';
+            position: absolute;
+            top: 15px;
+            left: 12px;
+            width: 8px;
+            height: 8px;
+            background: rgba(0,0,0,0.05);
+            border-radius: 50%;
+        }
+
+        .moon::after {
+            content: '';
+            position: absolute;
+            top: 28px;
+            left: 28px;
+            width: 12px;
+            height: 12px;
+            background: rgba(0,0,0,0.04);
+            border-radius: 50%;
+        }
+
+        /* Title */
+        h1 {
+            position: absolute;
+            top: 12px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-family: 'Lilita One', cursive;
+            color: white;
+            font-size: clamp(1.5rem, 5vw, 2.2rem);
+            text-shadow:
+                0 0 30px rgba(255,255,255,0.3),
+                0 4px 0 rgba(0,0,0,0.3);
+            z-index: 10;
+            letter-spacing: 2px;
+        }
+
+        /* Score board */
+        .score-board {
+            position: absolute;
+            top: 55px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: clamp(8px, 2vw, 15px);
+            z-index: 10;
+        }
+
+        .score-item {
+            background: linear-gradient(180deg, rgba(0,0,0,0.7), rgba(0,0,0,0.5));
+            padding: 8px clamp(12px, 3vw, 20px);
+            border-radius: 25px;
+            color: white;
+            font-size: clamp(0.8rem, 2vw, 1rem);
+            font-weight: 700;
+            border: 2px solid rgba(255,255,255,0.15);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+
+        .score-item span {
+            color: #FFD700;
+            text-shadow: 0 0 10px rgba(255,215,0,0.5);
+        }
+
+        /* Conveyor belt area */
+        .conveyor-area {
+            position: absolute;
+            top: 105px;
+            left: 0;
+            right: 0;
+            height: 110px;
+            background: linear-gradient(180deg,
+                #3a3a4a 0%,
+                #2a2a3a 50%,
+                #3a3a4a 100%
+            );
+            border-top: 4px solid #4a4a5a;
+            border-bottom: 4px solid #1a1a2a;
+            box-shadow: inset 0 5px 20px rgba(0,0,0,0.3);
+        }
+
+        .conveyor-belt {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 22px;
+            background: repeating-linear-gradient(
+                90deg,
+                #2a2a2a 0px,
+                #2a2a2a 25px,
+                #3a3a3a 25px,
+                #3a3a3a 50px
+            );
+            animation: conveyorMove 0.8s linear infinite;
+            box-shadow: inset 0 3px 8px rgba(0,0,0,0.4);
+        }
+
+        @keyframes conveyorMove {
+            from { background-position: 0 0; }
+            to { background-position: 50px 0; }
+        }
+
+        /* Cars on conveyor */
+        .car-queue {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            right: 15px;
+            height: 75px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .car {
+            font-size: clamp(2.5rem, 7vw, 3.5rem);
+            filter: drop-shadow(3px 5px 5px rgba(0,0,0,0.5));
+            transition: transform 0.15s ease;
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .car.current {
+            transform: scale(1.2);
+            animation: carBounce 0.4s ease-in-out infinite;
+            filter: drop-shadow(0 0 20px rgba(255,255,255,0.3)) drop-shadow(3px 5px 5px rgba(0,0,0,0.5));
+        }
+
+        @keyframes carBounce {
+            0%, 100% { transform: scale(1.2) translateY(0); }
+            50% { transform: scale(1.2) translateY(-6px); }
+        }
+
+        .car-color-indicator {
+            position: absolute;
+            bottom: -6px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 35px;
+            height: 8px;
+            border-radius: 4px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+        }
+
+        /* Garages */
+        .garages {
+            position: absolute;
+            bottom: 90px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: clamp(8px, 2vw, 18px);
+        }
+
+        .garage {
+            width: clamp(70px, 18vw, 95px);
+            height: clamp(90px, 22vw, 115px);
+            border-radius: 15px 15px 0 0;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: transform 0.1s, box-shadow 0.1s;
+            cursor: pointer;
+        }
+
+        .garage::before {
+            content: '';
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            right: 8px;
+            bottom: 25px;
+            background: rgba(0,0,0,0.35);
+            border-radius: 10px 10px 0 0;
+        }
+
+        .garage::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 20px;
+            background: linear-gradient(180deg, rgba(255,255,255,0.3), transparent);
+            border-radius: 15px 15px 0 0;
+        }
+
+        .garage.pressed {
+            transform: scale(0.92) translateY(3px);
+        }
+
+        .garage.correct {
+            animation: garageGlow 0.5s ease-out;
+        }
+
+        @keyframes garageGlow {
+            0%, 100% { box-shadow: 0 0 0 rgba(255,255,255,0); }
+            50% { box-shadow: 0 0 40px rgba(255,255,255,0.9), 0 0 60px currentColor; }
+        }
+
+        .garage.wrong {
+            animation: garageShake 0.4s ease-out;
+        }
+
+        @keyframes garageShake {
+            0%, 100% { transform: translateX(0); }
+            20% { transform: translateX(-12px) rotate(-3deg); }
+            40% { transform: translateX(12px) rotate(3deg); }
+            60% { transform: translateX(-8px) rotate(-2deg); }
+            80% { transform: translateX(8px) rotate(2deg); }
+        }
+
+        .garage-red {
+            background: linear-gradient(180deg, #FF7B7B 0%, #E74C3C 50%, #C0392B 100%);
+            box-shadow: 0 8px 0 #962d22, 0 12px 30px rgba(231, 76, 60, 0.4);
+        }
+
+        .garage-blue {
+            background: linear-gradient(180deg, #74B9FF 0%, #3498DB 50%, #2980B9 100%);
+            box-shadow: 0 8px 0 #1f6391, 0 12px 30px rgba(52, 152, 219, 0.4);
+        }
+
+        .garage-green {
+            background: linear-gradient(180deg, #7BED9F 0%, #2ECC71 50%, #27AE60 100%);
+            box-shadow: 0 8px 0 #1c8347, 0 12px 30px rgba(46, 204, 113, 0.4);
+        }
+
+        .garage-yellow {
+            background: linear-gradient(180deg, #FFE66D 0%, #F1C40F 50%, #D4AC0D 100%);
+            box-shadow: 0 8px 0 #a6870a, 0 12px 30px rgba(241, 196, 15, 0.4);
+        }
+
+        .garage-key {
+            position: absolute;
+            bottom: 5px;
+            background: rgba(0,0,0,0.6);
+            color: white;
+            width: clamp(28px, 7vw, 35px);
+            height: clamp(28px, 7vw, 35px);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: clamp(1rem, 3vw, 1.3rem);
+            font-weight: bold;
+            box-shadow: 0 3px 0 rgba(0,0,0,0.4);
+        }
+
+        .garage-icon {
+            position: absolute;
+            top: 12px;
+            font-size: clamp(1.5rem, 4vw, 2rem);
+            z-index: 1;
+            filter: drop-shadow(0 2px 3px rgba(0,0,0,0.3));
+        }
+
+        .garage-count {
+            position: absolute;
+            top: -12px;
+            right: -8px;
+            background: linear-gradient(180deg, #fff, #eee);
+            color: #333;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.85rem;
+            font-weight: bold;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.3);
+            border: 2px solid rgba(255,255,255,0.8);
+        }
+
+        /* Road */
+        .road {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 90px;
+            background: linear-gradient(180deg, #3d3d3d, #2C3E50, #2C3E50);
+        }
+
+        .road-lines {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: repeating-linear-gradient(
+                90deg,
+                #F1C40F 0px,
+                #F1C40F 35px,
+                transparent 35px,
+                transparent 70px
+            );
+            transform: translateY(-50%);
+            box-shadow: 0 0 15px rgba(241, 196, 15, 0.4);
+        }
+
+        /* Lives */
+        .lives {
+            position: absolute;
+            top: 100px;
+            left: 15px;
+            display: flex;
+            gap: 4px;
+            z-index: 10;
+        }
+
+        .life {
+            font-size: clamp(1.2rem, 3vw, 1.5rem);
+            transition: transform 0.3s, opacity 0.3s;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+        }
+
+        .life.lost {
+            transform: scale(0) rotate(180deg);
+            opacity: 0;
+        }
+
+        /* Speed indicator */
+        .speed-indicator {
+            position: absolute;
+            top: 100px;
+            right: 15px;
+            background: rgba(0,0,0,0.6);
+            padding: 5px 12px;
+            border-radius: 15px;
+            color: white;
+            font-size: clamp(0.7rem, 2vw, 0.85rem);
+            z-index: 10;
+            font-weight: 600;
+        }
+
+        .speed-indicator span {
+            color: #FF6B6B;
+            font-weight: bold;
+        }
+
+        /* Combo display */
+        .combo-display {
+            position: absolute;
+            top: 220px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-family: 'Lilita One', cursive;
+            font-size: clamp(1.5rem, 5vw, 2.2rem);
+            color: #FFD700;
+            text-shadow:
+                0 0 20px rgba(255,215,0,0.8),
+                2px 2px 4px rgba(0,0,0,0.5);
+            opacity: 0;
+            transition: opacity 0.3s;
+            z-index: 20;
+        }
+
+        .combo-display.show {
+            opacity: 1;
+            animation: comboPop 0.3s ease-out;
+        }
+
+        @keyframes comboPop {
+            0% { transform: translateX(-50%) scale(0.5); }
+            70% { transform: translateX(-50%) scale(1.2); }
+            100% { transform: translateX(-50%) scale(1); }
+        }
+
+        /* Flying car */
+        .flying-car {
+            position: absolute;
+            font-size: 2.5rem;
+            pointer-events: none;
+            z-index: 50;
+        }
+
+        /* Sparkles */
+        .sparkle {
+            position: absolute;
+            width: 18px;
+            height: 18px;
+            pointer-events: none;
+            z-index: 60;
+        }
+
+        .sparkle::before, .sparkle::after {
+            content: '';
+            position: absolute;
+            background: #FFD700;
+            border-radius: 2px;
+        }
+
+        .sparkle::before {
+            width: 100%;
+            height: 4px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        .sparkle::after {
+            width: 4px;
+            height: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .sparkle {
+            animation: sparkleAnim 0.5s ease-out forwards;
+        }
+
+        @keyframes sparkleAnim {
+            0% { transform: scale(0) rotate(0deg); opacity: 1; }
+            100% { transform: scale(2) rotate(45deg); opacity: 0; }
+        }
+
+        /* Level up notification */
+        .level-up {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-family: 'Lilita One', cursive;
+            font-size: clamp(2rem, 8vw, 3.5rem);
+            color: #FFD700;
+            text-shadow:
+                0 0 30px rgba(255,215,0,0.8),
+                3px 3px 6px rgba(0,0,0,0.5);
+            z-index: 100;
+            animation: levelUpAnim 1.5s ease-out forwards;
+            pointer-events: none;
+        }
+
+        @keyframes levelUpAnim {
+            0% { transform: translate(-50%, -50%) scale(0); opacity: 1; }
+            30% { transform: translate(-50%, -50%) scale(1.3); opacity: 1; }
+            100% { transform: translate(-50%, -100%) scale(1); opacity: 0; }
+        }
+
+        /* Instructions */
+        .instructions {
+            position: absolute;
+            bottom: 12px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.75);
+            padding: 10px 25px;
+            border-radius: 30px;
+            color: white;
+            font-size: clamp(0.75rem, 2vw, 0.95rem);
+            z-index: 10;
+            font-weight: 600;
+        }
+
+        /* Overlay screens */
+        .overlay-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            z-index: 1000;
+        }
+
+        .start-screen {
+            background: linear-gradient(180deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+        }
+
+        .game-over {
+            background: rgba(0,0,0,0.92);
+        }
+
+        .overlay-screen h2 {
+            font-family: 'Lilita One', cursive;
+            font-size: clamp(2rem, 7vw, 3rem);
+            color: white;
+            text-shadow: 0 4px 0 rgba(0,0,0,0.3);
+            margin-bottom: 10px;
+        }
+
+        .overlay-screen .cars-display {
+            font-size: clamp(3rem, 10vw, 5rem);
+            margin: 20px 0;
+            animation: carsFloat 2s ease-in-out infinite;
+        }
+
+        @keyframes carsFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .overlay-screen p {
+            font-size: clamp(1rem, 3vw, 1.3rem);
+            color: #B0B0B0;
+            margin-bottom: 15px;
+            text-align: center;
+            max-width: 450px;
+            line-height: 1.5;
+            padding: 0 20px;
+            font-weight: 600;
+        }
+
+        .keys-hint {
+            display: flex;
+            gap: clamp(6px, 2vw, 12px);
+            margin: 20px 0;
+        }
+
+        .key-demo {
+            width: clamp(40px, 10vw, 55px);
+            height: clamp(40px, 10vw, 55px);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: clamp(1.2rem, 4vw, 1.6rem);
+            font-weight: bold;
+            color: white;
+            box-shadow: 0 5px 0 rgba(0,0,0,0.3), 0 8px 20px rgba(0,0,0,0.2);
+            text-shadow: 0 2px 0 rgba(0,0,0,0.2);
+        }
+
+        .btn {
+            background: linear-gradient(180deg, #E74C3C 0%, #C0392B 100%);
+            color: white;
+            border: none;
+            padding: clamp(14px, 4vw, 20px) clamp(35px, 10vw, 55px);
+            font-size: clamp(1.3rem, 4vw, 1.7rem);
+            border-radius: 50px;
+            cursor: pointer;
+            font-family: 'Lilita One', cursive;
+            box-shadow: 0 6px 0 #962d22, 0 10px 30px rgba(231, 76, 60, 0.4);
+            transition: transform 0.2s;
+            margin-top: 20px;
+            letter-spacing: 1px;
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+        }
+
+        .btn:active {
+            transform: translateY(3px);
+            box-shadow: 0 3px 0 #962d22, 0 6px 15px rgba(231, 76, 60, 0.4);
+        }
+
+        .game-over .btn {
+            background: linear-gradient(180deg, #2ECC71 0%, #27AE60 100%);
+            box-shadow: 0 6px 0 #1c8347, 0 10px 30px rgba(46, 204, 113, 0.4);
+        }
+
+        .game-over .btn:active {
+            box-shadow: 0 3px 0 #1c8347, 0 6px 15px rgba(46, 204, 113, 0.4);
+        }
+
+        .final-score {
+            font-family: 'Lilita One', cursive;
+            font-size: clamp(3rem, 12vw, 5rem);
+            color: #FFD700;
+            text-shadow: 0 0 30px rgba(255,215,0,0.6);
+            margin: 15px 0;
+        }
+
+        .stats {
+            color: #B0B0B0;
+            font-size: clamp(1rem, 3vw, 1.3rem);
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* Sound toggle */
+        .sound-toggle {
+            position: fixed;
+            top: 12px;
+            right: 12px;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: rgba(0,0,0,0.5);
+            border: 2px solid rgba(255,255,255,0.2);
+            color: white;
+            font-size: 1.3rem;
+            cursor: pointer;
+            z-index: 2000;
+            backdrop-filter: blur(10px);
+        }
+
+        .sound-toggle.muted {
+            opacity: 0.5;
+        }
+
+        /* Mobile touch buttons */
+        .mobile-controls {
+            display: none;
+            position: fixed;
+            bottom: 100px;
+            left: 0;
+            right: 0;
+            justify-content: center;
+            gap: 10px;
+            z-index: 100;
+            padding: 0 10px;
+        }
+
+        .mobile-btn {
+            flex: 1;
+            max-width: 80px;
+            height: 70px;
+            border-radius: 15px;
+            border: none;
+            font-size: 1.8rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        .mobile-btn-red { background: linear-gradient(180deg, #FF7B7B, #E74C3C); box-shadow: 0 5px 0 #C0392B; }
+        .mobile-btn-blue { background: linear-gradient(180deg, #74B9FF, #3498DB); box-shadow: 0 5px 0 #2980B9; }
+        .mobile-btn-green { background: linear-gradient(180deg, #7BED9F, #2ECC71); box-shadow: 0 5px 0 #27AE60; }
+        .mobile-btn-yellow { background: linear-gradient(180deg, #FFE66D, #F1C40F); box-shadow: 0 5px 0 #D4AC0D; }
+
+        .mobile-btn:active {
+            transform: translateY(3px);
+            box-shadow: 0 2px 0 currentColor;
+        }
+
+        @media (hover: none) and (pointer: coarse) {
+            .mobile-controls {
+                display: flex;
+            }
+            .garages {
+                bottom: 180px;
+            }
+            .instructions {
+                display: none;
+            }
+        }
+
+        .home-btn {
+            position: fixed;
+            top: 15px;
+            left: 15px;
+            z-index: 1000;
+            background: linear-gradient(135deg, rgba(255,255,255,0.2), rgba(255,255,255,0.1));
+            border: 2px solid rgba(255,255,255,0.3);
+            color: white;
+            padding: 10px 18px;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: 700;
+            text-decoration: none;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .home-btn:hover {
+            background: linear-gradient(135deg, rgba(255,255,255,0.3), rgba(255,255,255,0.2));
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="home-btn">🏠 Home</a>
+    <button class="sound-toggle" id="soundToggle" onclick="toggleSound()">🔊</button>
+
+    <div class="game-container" id="gameContainer">
+        <!-- Stars -->
+        <div class="stars-layer" id="starsLayer"></div>
+        <div class="moon"></div>
+
+        <h1>Car Garage!</h1>
+
+        <!-- Score board -->
+        <div class="score-board">
+            <div class="score-item">Score: <span id="score">0</span></div>
+            <div class="score-item">Level: <span id="level">1</span></div>
+            <div class="score-item">Best: <span id="best">0</span></div>
+        </div>
+
+        <!-- Lives -->
+        <div class="lives" id="lives">
+            <div class="life">❤️</div>
+            <div class="life">❤️</div>
+            <div class="life">❤️</div>
+        </div>
+
+        <!-- Speed indicator -->
+        <div class="speed-indicator">Speed: <span id="speed">1.0x</span></div>
+
+        <!-- Conveyor area -->
+        <div class="conveyor-area">
+            <div class="car-queue" id="carQueue"></div>
+            <div class="conveyor-belt"></div>
+        </div>
+
+        <!-- Combo display -->
+        <div class="combo-display" id="comboDisplay">COMBO x5!</div>
+
+        <!-- Garages -->
+        <div class="garages">
+            <div class="garage garage-red" id="garage1" onclick="selectGarage(0)">
+                <div class="garage-icon">🚗</div>
+                <div class="garage-key">1</div>
+                <div class="garage-count" id="count1">0</div>
+            </div>
+            <div class="garage garage-blue" id="garage2" onclick="selectGarage(1)">
+                <div class="garage-icon">🚙</div>
+                <div class="garage-key">2</div>
+                <div class="garage-count" id="count2">0</div>
+            </div>
+            <div class="garage garage-green" id="garage3" onclick="selectGarage(2)">
+                <div class="garage-icon">🚕</div>
+                <div class="garage-key">3</div>
+                <div class="garage-count" id="count3">0</div>
+            </div>
+            <div class="garage garage-yellow" id="garage4" onclick="selectGarage(3)">
+                <div class="garage-icon">🚐</div>
+                <div class="garage-key">4</div>
+                <div class="garage-count" id="count4">0</div>
+            </div>
+        </div>
+
+        <!-- Road -->
+        <div class="road">
+            <div class="road-lines"></div>
+        </div>
+
+        <!-- Instructions -->
+        <div class="instructions">
+            Press <strong>1-4</strong> or tap to sort cars by color!
+        </div>
+    </div>
+
+    <!-- Mobile controls -->
+    <div class="mobile-controls" id="mobileControls">
+        <button class="mobile-btn mobile-btn-red" onclick="selectGarage(0)">🚗</button>
+        <button class="mobile-btn mobile-btn-blue" onclick="selectGarage(1)">🚙</button>
+        <button class="mobile-btn mobile-btn-green" onclick="selectGarage(2)">🚕</button>
+        <button class="mobile-btn mobile-btn-yellow" onclick="selectGarage(3)">🚐</button>
+    </div>
+
+    <!-- Start screen -->
+    <div class="overlay-screen start-screen" id="startScreen">
+        <h2>Car Garage!</h2>
+        <div class="cars-display">🚗 🚙 🚕 🚐</div>
+        <p>Sort the cars into matching colored garages!</p>
+        <div class="keys-hint">
+            <div class="key-demo" style="background: linear-gradient(180deg, #FF7B7B, #E74C3C);">1</div>
+            <div class="key-demo" style="background: linear-gradient(180deg, #74B9FF, #3498DB);">2</div>
+            <div class="key-demo" style="background: linear-gradient(180deg, #7BED9F, #2ECC71);">3</div>
+            <div class="key-demo" style="background: linear-gradient(180deg, #FFE66D, #F1C40F);">4</div>
+        </div>
+        <p style="font-size: 0.95rem; color: #888;">Gets faster as you level up!</p>
+        <button class="btn" onclick="startGame()">Start Sorting!</button>
+    </div>
+
+    <!-- Game over screen -->
+    <div class="overlay-screen game-over hidden" id="gameOver">
+        <h2>Game Over!</h2>
+        <div class="final-score" id="finalScore">0</div>
+        <div class="stats" id="statsText">You sorted 0 cars!</div>
+        <button class="btn" onclick="startGame()">Try Again!</button>
+    </div>
+
+    <script>
+        // Audio
+        let audioCtx = null;
+        let soundEnabled = true;
+
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+        }
+
+        function playSound(type) {
+            if (!soundEnabled || !audioCtx) return;
+
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            switch(type) {
+                case 'correct':
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(523, audioCtx.currentTime);
+                    osc.frequency.setValueAtTime(659, audioCtx.currentTime + 0.08);
+                    osc.frequency.setValueAtTime(784, audioCtx.currentTime + 0.16);
+                    gain.gain.setValueAtTime(0.25, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.3);
+                    break;
+                case 'wrong':
+                    osc.type = 'square';
+                    osc.frequency.setValueAtTime(200, audioCtx.currentTime);
+                    osc.frequency.setValueAtTime(150, audioCtx.currentTime + 0.1);
+                    gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.2);
+                    break;
+                case 'levelup':
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(440, audioCtx.currentTime);
+                    osc.frequency.setValueAtTime(554, audioCtx.currentTime + 0.1);
+                    osc.frequency.setValueAtTime(659, audioCtx.currentTime + 0.2);
+                    osc.frequency.setValueAtTime(880, audioCtx.currentTime + 0.3);
+                    gain.gain.setValueAtTime(0.25, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.5);
+                    break;
+                case 'gameover':
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(300, audioCtx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(80, audioCtx.currentTime + 0.5);
+                    gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.5);
+                    break;
+            }
+        }
+
+        function toggleSound() {
+            soundEnabled = !soundEnabled;
+            const btn = document.getElementById('soundToggle');
+            btn.textContent = soundEnabled ? '🔊' : '🔇';
+            btn.classList.toggle('muted', !soundEnabled);
+        }
+
+        // Create stars
+        function createStars() {
+            const starsEl = document.getElementById('starsLayer');
+            starsEl.innerHTML = '';
+            for (let i = 0; i < 40; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                star.style.left = Math.random() * 100 + '%';
+                star.style.top = Math.random() * 100 + '%';
+                const size = Math.random() * 3 + 1;
+                star.style.width = star.style.height = size + 'px';
+                star.style.background = `rgba(255, 255, 255, ${Math.random() * 0.5 + 0.5})`;
+                star.style.animationDelay = Math.random() * 2 + 's';
+                star.style.animationDuration = (Math.random() * 2 + 1.5) + 's';
+                starsEl.appendChild(star);
+            }
+        }
+
+        // Game state
+        let score = 0;
+        let level = 1;
+        let lives = 3;
+        let combo = 0;
+        let maxCombo = 0;
+        let carsProcessed = 0;
+        let garageCounts = [0, 0, 0, 0];
+        let carQueue = [];
+        let gameRunning = false;
+        let spawnInterval = null;
+        let bestScore = parseInt(localStorage.getItem('carGarageBest')) || 0;
+
+        const container = document.getElementById('gameContainer');
+        const carQueueEl = document.getElementById('carQueue');
+
+        // Car types with colors
+        const carTypes = [
+            { emoji: '🚗', color: 'red', colorHex: '#E74C3C' },
+            { emoji: '🚙', color: 'blue', colorHex: '#3498DB' },
+            { emoji: '🚕', color: 'green', colorHex: '#2ECC71' },
+            { emoji: '🚐', color: 'yellow', colorHex: '#F1C40F' }
+        ];
+
+        function startGame() {
+            initAudio();
+            document.getElementById('startScreen').classList.add('hidden');
+            document.getElementById('gameOver').classList.add('hidden');
+
+            // Reset state
+            score = 0;
+            level = 1;
+            lives = 3;
+            combo = 0;
+            maxCombo = 0;
+            carsProcessed = 0;
+            garageCounts = [0, 0, 0, 0];
+            carQueue = [];
+            gameRunning = true;
+
+            // Update UI
+            updateUI();
+            updateLives();
+            updateGarageCounts();
+
+            // Clear queue
+            carQueueEl.innerHTML = '';
+
+            // Start spawning cars
+            spawnCar();
+            scheduleNextSpawn();
+        }
+
+        function scheduleNextSpawn() {
+            if (spawnInterval) clearTimeout(spawnInterval);
+
+            const baseDelay = 2200;
+            const minDelay = 700;
+            const delay = Math.max(minDelay, baseDelay - (level - 1) * 180);
+
+            spawnInterval = setTimeout(() => {
+                if (gameRunning) {
+                    spawnCar();
+                    scheduleNextSpawn();
+                }
+            }, delay);
+        }
+
+        function spawnCar() {
+            if (!gameRunning) return;
+
+            const maxCars = Math.min(6, 3 + Math.floor(level / 2));
+            if (carQueue.length >= maxCars) {
+                loseLife();
+                return;
+            }
+
+            const carType = carTypes[Math.floor(Math.random() * carTypes.length)];
+
+            const car = {
+                type: carType,
+                element: createCarElement(carType)
+            };
+
+            carQueue.push(car);
+            carQueueEl.appendChild(car.element);
+
+            updateCurrentCar();
+        }
+
+        function createCarElement(carType) {
+            const carEl = document.createElement('div');
+            carEl.className = 'car';
+            carEl.textContent = carType.emoji;
+
+            const indicator = document.createElement('div');
+            indicator.className = 'car-color-indicator';
+            indicator.style.background = carType.colorHex;
+            carEl.appendChild(indicator);
+
+            return carEl;
+        }
+
+        function updateCurrentCar() {
+            document.querySelectorAll('.car').forEach(c => c.classList.remove('current'));
+            if (carQueue.length > 0) {
+                carQueue[0].element.classList.add('current');
+            }
+        }
+
+        function selectGarage(index) {
+            if (!gameRunning || carQueue.length === 0) return;
+            initAudio();
+
+            const garageEl = document.getElementById('garage' + (index + 1));
+
+            garageEl.classList.add('pressed');
+            setTimeout(() => garageEl.classList.remove('pressed'), 100);
+
+            const currentCar = carQueue[0];
+            const correctIndex = carTypes.findIndex(t => t.color === currentCar.type.color);
+
+            if (index === correctIndex) {
+                handleCorrect(index, currentCar);
+            } else {
+                handleWrong(index);
+            }
+        }
+
+        function handleCorrect(garageIndex, car) {
+            const garageEl = document.getElementById('garage' + (garageIndex + 1));
+            garageEl.classList.add('correct');
+            setTimeout(() => garageEl.classList.remove('correct'), 500);
+
+            flyCarToGarage(car, garageIndex);
+
+            carQueue.shift();
+            car.element.remove();
+
+            garageCounts[garageIndex]++;
+            updateGarageCounts();
+
+            combo++;
+            maxCombo = Math.max(maxCombo, combo);
+            const points = 10 * Math.min(combo, 10);
+            score += points;
+            carsProcessed++;
+
+            if (combo >= 3) {
+                showCombo();
+            }
+
+            createSparkles(garageEl);
+            playSound('correct');
+
+            if (carsProcessed > 0 && carsProcessed % 10 === 0) {
+                levelUp();
+            }
+
+            updateUI();
+            updateCurrentCar();
+        }
+
+        function handleWrong(garageIndex) {
+            const garageEl = document.getElementById('garage' + (garageIndex + 1));
+            garageEl.classList.add('wrong');
+            setTimeout(() => garageEl.classList.remove('wrong'), 400);
+
+            combo = 0;
+            hideCombo();
+            playSound('wrong');
+
+            loseLife();
+        }
+
+        function loseLife() {
+            lives--;
+            updateLives();
+
+            if (lives <= 0) {
+                gameOver();
+            }
+        }
+
+        function updateLives() {
+            const livesEl = document.getElementById('lives');
+            const hearts = livesEl.querySelectorAll('.life');
+            hearts.forEach((heart, i) => {
+                heart.classList.toggle('lost', i >= lives);
+            });
+        }
+
+        function flyCarToGarage(car, garageIndex) {
+            const carRect = car.element.getBoundingClientRect();
+            const garageEl = document.getElementById('garage' + (garageIndex + 1));
+            const garageRect = garageEl.getBoundingClientRect();
+            const containerRect = container.getBoundingClientRect();
+
+            const flyingCar = document.createElement('div');
+            flyingCar.className = 'flying-car';
+            flyingCar.textContent = car.type.emoji;
+            flyingCar.style.left = (carRect.left - containerRect.left) + 'px';
+            flyingCar.style.top = (carRect.top - containerRect.top) + 'px';
+
+            container.appendChild(flyingCar);
+
+            const endX = garageRect.left - containerRect.left + garageRect.width/2 - 30;
+            const endY = garageRect.top - containerRect.top + 20;
+
+            flyingCar.animate([
+                { transform: 'translate(0, 0) scale(1)', opacity: 1 },
+                { transform: `translate(${endX - parseFloat(flyingCar.style.left)}px, ${endY - parseFloat(flyingCar.style.top)}px) scale(0.4)`, opacity: 0.5 }
+            ], {
+                duration: 350,
+                easing: 'ease-in'
+            });
+
+            setTimeout(() => flyingCar.remove(), 350);
+        }
+
+        function showCombo() {
+            const comboEl = document.getElementById('comboDisplay');
+            comboEl.textContent = `COMBO x${combo}!`;
+            comboEl.classList.add('show');
+        }
+
+        function hideCombo() {
+            document.getElementById('comboDisplay').classList.remove('show');
+        }
+
+        function createSparkles(element) {
+            const rect = element.getBoundingClientRect();
+            const containerRect = container.getBoundingClientRect();
+
+            for (let i = 0; i < 6; i++) {
+                setTimeout(() => {
+                    const sparkle = document.createElement('div');
+                    sparkle.className = 'sparkle';
+                    sparkle.style.left = (rect.left - containerRect.left + Math.random() * rect.width) + 'px';
+                    sparkle.style.top = (rect.top - containerRect.top + Math.random() * rect.height) + 'px';
+                    container.appendChild(sparkle);
+                    setTimeout(() => sparkle.remove(), 500);
+                }, i * 40);
+            }
+        }
+
+        function levelUp() {
+            level++;
+            updateUI();
+            playSound('levelup');
+
+            const levelUpEl = document.createElement('div');
+            levelUpEl.className = 'level-up';
+            levelUpEl.textContent = `LEVEL ${level}!`;
+            container.appendChild(levelUpEl);
+            setTimeout(() => levelUpEl.remove(), 1500);
+
+            if (lives < 5) {
+                lives++;
+                updateLives();
+            }
+        }
+
+        function updateUI() {
+            document.getElementById('score').textContent = score;
+            document.getElementById('level').textContent = level;
+            document.getElementById('best').textContent = bestScore;
+
+            const speedMultiplier = 1 + (level - 1) * 0.2;
+            document.getElementById('speed').textContent = speedMultiplier.toFixed(1) + 'x';
+        }
+
+        function updateGarageCounts() {
+            for (let i = 0; i < 4; i++) {
+                document.getElementById('count' + (i + 1)).textContent = garageCounts[i];
+            }
+        }
+
+        function gameOver() {
+            gameRunning = false;
+            if (spawnInterval) clearTimeout(spawnInterval);
+            playSound('gameover');
+
+            if (score > bestScore) {
+                bestScore = score;
+                localStorage.setItem('carGarageBest', bestScore);
+            }
+
+            document.getElementById('finalScore').textContent = score;
+            document.getElementById('statsText').textContent =
+                `You sorted ${carsProcessed} cars! Max combo: ${maxCombo}x`;
+            document.getElementById('gameOver').classList.remove('hidden');
+        }
+
+        // Keyboard controls
+        document.addEventListener('keydown', (e) => {
+            // Start game
+            if (!document.getElementById('startScreen').classList.contains('hidden')) {
+                if (['1', '2', '3', '4', ' ', 'Enter'].includes(e.key)) {
+                    e.preventDefault();
+                    startGame();
+                    return;
+                }
+            }
+
+            // Restart game
+            if (!document.getElementById('gameOver').classList.contains('hidden')) {
+                if ([' ', 'Enter'].includes(e.key)) {
+                    e.preventDefault();
+                    startGame();
+                    return;
+                }
+            }
+
+            // Game controls
+            if (e.key === '1') { e.preventDefault(); selectGarage(0); }
+            else if (e.key === '2') { e.preventDefault(); selectGarage(1); }
+            else if (e.key === '3') { e.preventDefault(); selectGarage(2); }
+            else if (e.key === '4') { e.preventDefault(); selectGarage(3); }
+
+            // Arrow keys
+            if (e.key === 'ArrowLeft') { e.preventDefault(); selectGarage(0); }
+            else if (e.key === 'ArrowUp') { e.preventDefault(); selectGarage(1); }
+            else if (e.key === 'ArrowDown') { e.preventDefault(); selectGarage(2); }
+            else if (e.key === 'ArrowRight') { e.preventDefault(); selectGarage(3); }
+        });
+
+        // Initialize
+        createStars();
+        document.getElementById('best').textContent = bestScore;
+    </script>
+</body>
+</html>
