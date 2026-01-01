@@ -743,8 +743,8 @@
                 overlap = newWidth;
             }
 
-            // Calculate target Y
-            const targetY = canvas.height - 45 - (blocks.length * 34);
+            // Calculate target Y based on previous block's position
+            const targetY = lastBlock ? lastBlock.targetY - 34 : canvas.height - 45;
 
             // Create the new settled block
             const newBlock = new Block(
