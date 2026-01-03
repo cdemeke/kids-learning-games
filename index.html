@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Penny and Theo's Fun Learning Games!</title>
     <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@700;800&family=Nunito:wght@600;700&display=swap" rel="stylesheet">
     <style>
@@ -10,6 +10,10 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+        }
+
+        html {
+            overflow-x: hidden;
         }
 
         :root {
@@ -412,22 +416,53 @@
             margin-bottom: 10px;
         }
 
+        /* Tablet adjustments */
+        @media (max-width: 768px) {
+            .games-grid {
+                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+                gap: 20px;
+            }
+        }
+
         /* Mobile adjustments */
         @media (max-width: 600px) {
             .container {
                 padding: 30px 15px;
+                padding-top: max(30px, env(safe-area-inset-top));
+                padding-bottom: max(30px, env(safe-area-inset-bottom));
+                padding-left: max(15px, env(safe-area-inset-left));
+                padding-right: max(15px, env(safe-area-inset-right));
+            }
+
+            .site-logo {
+                width: 140px;
             }
 
             .games-grid {
-                gap: 20px;
+                grid-template-columns: 1fr;
+                gap: 16px;
             }
 
             .game-card {
-                padding: 25px 20px;
+                padding: 20px 18px;
             }
 
             .game-icon {
                 font-size: 3rem;
+            }
+
+            .game-title {
+                font-size: 1.4rem;
+            }
+
+            .game-desc {
+                font-size: 0.9rem;
+                margin-bottom: 15px;
+            }
+
+            .play-btn {
+                padding: 10px 20px;
+                font-size: 0.95rem;
             }
 
             .title {
@@ -435,14 +470,152 @@
             }
 
             .creator-badge {
-                padding: 12px 20px;
+                padding: 12px 16px;
                 flex-direction: column;
                 text-align: center;
                 gap: 8px;
+                margin: 15px 10px 30px;
+                max-width: calc(100% - 20px);
             }
 
             .creator-badge .text {
                 text-align: center;
+            }
+
+            .creator-badge .main-text {
+                font-size: 1rem;
+            }
+
+            .creator-badge .sub-text {
+                font-size: 0.8rem;
+            }
+
+            .header {
+                margin-bottom: 20px;
+            }
+
+            .footer {
+                margin-top: 40px;
+            }
+
+            .card-deco {
+                font-size: 5rem;
+                right: -15px;
+                bottom: -15px;
+            }
+        }
+
+        /* Extra small screens (iPhone SE, older devices) */
+        @media (max-width: 380px) {
+            .container {
+                padding: 20px 12px;
+            }
+
+            .site-logo {
+                width: 120px;
+            }
+
+            .game-card {
+                padding: 18px 15px;
+                border-radius: 18px;
+            }
+
+            .game-icon {
+                font-size: 2.5rem;
+                margin-bottom: 10px;
+            }
+
+            .game-title {
+                font-size: 1.25rem;
+            }
+
+            .creator-badge {
+                padding: 10px 14px;
+                border-radius: 20px;
+            }
+
+            .creator-badge .badge-icon {
+                width: 40px;
+                height: 40px;
+            }
+
+            .subtitle {
+                font-size: 0.95rem;
+            }
+
+            .shape {
+                opacity: 0.08;
+            }
+
+            .shape:nth-child(1) {
+                width: 150px;
+                height: 150px;
+            }
+
+            .shape:nth-child(2) {
+                width: 100px;
+                height: 100px;
+            }
+
+            .shape:nth-child(4) {
+                width: 120px;
+                height: 120px;
+            }
+        }
+
+        /* Landscape mobile */
+        @media (max-height: 500px) and (orientation: landscape) {
+            .container {
+                padding: 15px;
+            }
+
+            .header {
+                margin-bottom: 15px;
+            }
+
+            .site-logo {
+                width: 80px;
+                margin-bottom: 10px;
+            }
+
+            .title {
+                font-size: 1.8rem;
+            }
+
+            .title-header {
+                font-size: 1rem;
+            }
+
+            .creator-badge {
+                margin: 10px 0 20px;
+                padding: 10px 20px;
+                flex-direction: row;
+            }
+
+            .games-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 12px;
+            }
+
+            .game-card {
+                padding: 15px;
+            }
+
+            .game-icon {
+                font-size: 2rem;
+                margin-bottom: 8px;
+            }
+
+            .game-title {
+                font-size: 1.1rem;
+            }
+
+            .game-desc {
+                display: none;
+            }
+
+            .footer {
+                margin-top: 20px;
             }
         }
 

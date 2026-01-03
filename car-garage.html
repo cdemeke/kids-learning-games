@@ -1,10 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Car Garage - Sort the Cars!</title>
-    <link href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Quicksand:wght@600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Quicksand:wght@600;700&display=swap"
+        rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -29,12 +31,11 @@
             max-width: 900px;
             margin: 0 auto;
             background: linear-gradient(180deg,
-                #1a1a3e 0%,
-                #2d2d5a 30%,
-                #3d3d6a 45%,
-                #4a4a4a 45%,
-                #3a3a3a 100%
-            );
+                    #1a1a3e 0%,
+                    #2d2d5a 30%,
+                    #3d3d6a 45%,
+                    #4a4a4a 45%,
+                    #3a3a3a 100%);
             overflow: hidden;
         }
 
@@ -56,8 +57,17 @@
         }
 
         @keyframes twinkle {
-            0%, 100% { opacity: 0.3; transform: scale(1); }
-            50% { opacity: 1; transform: scale(1.4); }
+
+            0%,
+            100% {
+                opacity: 0.3;
+                transform: scale(1);
+            }
+
+            50% {
+                opacity: 1;
+                transform: scale(1.4);
+            }
         }
 
         /* Moon */
@@ -72,7 +82,7 @@
             box-shadow:
                 0 0 40px rgba(255, 253, 231, 0.6),
                 0 0 80px rgba(255, 213, 79, 0.3),
-                inset -8px -8px 20px rgba(0,0,0,0.1);
+                inset -8px -8px 20px rgba(0, 0, 0, 0.1);
         }
 
         .moon::before {
@@ -82,7 +92,7 @@
             left: 12px;
             width: 8px;
             height: 8px;
-            background: rgba(0,0,0,0.05);
+            background: rgba(0, 0, 0, 0.05);
             border-radius: 50%;
         }
 
@@ -93,7 +103,7 @@
             left: 28px;
             width: 12px;
             height: 12px;
-            background: rgba(0,0,0,0.04);
+            background: rgba(0, 0, 0, 0.04);
             border-radius: 50%;
         }
 
@@ -107,8 +117,8 @@
             color: white;
             font-size: clamp(1.5rem, 5vw, 2.2rem);
             text-shadow:
-                0 0 30px rgba(255,255,255,0.3),
-                0 4px 0 rgba(0,0,0,0.3);
+                0 0 30px rgba(255, 255, 255, 0.3),
+                0 4px 0 rgba(0, 0, 0, 0.3);
             z-index: 10;
             letter-spacing: 2px;
         }
@@ -125,19 +135,19 @@
         }
 
         .score-item {
-            background: linear-gradient(180deg, rgba(0,0,0,0.7), rgba(0,0,0,0.5));
+            background: linear-gradient(180deg, rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.5));
             padding: 8px clamp(12px, 3vw, 20px);
             border-radius: 25px;
             color: white;
             font-size: clamp(0.8rem, 2vw, 1rem);
             font-weight: 700;
-            border: 2px solid rgba(255,255,255,0.15);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            border: 2px solid rgba(255, 255, 255, 0.15);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
         }
 
         .score-item span {
             color: #FFD700;
-            text-shadow: 0 0 10px rgba(255,215,0,0.5);
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
         }
 
         /* Conveyor belt area */
@@ -148,13 +158,12 @@
             right: 0;
             height: 110px;
             background: linear-gradient(180deg,
-                #3a3a4a 0%,
-                #2a2a3a 50%,
-                #3a3a4a 100%
-            );
+                    #3a3a4a 0%,
+                    #2a2a3a 50%,
+                    #3a3a4a 100%);
             border-top: 4px solid #4a4a5a;
             border-bottom: 4px solid #1a1a2a;
-            box-shadow: inset 0 5px 20px rgba(0,0,0,0.3);
+            box-shadow: inset 0 5px 20px rgba(0, 0, 0, 0.3);
         }
 
         .conveyor-belt {
@@ -163,20 +172,23 @@
             left: 0;
             right: 0;
             height: 22px;
-            background: repeating-linear-gradient(
-                90deg,
-                #2a2a2a 0px,
-                #2a2a2a 25px,
-                #3a3a3a 25px,
-                #3a3a3a 50px
-            );
+            background: repeating-linear-gradient(90deg,
+                    #2a2a2a 0px,
+                    #2a2a2a 25px,
+                    #3a3a3a 25px,
+                    #3a3a3a 50px);
             animation: conveyorMove 0.8s linear infinite;
-            box-shadow: inset 0 3px 8px rgba(0,0,0,0.4);
+            box-shadow: inset 0 3px 8px rgba(0, 0, 0, 0.4);
         }
 
         @keyframes conveyorMove {
-            from { background-position: 0 0; }
-            to { background-position: 50px 0; }
+            from {
+                background-position: 0 0;
+            }
+
+            to {
+                background-position: 50px 0;
+            }
         }
 
         /* Cars on conveyor */
@@ -193,7 +205,7 @@
 
         .car {
             font-size: clamp(2.5rem, 7vw, 3.5rem);
-            filter: drop-shadow(3px 5px 5px rgba(0,0,0,0.5));
+            filter: drop-shadow(3px 5px 5px rgba(0, 0, 0, 0.5));
             transition: transform 0.15s ease;
             position: relative;
             flex-shrink: 0;
@@ -202,12 +214,19 @@
         .car.current {
             transform: scale(1.2);
             animation: carBounce 0.4s ease-in-out infinite;
-            filter: drop-shadow(0 0 20px rgba(255,255,255,0.3)) drop-shadow(3px 5px 5px rgba(0,0,0,0.5));
+            filter: drop-shadow(0 0 20px rgba(255, 255, 255, 0.3)) drop-shadow(3px 5px 5px rgba(0, 0, 0, 0.5));
         }
 
         @keyframes carBounce {
-            0%, 100% { transform: scale(1.2) translateY(0); }
-            50% { transform: scale(1.2) translateY(-6px); }
+
+            0%,
+            100% {
+                transform: scale(1.2) translateY(0);
+            }
+
+            50% {
+                transform: scale(1.2) translateY(-6px);
+            }
         }
 
         .car-color-indicator {
@@ -218,7 +237,7 @@
             width: 35px;
             height: 8px;
             border-radius: 4px;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
         }
 
         /* Garages */
@@ -250,7 +269,7 @@
             left: 8px;
             right: 8px;
             bottom: 25px;
-            background: rgba(0,0,0,0.35);
+            background: rgba(0, 0, 0, 0.35);
             border-radius: 10px 10px 0 0;
         }
 
@@ -261,7 +280,7 @@
             left: 0;
             right: 0;
             height: 20px;
-            background: linear-gradient(180deg, rgba(255,255,255,0.3), transparent);
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.3), transparent);
             border-radius: 15px 15px 0 0;
         }
 
@@ -274,8 +293,15 @@
         }
 
         @keyframes garageGlow {
-            0%, 100% { box-shadow: 0 0 0 rgba(255,255,255,0); }
-            50% { box-shadow: 0 0 40px rgba(255,255,255,0.9), 0 0 60px currentColor; }
+
+            0%,
+            100% {
+                box-shadow: 0 0 0 rgba(255, 255, 255, 0);
+            }
+
+            50% {
+                box-shadow: 0 0 40px rgba(255, 255, 255, 0.9), 0 0 60px currentColor;
+            }
         }
 
         .garage.wrong {
@@ -283,11 +309,27 @@
         }
 
         @keyframes garageShake {
-            0%, 100% { transform: translateX(0); }
-            20% { transform: translateX(-12px) rotate(-3deg); }
-            40% { transform: translateX(12px) rotate(3deg); }
-            60% { transform: translateX(-8px) rotate(-2deg); }
-            80% { transform: translateX(8px) rotate(2deg); }
+
+            0%,
+            100% {
+                transform: translateX(0);
+            }
+
+            20% {
+                transform: translateX(-12px) rotate(-3deg);
+            }
+
+            40% {
+                transform: translateX(12px) rotate(3deg);
+            }
+
+            60% {
+                transform: translateX(-8px) rotate(-2deg);
+            }
+
+            80% {
+                transform: translateX(8px) rotate(2deg);
+            }
         }
 
         .garage-red {
@@ -313,7 +355,7 @@
         .garage-key {
             position: absolute;
             bottom: 5px;
-            background: rgba(0,0,0,0.6);
+            background: rgba(0, 0, 0, 0.6);
             color: white;
             width: clamp(28px, 7vw, 35px);
             height: clamp(28px, 7vw, 35px);
@@ -323,7 +365,7 @@
             justify-content: center;
             font-size: clamp(1rem, 3vw, 1.3rem);
             font-weight: bold;
-            box-shadow: 0 3px 0 rgba(0,0,0,0.4);
+            box-shadow: 0 3px 0 rgba(0, 0, 0, 0.4);
         }
 
         .garage-icon {
@@ -331,7 +373,7 @@
             top: 12px;
             font-size: clamp(1.5rem, 4vw, 2rem);
             z-index: 1;
-            filter: drop-shadow(0 2px 3px rgba(0,0,0,0.3));
+            filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.3));
         }
 
         .garage-count {
@@ -348,8 +390,8 @@
             justify-content: center;
             font-size: 0.85rem;
             font-weight: bold;
-            box-shadow: 0 3px 10px rgba(0,0,0,0.3);
-            border: 2px solid rgba(255,255,255,0.8);
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
+            border: 2px solid rgba(255, 255, 255, 0.8);
         }
 
         /* Road */
@@ -368,13 +410,11 @@
             left: 0;
             right: 0;
             height: 5px;
-            background: repeating-linear-gradient(
-                90deg,
-                #F1C40F 0px,
-                #F1C40F 35px,
-                transparent 35px,
-                transparent 70px
-            );
+            background: repeating-linear-gradient(90deg,
+                    #F1C40F 0px,
+                    #F1C40F 35px,
+                    transparent 35px,
+                    transparent 70px);
             transform: translateY(-50%);
             box-shadow: 0 0 15px rgba(241, 196, 15, 0.4);
         }
@@ -392,7 +432,7 @@
         .life {
             font-size: clamp(1.2rem, 3vw, 1.5rem);
             transition: transform 0.3s, opacity 0.3s;
-            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
         }
 
         .life.lost {
@@ -405,7 +445,7 @@
             position: absolute;
             top: 100px;
             right: 15px;
-            background: rgba(0,0,0,0.6);
+            background: rgba(0, 0, 0, 0.6);
             padding: 5px 12px;
             border-radius: 15px;
             color: white;
@@ -429,8 +469,8 @@
             font-size: clamp(1.5rem, 5vw, 2.2rem);
             color: #FFD700;
             text-shadow:
-                0 0 20px rgba(255,215,0,0.8),
-                2px 2px 4px rgba(0,0,0,0.5);
+                0 0 20px rgba(255, 215, 0, 0.8),
+                2px 2px 4px rgba(0, 0, 0, 0.5);
             opacity: 0;
             transition: opacity 0.3s;
             z-index: 20;
@@ -442,9 +482,17 @@
         }
 
         @keyframes comboPop {
-            0% { transform: translateX(-50%) scale(0.5); }
-            70% { transform: translateX(-50%) scale(1.2); }
-            100% { transform: translateX(-50%) scale(1); }
+            0% {
+                transform: translateX(-50%) scale(0.5);
+            }
+
+            70% {
+                transform: translateX(-50%) scale(1.2);
+            }
+
+            100% {
+                transform: translateX(-50%) scale(1);
+            }
         }
 
         /* Flying car */
@@ -464,7 +512,8 @@
             z-index: 60;
         }
 
-        .sparkle::before, .sparkle::after {
+        .sparkle::before,
+        .sparkle::after {
             content: '';
             position: absolute;
             background: #FFD700;
@@ -490,8 +539,15 @@
         }
 
         @keyframes sparkleAnim {
-            0% { transform: scale(0) rotate(0deg); opacity: 1; }
-            100% { transform: scale(2) rotate(45deg); opacity: 0; }
+            0% {
+                transform: scale(0) rotate(0deg);
+                opacity: 1;
+            }
+
+            100% {
+                transform: scale(2) rotate(45deg);
+                opacity: 0;
+            }
         }
 
         /* Level up notification */
@@ -504,17 +560,28 @@
             font-size: clamp(2rem, 8vw, 3.5rem);
             color: #FFD700;
             text-shadow:
-                0 0 30px rgba(255,215,0,0.8),
-                3px 3px 6px rgba(0,0,0,0.5);
+                0 0 30px rgba(255, 215, 0, 0.8),
+                3px 3px 6px rgba(0, 0, 0, 0.5);
             z-index: 100;
             animation: levelUpAnim 1.5s ease-out forwards;
             pointer-events: none;
         }
 
         @keyframes levelUpAnim {
-            0% { transform: translate(-50%, -50%) scale(0); opacity: 1; }
-            30% { transform: translate(-50%, -50%) scale(1.3); opacity: 1; }
-            100% { transform: translate(-50%, -100%) scale(1); opacity: 0; }
+            0% {
+                transform: translate(-50%, -50%) scale(0);
+                opacity: 1;
+            }
+
+            30% {
+                transform: translate(-50%, -50%) scale(1.3);
+                opacity: 1;
+            }
+
+            100% {
+                transform: translate(-50%, -100%) scale(1);
+                opacity: 0;
+            }
         }
 
         /* Instructions */
@@ -523,7 +590,7 @@
             bottom: 12px;
             left: 50%;
             transform: translateX(-50%);
-            background: rgba(0,0,0,0.75);
+            background: rgba(0, 0, 0, 0.75);
             padding: 10px 25px;
             border-radius: 30px;
             color: white;
@@ -551,14 +618,14 @@
         }
 
         .game-over {
-            background: rgba(0,0,0,0.92);
+            background: rgba(0, 0, 0, 0.92);
         }
 
         .overlay-screen h2 {
             font-family: 'Lilita One', cursive;
             font-size: clamp(2rem, 7vw, 3rem);
             color: white;
-            text-shadow: 0 4px 0 rgba(0,0,0,0.3);
+            text-shadow: 0 4px 0 rgba(0, 0, 0, 0.3);
             margin-bottom: 10px;
         }
 
@@ -569,8 +636,15 @@
         }
 
         @keyframes carsFloat {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-10px); }
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-10px);
+            }
         }
 
         .overlay-screen p {
@@ -600,8 +674,8 @@
             font-size: clamp(1.2rem, 4vw, 1.6rem);
             font-weight: bold;
             color: white;
-            box-shadow: 0 5px 0 rgba(0,0,0,0.3), 0 8px 20px rgba(0,0,0,0.2);
-            text-shadow: 0 2px 0 rgba(0,0,0,0.2);
+            box-shadow: 0 5px 0 rgba(0, 0, 0, 0.3), 0 8px 20px rgba(0, 0, 0, 0.2);
+            text-shadow: 0 2px 0 rgba(0, 0, 0, 0.2);
         }
 
         .btn {
@@ -641,7 +715,7 @@
             font-family: 'Lilita One', cursive;
             font-size: clamp(3rem, 12vw, 5rem);
             color: #FFD700;
-            text-shadow: 0 0 30px rgba(255,215,0,0.6);
+            text-shadow: 0 0 30px rgba(255, 215, 0, 0.6);
             margin: 15px 0;
         }
 
@@ -664,8 +738,8 @@
             width: 45px;
             height: 45px;
             border-radius: 50%;
-            background: rgba(0,0,0,0.5);
-            border: 2px solid rgba(255,255,255,0.2);
+            background: rgba(0, 0, 0, 0.5);
+            border: 2px solid rgba(255, 255, 255, 0.2);
             color: white;
             font-size: 1.3rem;
             cursor: pointer;
@@ -681,7 +755,7 @@
         .mobile-controls {
             display: none;
             position: fixed;
-            bottom: 100px;
+            bottom: 15px;
             left: 0;
             right: 0;
             justify-content: center;
@@ -703,10 +777,25 @@
             cursor: pointer;
         }
 
-        .mobile-btn-red { background: linear-gradient(180deg, #FF7B7B, #E74C3C); box-shadow: 0 5px 0 #C0392B; }
-        .mobile-btn-blue { background: linear-gradient(180deg, #74B9FF, #3498DB); box-shadow: 0 5px 0 #2980B9; }
-        .mobile-btn-green { background: linear-gradient(180deg, #7BED9F, #2ECC71); box-shadow: 0 5px 0 #27AE60; }
-        .mobile-btn-yellow { background: linear-gradient(180deg, #FFE66D, #F1C40F); box-shadow: 0 5px 0 #D4AC0D; }
+        .mobile-btn-red {
+            background: linear-gradient(180deg, #FF7B7B, #E74C3C);
+            box-shadow: 0 5px 0 #C0392B;
+        }
+
+        .mobile-btn-blue {
+            background: linear-gradient(180deg, #74B9FF, #3498DB);
+            box-shadow: 0 5px 0 #2980B9;
+        }
+
+        .mobile-btn-green {
+            background: linear-gradient(180deg, #7BED9F, #2ECC71);
+            box-shadow: 0 5px 0 #27AE60;
+        }
+
+        .mobile-btn-yellow {
+            background: linear-gradient(180deg, #FFE66D, #F1C40F);
+            box-shadow: 0 5px 0 #D4AC0D;
+        }
 
         .mobile-btn:active {
             transform: translateY(3px);
@@ -717,11 +806,34 @@
             .mobile-controls {
                 display: flex;
             }
+
             .garages {
-                bottom: 180px;
+                bottom: 100px;
             }
+
             .instructions {
                 display: none;
+            }
+
+            .road {
+                height: 90px;
+            }
+        }
+
+        /* Extra small screens */
+        @media (hover: none) and (pointer: coarse) and (max-height: 600px) {
+            .garages {
+                bottom: 95px;
+            }
+
+            .garage {
+                width: clamp(60px, 16vw, 80px);
+                height: clamp(75px, 19vw, 95px);
+            }
+
+            .mobile-btn {
+                height: 60px;
+                max-width: 70px;
             }
         }
 
@@ -730,8 +842,8 @@
             top: 15px;
             left: 15px;
             z-index: 1000;
-            background: linear-gradient(135deg, rgba(255,255,255,0.2), rgba(255,255,255,0.1));
-            border: 2px solid rgba(255,255,255,0.3);
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.1));
+            border: 2px solid rgba(255, 255, 255, 0.3);
             color: white;
             padding: 10px 18px;
             border-radius: 50px;
@@ -739,7 +851,7 @@
             font-weight: 700;
             text-decoration: none;
             backdrop-filter: blur(10px);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
             transition: all 0.3s ease;
             display: flex;
             align-items: center;
@@ -747,12 +859,13 @@
         }
 
         .home-btn:hover {
-            background: linear-gradient(135deg, rgba(255,255,255,0.3), rgba(255,255,255,0.2));
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.2));
             transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
         }
     </style>
 </head>
+
 <body>
     <a href="index.html" class="home-btn">🏠 Home</a>
     <button class="sound-toggle" id="soundToggle" onclick="toggleSound()">🔊</button>
@@ -875,7 +988,7 @@
             osc.connect(gain);
             gain.connect(audioCtx.destination);
 
-            switch(type) {
+            switch (type) {
                 case 'correct':
                     osc.type = 'sine';
                     osc.frequency.setValueAtTime(523, audioCtx.currentTime);
@@ -1149,7 +1262,7 @@
 
             container.appendChild(flyingCar);
 
-            const endX = garageRect.left - containerRect.left + garageRect.width/2 - 30;
+            const endX = garageRect.left - containerRect.left + garageRect.width / 2 - 30;
             const endY = garageRect.top - containerRect.top + 20;
 
             flyingCar.animate([
@@ -1275,4 +1388,5 @@
         document.getElementById('best').textContent = bestScore;
     </script>
 </body>
+
 </html>

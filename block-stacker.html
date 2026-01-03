@@ -1,10 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Block Stacker - Fun Kids Game!</title>
-    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@600;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@600;800&display=swap"
+        rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -37,15 +39,22 @@
             text-shadow:
                 0 0 20px rgba(255, 107, 107, 0.8),
                 0 4px 0 #ff6b6b,
-                0 8px 0 rgba(0,0,0,0.3);
+                0 8px 0 rgba(0, 0, 0, 0.3);
             margin-bottom: 10px;
             letter-spacing: 2px;
             animation: titleFloat 3s ease-in-out infinite;
         }
 
         @keyframes titleFloat {
-            0%, 100% { transform: translateY(0) rotate(-1deg); }
-            50% { transform: translateY(-8px) rotate(1deg); }
+
+            0%,
+            100% {
+                transform: translateY(0) rotate(-1deg);
+            }
+
+            50% {
+                transform: translateY(-8px) rotate(1deg);
+            }
         }
 
         .score-board {
@@ -57,15 +66,15 @@
         }
 
         .score-item {
-            background: linear-gradient(135deg, rgba(255,255,255,0.15), rgba(255,255,255,0.05));
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.05));
             padding: 10px clamp(15px, 4vw, 30px);
             border-radius: 50px;
             color: white;
             font-size: clamp(0.9rem, 2.5vw, 1.3rem);
             font-weight: 800;
             backdrop-filter: blur(10px);
-            border: 2px solid rgba(255,255,255,0.2);
-            box-shadow: 0 4px 20px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.2);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2);
         }
 
         .score-item span {
@@ -73,34 +82,36 @@
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
-            filter: drop-shadow(0 2px 3px rgba(0,0,0,0.4));
+            filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.4));
         }
 
         #gameCanvas {
             border-radius: 20px;
             box-shadow:
-                0 0 0 4px rgba(255,255,255,0.1),
-                0 10px 60px rgba(0,0,0,0.5),
-                inset 0 0 100px rgba(255,255,255,0.05);
+                0 0 0 4px rgba(255, 255, 255, 0.1),
+                0 10px 60px rgba(0, 0, 0, 0.5),
+                inset 0 0 100px rgba(255, 255, 255, 0.05);
             cursor: pointer;
             max-width: 100%;
             height: auto;
+            display: block;
+            margin: 0 auto;
         }
 
         .instructions {
-            color: rgba(255,255,255,0.8);
+            color: rgba(255, 255, 255, 0.8);
             margin-top: 15px;
             font-size: clamp(0.9rem, 2.5vw, 1.2rem);
             font-weight: 600;
         }
 
         .instructions kbd {
-            background: linear-gradient(180deg, rgba(255,255,255,0.3), rgba(255,255,255,0.1));
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.1));
             padding: 6px 16px;
             border-radius: 10px;
             margin: 0 5px;
-            border: 1px solid rgba(255,255,255,0.3);
-            box-shadow: 0 3px 0 rgba(0,0,0,0.3);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 3px 0 rgba(0, 0, 0, 0.3);
         }
 
         .overlay-screen {
@@ -113,16 +124,23 @@
             border-radius: 30px;
             text-align: center;
             box-shadow:
-                0 25px 80px rgba(0,0,0,0.4),
-                0 0 0 4px rgba(255,255,255,0.3),
+                0 25px 80px rgba(0, 0, 0, 0.4),
+                0 0 0 4px rgba(255, 255, 255, 0.3),
                 inset 0 2px 0 white;
             z-index: 100;
             animation: screenPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
         @keyframes screenPop {
-            0% { transform: translate(-50%, -50%) scale(0.8); opacity: 0; }
-            100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+            0% {
+                transform: translate(-50%, -50%) scale(0.8);
+                opacity: 0;
+            }
+
+            100% {
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 1;
+            }
         }
 
         .overlay-screen h2 {
@@ -130,7 +148,7 @@
             color: #2d1b4e;
             font-size: clamp(1.8rem, 5vw, 2.8rem);
             margin-bottom: 15px;
-            text-shadow: 0 2px 0 rgba(0,0,0,0.1);
+            text-shadow: 0 2px 0 rgba(0, 0, 0, 0.1);
         }
 
         .overlay-screen p {
@@ -153,8 +171,15 @@
         }
 
         @keyframes scorePulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.05);
+            }
         }
 
         .btn {
@@ -169,8 +194,8 @@
             transition: transform 0.2s, box-shadow 0.2s;
             box-shadow:
                 0 6px 0 #c0392b,
-                0 10px 25px rgba(255,107,107,0.4);
-            text-shadow: 0 2px 0 rgba(0,0,0,0.2);
+                0 10px 25px rgba(255, 107, 107, 0.4);
+            text-shadow: 0 2px 0 rgba(0, 0, 0, 0.2);
             letter-spacing: 1px;
         }
 
@@ -178,14 +203,14 @@
             transform: translateY(-3px);
             box-shadow:
                 0 9px 0 #c0392b,
-                0 15px 35px rgba(255,107,107,0.5);
+                0 15px 35px rgba(255, 107, 107, 0.5);
         }
 
         .btn:active {
             transform: translateY(3px);
             box-shadow:
                 0 3px 0 #c0392b,
-                0 6px 15px rgba(255,107,107,0.4);
+                0 6px 15px rgba(255, 107, 107, 0.4);
         }
 
         .stars {
@@ -205,8 +230,17 @@
         }
 
         @keyframes twinkle {
-            0%, 100% { opacity: 0.2; transform: scale(1); }
-            50% { opacity: 1; transform: scale(1.3); }
+
+            0%,
+            100% {
+                opacity: 0.2;
+                transform: scale(1);
+            }
+
+            50% {
+                opacity: 1;
+                transform: scale(1.3);
+            }
         }
 
         .combo-text {
@@ -215,24 +249,34 @@
             font-size: clamp(1.5rem, 4vw, 2.2rem);
             color: #ffd700;
             text-shadow:
-                0 0 20px rgba(255,215,0,0.8),
-                2px 2px 4px rgba(0,0,0,0.4);
+                0 0 20px rgba(255, 215, 0, 0.8),
+                2px 2px 4px rgba(0, 0, 0, 0.4);
             pointer-events: none;
             animation: comboFloat 1.2s ease-out forwards;
             white-space: nowrap;
         }
 
         @keyframes comboFloat {
-            0% { opacity: 1; transform: translateY(0) scale(0.5) rotate(-5deg); }
-            30% { transform: translateY(-20px) scale(1.2) rotate(5deg); }
-            100% { opacity: 0; transform: translateY(-100px) scale(1) rotate(0deg); }
+            0% {
+                opacity: 1;
+                transform: translateY(0) scale(0.5) rotate(-5deg);
+            }
+
+            30% {
+                transform: translateY(-20px) scale(1.2) rotate(5deg);
+            }
+
+            100% {
+                opacity: 0;
+                transform: translateY(-100px) scale(1) rotate(0deg);
+            }
         }
 
         .perfect-text {
             color: #00ff88 !important;
             text-shadow:
-                0 0 30px rgba(0,255,136,0.9),
-                2px 2px 4px rgba(0,0,0,0.4) !important;
+                0 0 30px rgba(0, 255, 136, 0.9),
+                2px 2px 4px rgba(0, 0, 0, 0.4) !important;
         }
 
         .hidden {
@@ -247,8 +291,8 @@
             width: 50px;
             height: 50px;
             border-radius: 50%;
-            background: rgba(255,255,255,0.15);
-            border: 2px solid rgba(255,255,255,0.3);
+            background: rgba(255, 255, 255, 0.15);
+            border: 2px solid rgba(255, 255, 255, 0.3);
             color: white;
             font-size: 1.5rem;
             cursor: pointer;
@@ -277,12 +321,19 @@
             font-size: 0.9rem;
             font-weight: 800;
             animation: badgeBounce 0.5s ease infinite;
-            box-shadow: 0 3px 15px rgba(255,215,0,0.5);
+            box-shadow: 0 3px 15px rgba(255, 215, 0, 0.5);
         }
 
         @keyframes badgeBounce {
-            0%, 100% { transform: rotate(-10deg) scale(1); }
-            50% { transform: rotate(10deg) scale(1.1); }
+
+            0%,
+            100% {
+                transform: rotate(-10deg) scale(1);
+            }
+
+            50% {
+                transform: rotate(10deg) scale(1.1);
+            }
         }
 
         /* Mobile touch button */
@@ -292,35 +343,47 @@
             bottom: 0;
             left: 0;
             right: 0;
-            height: 25vh;
-            background: linear-gradient(180deg, transparent, rgba(255,107,107,0.3));
+            height: auto;
+            padding: 15px;
+            background: linear-gradient(180deg, transparent, rgba(255, 107, 107, 0.2));
             justify-content: center;
             align-items: center;
             z-index: 50;
+            pointer-events: none;
         }
 
         .touch-btn {
             background: linear-gradient(180deg, #ff6b6b, #e74c3c);
             color: white;
             border: none;
-            padding: 20px 60px;
-            font-size: 1.5rem;
+            padding: clamp(15px, 4vw, 20px) clamp(40px, 10vw, 60px);
+            font-size: clamp(1.2rem, 4vw, 1.5rem);
             font-family: 'Fredoka One', cursive;
             border-radius: 60px;
-            box-shadow: 0 8px 0 #c0392b, 0 15px 40px rgba(0,0,0,0.4);
+            box-shadow: 0 8px 0 #c0392b, 0 15px 40px rgba(0, 0, 0, 0.4);
+            pointer-events: all;
         }
 
         .touch-btn:active {
             transform: translateY(4px);
-            box-shadow: 0 4px 0 #c0392b, 0 8px 20px rgba(0,0,0,0.4);
+            box-shadow: 0 4px 0 #c0392b, 0 8px 20px rgba(0, 0, 0, 0.4);
         }
 
         @media (hover: none) and (pointer: coarse) {
             .touch-zone {
                 display: flex;
             }
+
             .instructions {
                 display: none;
+            }
+
+            #gameCanvas {
+                max-height: calc(100vh - 280px);
+            }
+
+            .game-container {
+                padding-bottom: 100px;
             }
         }
 
@@ -329,8 +392,8 @@
             top: 15px;
             left: 15px;
             z-index: 1000;
-            background: linear-gradient(135deg, rgba(255,255,255,0.2), rgba(255,255,255,0.1));
-            border: 2px solid rgba(255,255,255,0.3);
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.1));
+            border: 2px solid rgba(255, 255, 255, 0.3);
             color: white;
             padding: 10px 18px;
             border-radius: 50px;
@@ -338,7 +401,7 @@
             font-weight: 700;
             text-decoration: none;
             backdrop-filter: blur(10px);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
             transition: all 0.3s ease;
             display: flex;
             align-items: center;
@@ -346,12 +409,13 @@
         }
 
         .home-btn:hover {
-            background: linear-gradient(135deg, rgba(255,255,255,0.3), rgba(255,255,255,0.2));
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.2));
             transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
         }
     </style>
 </head>
+
 <body>
     <a href="index.html" class="home-btn">🏠 Home</a>
     <button class="sound-toggle" id="soundToggle" onclick="toggleSound()">🔊</button>
@@ -418,7 +482,7 @@
             oscillator.connect(gainNode);
             gainNode.connect(audioCtx.destination);
 
-            switch(type) {
+            switch (type) {
                 case 'drop':
                     oscillator.frequency.setValueAtTime(300, audioCtx.currentTime);
                     oscillator.frequency.exponentialRampToValueAtTime(150, audioCtx.currentTime + 0.1);
@@ -539,7 +603,7 @@
                 // Draw as rounded square
                 const r = 3;
                 ctx.beginPath();
-                ctx.roundRect(-this.size/2, -this.size/2, this.size, this.size, r);
+                ctx.roundRect(-this.size / 2, -this.size / 2, this.size, this.size, r);
                 ctx.fill();
 
                 ctx.restore();
@@ -567,9 +631,9 @@
 
                 // Wobble effect
                 if (this.wobble !== 0) {
-                    ctx.translate(this.x + this.width/2, this.y + this.height);
+                    ctx.translate(this.x + this.width / 2, this.y + this.height);
                     ctx.rotate(this.wobble * Math.PI / 180);
-                    ctx.translate(-(this.x + this.width/2), -(this.y + this.height));
+                    ctx.translate(-(this.x + this.width / 2), -(this.y + this.height));
                 }
 
                 // Glow effect
@@ -616,7 +680,7 @@
             }
 
             lightenColor(color, percent) {
-                const num = parseInt(color.replace('#',''), 16);
+                const num = parseInt(color.replace('#', ''), 16);
                 const amt = Math.round(2.55 * percent);
                 const R = Math.min(255, (num >> 16) + amt);
                 const G = Math.min(255, (num >> 8 & 0x00FF) + amt);
@@ -625,7 +689,7 @@
             }
 
             darkenColor(color, percent) {
-                const num = parseInt(color.replace('#',''), 16);
+                const num = parseInt(color.replace('#', ''), 16);
                 const amt = Math.round(2.55 * percent);
                 const R = Math.max(0, (num >> 16) - amt);
                 const G = Math.max(0, (num >> 8 & 0x00FF) - amt);
@@ -765,23 +829,23 @@
             if (isPerfect) {
                 combo++;
                 score += 100 * combo;
-                showFloatingText('PERFECT! +' + (100 * combo), newX + newWidth/2, targetY - 60, true);
-                createParticles(newX + newWidth/2, targetY, '#00ff88', 40);
+                showFloatingText('PERFECT! +' + (100 * combo), newX + newWidth / 2, targetY - 60, true);
+                createParticles(newX + newWidth / 2, targetY, '#00ff88', 40);
                 playSound('perfect');
             } else {
                 if (combo > 2) {
-                    showFloatingText('Combo ended!', newX + newWidth/2, targetY - 60);
+                    showFloatingText('Combo ended!', newX + newWidth / 2, targetY - 60);
                 }
                 combo = Math.max(0, combo - 1);
                 score += 10 + Math.floor(overlap / 2);
-                createParticles(newX + newWidth/2, targetY, currentBlock.color, 20);
+                createParticles(newX + newWidth / 2, targetY, currentBlock.color, 20);
                 playSound('drop');
             }
 
             // Level up every 5 blocks
             if (blocks.length % 5 === 0) {
                 level++;
-                showFloatingText('LEVEL ' + level + '!', canvas.width/2, 150, true);
+                showFloatingText('LEVEL ' + level + '!', canvas.width / 2, 150, true);
                 playSound('levelup');
             }
 
@@ -826,8 +890,8 @@
             // Explosion effect
             blocks.forEach(block => {
                 createParticles(
-                    block.x + block.width/2,
-                    block.y + block.height/2,
+                    block.x + block.width / 2,
+                    block.y + block.height / 2,
                     block.color,
                     12
                 );
@@ -851,7 +915,7 @@
 
             // Create base block
             const baseBlock = new Block(
-                canvas.width/2 - 60,
+                canvas.width / 2 - 60,
                 canvas.height - 45,
                 120,
                 32,
@@ -952,4 +1016,5 @@
         gameLoop();
     </script>
 </body>
+
 </html>

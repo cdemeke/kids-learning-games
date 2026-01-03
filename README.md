@@ -2,7 +2,7 @@
 
 **[Play Now](https://cdemeke.github.io/kids-learning-games/)**
 
-This repository features interactive games created by my kids Penny and Theo. Every game was built using AI assistance, with my help to set up the environment so they could focus on creativity and testing.
+This repo features interactive games created by my kids Penny and Theo. Every game was built using AI assistance, with my help to set up the environment so they could focus on creativity and testing.
 
 ## Games
 
