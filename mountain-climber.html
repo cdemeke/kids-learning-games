@@ -4,8 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Mountain Climber - Happy Truck Adventure!</title>
-    <link href="https://fonts.googleapis.com/css2?family=Bubblegum+Sans&family=Nunito:wght@700;800&display=swap"
+    <title>Mountain Climber - Epic Truck Adventure!</title>
+    <link href="https://fonts.googleapis.com/css2?family=Bubblegum+Sans&family=Nunito:wght@700;800;900&display=swap"
         rel="stylesheet">
     <style>
         * {
@@ -33,129 +33,9 @@
             overflow: hidden;
         }
 
-        /* Sky gradient - changes based on height */
-        .sky {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(180deg, #74b9ff 0%, #a8e6cf 100%);
-            transition: background 2s ease;
-        }
-
-        .sky.sunset {
-            background: linear-gradient(180deg, #fd79a8 0%, #fdcb6e 50%, #74b9ff 100%);
-        }
-
-        .sky.rainbow {
-            background: linear-gradient(180deg, #a29bfe 0%, #74b9ff 25%, #55efc4 50%, #ffeaa7 75%, #fab1a0 100%);
-        }
-
-        /* Sun */
-        .sun {
-            position: absolute;
-            top: 30px;
-            right: 60px;
-            width: 100px;
-            height: 100px;
-            background: radial-gradient(circle at 40% 40%, #fff9c4, #ffd93d);
-            border-radius: 50%;
-            box-shadow: 0 0 80px rgba(255, 217, 61, 0.8);
-            animation: sunPulse 3s ease-in-out infinite;
-        }
-
-        .sun::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-size: 4rem;
-        }
-
-        @keyframes sunPulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.1); }
-        }
-
-        /* Clouds */
-        .cloud {
-            position: absolute;
-            background: white;
-            border-radius: 50px;
-            opacity: 0.9;
-            animation: floatCloud 30s linear infinite;
-        }
-
-        .cloud::before, .cloud::after {
-            content: '';
-            position: absolute;
-            background: white;
-            border-radius: 50%;
-        }
-
-        .cloud-1 {
-            width: 120px;
-            height: 50px;
-            top: 80px;
-            left: -150px;
-        }
-
-        .cloud-1::before {
-            width: 60px;
-            height: 60px;
-            top: -30px;
-            left: 20px;
-        }
-
-        .cloud-1::after {
-            width: 45px;
-            height: 45px;
-            top: -18px;
-            left: 65px;
-        }
-
-        .cloud-2 {
-            width: 100px;
-            height: 40px;
-            top: 140px;
-            left: -250px;
-            animation-delay: -15s;
-        }
-
-        .cloud-2::before {
-            width: 50px;
-            height: 50px;
-            top: -25px;
-            left: 15px;
-        }
-
-        .cloud-2::after {
-            width: 35px;
-            height: 35px;
-            top: -12px;
-            left: 55px;
-        }
-
-        @keyframes floatCloud {
-            from { transform: translateX(0); }
-            to { transform: translateX(calc(100vw + 300px)); }
-        }
-
-        /* Game canvas area */
-        .game-world {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            height: 100%;
-        }
-
-        /* Mountain/ground - drawn with canvas */
         #gameCanvas {
             position: absolute;
-            bottom: 0;
+            top: 0;
             left: 0;
             display: block;
         }
@@ -202,29 +82,159 @@
 
         .stats-panel {
             display: flex;
-            gap: 15px;
+            gap: 12px;
             flex-wrap: wrap;
             justify-content: flex-end;
         }
 
         .stat-item {
             background: linear-gradient(180deg, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.85));
-            padding: 12px 20px;
+            padding: 10px 16px;
             border-radius: 50px;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
             font-weight: 800;
-            font-size: clamp(1rem, 3vw, 1.3rem);
+            font-size: clamp(0.9rem, 2.5vw, 1.1rem);
         }
 
         .stat-item .icon {
-            font-size: clamp(1.3rem, 4vw, 1.8rem);
+            font-size: clamp(1.1rem, 3vw, 1.4rem);
         }
 
         .stat-item .value {
             color: #e17055;
+        }
+
+        /* Speed meter */
+        .speed-meter {
+            position: fixed;
+            left: 20px;
+            bottom: 120px;
+            background: linear-gradient(180deg, rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.5));
+            padding: 15px;
+            border-radius: 15px;
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .speed-value {
+            font-family: 'Bubblegum Sans', cursive;
+            font-size: clamp(1.5rem, 4vw, 2rem);
+            color: #55efc4;
+            text-shadow: 0 0 10px rgba(85, 239, 196, 0.5);
+        }
+
+        .speed-label {
+            font-size: 0.7rem;
+            color: rgba(255, 255, 255, 0.7);
+            font-weight: 700;
+        }
+
+        .speed-bar {
+            width: 60px;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .speed-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #55efc4, #00b894);
+            border-radius: 4px;
+            transition: width 0.1s;
+        }
+
+        /* Boost meter */
+        .boost-meter {
+            position: fixed;
+            left: 20px;
+            bottom: 220px;
+            background: linear-gradient(180deg, rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.5));
+            padding: 12px;
+            border-radius: 15px;
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .boost-icon {
+            font-size: 1.5rem;
+        }
+
+        .boost-bar {
+            width: 20px;
+            height: 80px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .boost-fill {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(180deg, #ff6b6b, #feca57, #ff9ff3);
+            border-radius: 10px;
+            transition: height 0.2s;
+        }
+
+        /* Trick display */
+        .trick-display {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            z-index: 200;
+        }
+
+        .trick-text {
+            font-family: 'Bubblegum Sans', cursive;
+            font-size: clamp(2rem, 8vw, 4rem);
+            color: #ffd700;
+            text-shadow: 0 4px 0 rgba(0, 0, 0, 0.3), 0 0 40px rgba(255, 215, 0, 0.6);
+            animation: trickPop 1s ease-out forwards;
+            white-space: nowrap;
+        }
+
+        @keyframes trickPop {
+            0% { transform: scale(0) rotate(-20deg); opacity: 1; }
+            30% { transform: scale(1.3) rotate(10deg); opacity: 1; }
+            100% { transform: scale(1) rotate(0) translateY(-30px); opacity: 0; }
+        }
+
+        /* Combo display */
+        .combo-display {
+            position: fixed;
+            top: 120px;
+            left: 50%;
+            transform: translateX(-50%);
+            pointer-events: none;
+            z-index: 150;
+            text-align: center;
+        }
+
+        .combo-text {
+            font-family: 'Bubblegum Sans', cursive;
+            font-size: clamp(1.2rem, 4vw, 2rem);
+            color: #ff6b6b;
+            text-shadow: 0 2px 0 rgba(0, 0, 0, 0.2);
+        }
+
+        .combo-multiplier {
+            font-size: clamp(2rem, 6vw, 3rem);
+            color: #feca57;
+            text-shadow: 0 3px 0 rgba(0, 0, 0, 0.2), 0 0 20px rgba(254, 202, 87, 0.5);
         }
 
         /* Height indicator */
@@ -258,13 +268,13 @@
             bottom: 0;
             left: 0;
             right: 0;
-            background: linear-gradient(180deg, #fd79a8, #e17055, #fdcb6e, #55efc4);
+            background: linear-gradient(180deg, #a29bfe, #fd79a8, #fdcb6e, #55efc4);
             border-radius: 10px;
             transition: height 0.3s ease;
         }
 
         .height-label {
-            font-size: 0.8rem;
+            font-size: 0.7rem;
             font-weight: 800;
             color: #636e72;
             writing-mode: vertical-rl;
@@ -272,7 +282,29 @@
             transform: rotate(180deg);
         }
 
-        /* Big play button */
+        .height-value {
+            font-size: 0.8rem;
+            font-weight: 800;
+            color: #e17055;
+        }
+
+        /* Zone indicator */
+        .zone-indicator {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 800;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* Play button */
         .play-button {
             position: fixed;
             bottom: 30px;
@@ -281,8 +313,8 @@
             background: linear-gradient(180deg, #00b894, #00a085);
             color: white;
             border: none;
-            padding: 25px 60px;
-            font-size: clamp(1.5rem, 5vw, 2.2rem);
+            padding: 22px 50px;
+            font-size: clamp(1.3rem, 4vw, 1.8rem);
             border-radius: 60px;
             cursor: pointer;
             font-family: 'Bubblegum Sans', cursive;
@@ -290,7 +322,7 @@
             z-index: 100;
             display: flex;
             align-items: center;
-            gap: 15px;
+            gap: 12px;
             transition: transform 0.1s, box-shadow 0.1s;
             -webkit-touch-callout: none;
         }
@@ -301,25 +333,52 @@
         }
 
         .play-button .icon {
-            font-size: clamp(2rem, 6vw, 2.8rem);
+            font-size: clamp(1.8rem, 5vw, 2.5rem);
             animation: truckBounce 0.5s ease-in-out infinite;
         }
 
         @keyframes truckBounce {
             0%, 100% { transform: translateY(0) rotate(-3deg); }
-            50% { transform: translateY(-5px) rotate(3deg); }
+            50% { transform: translateY(-4px) rotate(3deg); }
         }
 
-        /* Instruction text */
+        /* Boost button */
+        .boost-button {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(180deg, #ff6b6b, #ee5a5a);
+            border: none;
+            border-radius: 50%;
+            font-size: 2rem;
+            cursor: pointer;
+            box-shadow: 0 6px 0 #c44545, 0 10px 30px rgba(238, 90, 90, 0.4);
+            z-index: 100;
+            transition: transform 0.1s, box-shadow 0.1s;
+        }
+
+        .boost-button:active {
+            transform: translateY(4px);
+            box-shadow: 0 2px 0 #c44545;
+        }
+
+        .boost-button.empty {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Instruction */
         .instruction {
             position: fixed;
-            bottom: 120px;
+            bottom: 130px;
             left: 50%;
             transform: translateX(-50%);
             background: rgba(255, 255, 255, 0.95);
-            padding: 15px 30px;
-            border-radius: 30px;
-            font-size: clamp(1rem, 3vw, 1.3rem);
+            padding: 12px 25px;
+            border-radius: 25px;
+            font-size: clamp(0.85rem, 2.5vw, 1.1rem);
             font-weight: 700;
             color: #2d3436;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
@@ -330,24 +389,90 @@
 
         @keyframes bounce {
             0%, 100% { transform: translateX(-50%) translateY(0); }
-            50% { transform: translateX(-50%) translateY(-10px); }
+            50% { transform: translateX(-50%) translateY(-8px); }
         }
 
-        /* Cheering animals */
-        .animal {
-            position: absolute;
-            font-size: clamp(2rem, 6vw, 3rem);
-            animation: animalCheer 1s ease-in-out infinite;
-            filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
-            z-index: 10;
+        /* Sound toggle */
+        .sound-toggle {
+            position: fixed;
+            top: 15px;
+            right: 15px;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.95);
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            z-index: 1000;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+            pointer-events: all;
         }
 
-        @keyframes animalCheer {
-            0%, 100% { transform: translateY(0) rotate(-5deg); }
-            50% { transform: translateY(-10px) rotate(5deg); }
+        .sound-toggle.muted {
+            opacity: 0.5;
         }
 
-        /* Collectible sparkle effect */
+        /* Customize panel */
+        .customize-panel {
+            position: fixed;
+            top: 80px;
+            right: 80px;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 12px;
+            border-radius: 20px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .customize-label {
+            font-size: 0.75rem;
+            font-weight: 800;
+            color: #636e72;
+            text-align: center;
+        }
+
+        .color-options, .hat-options {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .color-btn, .hat-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: 2px solid transparent;
+            cursor: pointer;
+            transition: transform 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+        }
+
+        .color-btn:hover, .hat-btn:hover {
+            transform: scale(1.15);
+        }
+
+        .color-btn.active, .hat-btn.active {
+            border-color: #2d3436;
+        }
+
+        .color-btn.locked, .hat-btn.locked {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* Sparkle effects */
         .sparkle {
             position: absolute;
             width: 30px;
@@ -386,55 +511,16 @@
             100% { transform: scale(2.5) rotate(45deg); opacity: 0; }
         }
 
-        /* Floating collect text */
         .collect-text {
             position: absolute;
             font-family: 'Bubblegum Sans', cursive;
-            font-size: clamp(1.5rem, 5vw, 2.2rem);
+            font-size: clamp(1.3rem, 4vw, 1.8rem);
             color: #ffd700;
             text-shadow: 0 3px 0 rgba(0, 0, 0, 0.2), 0 0 20px rgba(255, 215, 0, 0.6);
             pointer-events: none;
             z-index: 200;
             animation: floatUp 1.2s ease-out forwards;
             white-space: nowrap;
-        }
-
-        /* Big air indicator */
-        .big-air {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-family: 'Bubblegum Sans', cursive;
-            font-size: clamp(3rem, 10vw, 5rem);
-            color: #ff6b6b;
-            text-shadow: 0 4px 0 rgba(0, 0, 0, 0.2), 0 0 30px rgba(255, 107, 107, 0.6);
-            pointer-events: none;
-            z-index: 200;
-            animation: bigAirPop 1.5s ease-out forwards;
-            white-space: nowrap;
-        }
-
-        @keyframes bigAirPop {
-            0% { transform: translate(-50%, -50%) scale(0) rotate(-10deg); opacity: 1; }
-            30% { transform: translate(-50%, -50%) scale(1.3) rotate(5deg); opacity: 1; }
-            100% { transform: translate(-50%, -50%) scale(1) rotate(0deg) translateY(-50px); opacity: 0; }
-        }
-
-        /* Jump trail */
-        .jump-trail {
-            position: absolute;
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            pointer-events: none;
-            z-index: 5;
-            animation: trailFade 0.8s ease-out forwards;
-        }
-
-        @keyframes trailFade {
-            0% { transform: scale(1); opacity: 0.8; }
-            100% { transform: scale(0); opacity: 0; }
         }
 
         @keyframes floatUp {
@@ -449,8 +535,8 @@
             left: 50%;
             transform: translate(-50%, -50%);
             background: linear-gradient(180deg, #fff, #f8f9fa);
-            padding: 30px 50px;
-            border-radius: 30px;
+            padding: 25px 40px;
+            border-radius: 25px;
             text-align: center;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
             z-index: 500;
@@ -465,14 +551,14 @@
 
         .unlock-notification h2 {
             font-family: 'Bubblegum Sans', cursive;
-            font-size: clamp(1.8rem, 6vw, 2.5rem);
+            font-size: clamp(1.5rem, 5vw, 2rem);
             color: #e17055;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
         }
 
         .unlock-notification .unlock-item {
-            font-size: clamp(3rem, 10vw, 5rem);
-            margin: 15px 0;
+            font-size: clamp(2.5rem, 8vw, 4rem);
+            margin: 10px 0;
             animation: unlockBounce 0.5s ease infinite;
         }
 
@@ -482,99 +568,47 @@
         }
 
         .unlock-notification p {
-            font-size: clamp(1rem, 3vw, 1.3rem);
+            font-size: clamp(0.9rem, 2.5vw, 1.1rem);
             color: #636e72;
             font-weight: 700;
         }
 
-        /* Sound toggle */
-        .sound-toggle {
-            position: fixed;
-            top: 15px;
-            right: 15px;
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.95);
-            border: none;
-            font-size: 1.5rem;
-            cursor: pointer;
-            z-index: 1000;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
-            pointer-events: all;
-        }
-
-        .sound-toggle.muted {
-            opacity: 0.5;
-        }
-
-        /* Truck customization panel */
-        .customize-panel {
-            position: fixed;
-            top: 80px;
-            right: 15px;
-            background: rgba(255, 255, 255, 0.95);
-            padding: 15px;
-            border-radius: 20px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-            z-index: 100;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .customize-label {
-            font-size: 0.85rem;
-            font-weight: 800;
-            color: #636e72;
-            text-align: center;
-        }
-
-        .color-options, .hat-options {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-            justify-content: center;
-        }
-
-        .color-btn, .hat-btn {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            border: 3px solid transparent;
-            cursor: pointer;
-            transition: transform 0.2s, border-color 0.2s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.3rem;
-        }
-
-        .color-btn:hover, .hat-btn:hover {
-            transform: scale(1.15);
-        }
-
-        .color-btn.active, .hat-btn.active {
-            border-color: #2d3436;
-        }
-
-        .color-btn.locked, .hat-btn.locked {
-            opacity: 0.3;
-            cursor: not-allowed;
-        }
-
-        .hidden {
-            display: none !important;
-        }
-
         /* Mobile adjustments */
         @media (max-width: 600px) {
-            .stats-panel {
-                gap: 10px;
+            .speed-meter {
+                left: 10px;
+                bottom: 110px;
+                padding: 10px;
             }
 
-            .stat-item {
-                padding: 10px 15px;
+            .boost-meter {
+                left: 10px;
+                bottom: 200px;
+                padding: 8px;
+            }
+
+            .boost-bar {
+                height: 60px;
+            }
+
+            .boost-button {
+                width: 65px;
+                height: 65px;
+                right: 20px;
+                font-size: 1.5rem;
+            }
+
+            .customize-panel {
+                top: auto;
+                bottom: 130px;
+                right: 10px;
+                padding: 8px;
+            }
+
+            .zone-indicator {
+                top: 70px;
+                right: 10px;
+                font-size: 0.75rem;
             }
 
             .height-indicator {
@@ -586,27 +620,14 @@
                 height: 100px;
             }
 
-            .customize-panel {
-                top: auto;
-                bottom: 140px;
-                right: 10px;
-                padding: 10px;
-            }
-
-            .color-btn, .hat-btn {
-                width: 35px;
-                height: 35px;
-                font-size: 1.1rem;
+            .play-button {
+                padding: 18px 40px;
+                bottom: 25px;
             }
 
             .instruction {
-                bottom: 110px;
-                padding: 12px 20px;
-            }
-
-            .play-button {
-                padding: 20px 45px;
-                bottom: 25px;
+                bottom: 105px;
+                padding: 10px 18px;
             }
         }
 
@@ -615,11 +636,15 @@
                 display: none;
             }
 
+            .boost-meter {
+                bottom: 120px;
+            }
+
             .customize-panel {
                 flex-direction: row;
                 top: 70px;
-                right: 50%;
-                transform: translateX(50%);
+                right: 80px;
+                bottom: auto;
             }
         }
     </style>
@@ -627,16 +652,7 @@
 
 <body>
     <div class="game-container" id="gameContainer">
-        <!-- Sky -->
-        <div class="sky" id="sky"></div>
-        <div class="sun"></div>
-        <div class="cloud cloud-1"></div>
-        <div class="cloud cloud-2"></div>
-
-        <!-- Game world -->
-        <div class="game-world">
-            <canvas id="gameCanvas"></canvas>
-        </div>
+        <canvas id="gameCanvas"></canvas>
 
         <!-- UI -->
         <div class="game-ui">
@@ -647,12 +663,8 @@
                     <span class="value" id="starCount">0</span>
                 </div>
                 <div class="stat-item">
-                    <span class="icon">🎈</span>
-                    <span class="value" id="balloonCount">0</span>
-                </div>
-                <div class="stat-item">
-                    <span class="icon">😊</span>
-                    <span class="value" id="smileyCount">0</span>
+                    <span class="icon">🔥</span>
+                    <span class="value" id="trickScore">0</span>
                 </div>
             </div>
         </div>
@@ -660,32 +672,68 @@
         <a href="index.html" class="home-btn">🏠 Home</a>
         <button class="sound-toggle" id="soundToggle">🔊</button>
 
+        <!-- Speed meter -->
+        <div class="speed-meter">
+            <div class="speed-value" id="speedValue">0</div>
+            <div class="speed-label">MPH</div>
+            <div class="speed-bar">
+                <div class="speed-fill" id="speedFill" style="width: 0%"></div>
+            </div>
+        </div>
+
+        <!-- Boost meter -->
+        <div class="boost-meter">
+            <div class="boost-icon">🚀</div>
+            <div class="boost-bar">
+                <div class="boost-fill" id="boostFill" style="height: 100%"></div>
+            </div>
+        </div>
+
         <!-- Height indicator -->
         <div class="height-indicator">
+            <div class="height-value" id="heightValue">0m</div>
             <div class="height-bar">
                 <div class="height-fill" id="heightFill" style="height: 0%"></div>
             </div>
             <div class="height-label">HEIGHT</div>
         </div>
 
-        <!-- Customization panel -->
+        <!-- Zone indicator -->
+        <div class="zone-indicator" id="zoneIndicator">
+            <span>🌿</span>
+            <span>Meadow Zone</span>
+        </div>
+
+        <!-- Customize panel -->
         <div class="customize-panel" id="customizePanel">
-            <div class="customize-label">Truck Color</div>
+            <div class="customize-label">Color</div>
             <div class="color-options" id="colorOptions"></div>
-            <div class="customize-label">Silly Hats</div>
+            <div class="customize-label">Hat</div>
             <div class="hat-options" id="hatOptions"></div>
         </div>
 
-        <!-- Instructions -->
-        <div class="instruction" id="instruction">
-            Hold the button to GO! Hit ramps for BIG JUMPS! 🚚🚀
+        <!-- Combo display -->
+        <div class="combo-display hidden" id="comboDisplay">
+            <div class="combo-text">COMBO</div>
+            <div class="combo-multiplier" id="comboMultiplier">x2</div>
         </div>
 
-        <!-- Big play button -->
+        <!-- Trick display -->
+        <div class="trick-display" id="trickDisplay"></div>
+
+        <!-- Instruction -->
+        <div class="instruction" id="instruction">
+            HOLD to drive! Hit ramps for FLIPS! Tap 🚀 for BOOST!
+        </div>
+
+        <!-- Play button -->
         <button class="play-button" id="playButton">
             <span class="icon">🚚</span>
             <span>HOLD TO GO!</span>
         </button>
+
+        <!-- Boost button -->
+        <button class="boost-button" id="boostButton">🚀</button>
     </div>
 
     <script>
@@ -729,71 +777,69 @@
                     osc.start();
                     osc.stop(audioCtx.currentTime + 0.4);
                     break;
-                case 'boing':
-                    osc.type = 'sine';
-                    osc.frequency.setValueAtTime(200, audioCtx.currentTime);
-                    osc.frequency.exponentialRampToValueAtTime(600, audioCtx.currentTime + 0.1);
-                    osc.frequency.exponentialRampToValueAtTime(300, audioCtx.currentTime + 0.2);
-                    gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
-                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.25);
-                    osc.start();
-                    osc.stop(audioCtx.currentTime + 0.25);
-                    break;
-                case 'vroom':
+                case 'boost':
                     osc.type = 'sawtooth';
-                    osc.frequency.setValueAtTime(80, audioCtx.currentTime);
-                    osc.frequency.linearRampToValueAtTime(120, audioCtx.currentTime + 0.15);
-                    gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
-                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
-                    osc.start();
-                    osc.stop(audioCtx.currentTime + 0.2);
-                    break;
-                case 'honk':
-                    osc.type = 'square';
-                    osc.frequency.setValueAtTime(400, audioCtx.currentTime);
-                    osc.frequency.setValueAtTime(350, audioCtx.currentTime + 0.15);
-                    gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
-                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
-                    osc.start();
-                    osc.stop(audioCtx.currentTime + 0.3);
-                    break;
-                case 'unlock':
-                    osc.type = 'sine';
-                    osc.frequency.setValueAtTime(523, audioCtx.currentTime);
-                    osc.frequency.setValueAtTime(659, audioCtx.currentTime + 0.15);
-                    osc.frequency.setValueAtTime(784, audioCtx.currentTime + 0.3);
-                    osc.frequency.setValueAtTime(1047, audioCtx.currentTime + 0.45);
-                    gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
-                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.7);
-                    osc.start();
-                    osc.stop(audioCtx.currentTime + 0.7);
-                    break;
-                case 'engine':
-                    osc.type = 'sawtooth';
-                    osc.frequency.setValueAtTime(60 + Math.random() * 20, audioCtx.currentTime);
-                    gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
-                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
-                    osc.start();
-                    osc.stop(audioCtx.currentTime + 0.1);
-                    break;
-                case 'whoosh':
-                    osc.type = 'sine';
-                    osc.frequency.setValueAtTime(300, audioCtx.currentTime);
-                    osc.frequency.exponentialRampToValueAtTime(800, audioCtx.currentTime + 0.15);
-                    osc.frequency.exponentialRampToValueAtTime(200, audioCtx.currentTime + 0.4);
+                    osc.frequency.setValueAtTime(150, audioCtx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(400, audioCtx.currentTime + 0.3);
                     gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
                     gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.4);
                     osc.start();
                     osc.stop(audioCtx.currentTime + 0.4);
                     break;
+                case 'flip':
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(400, audioCtx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(1200, audioCtx.currentTime + 0.2);
+                    gain.gain.setValueAtTime(0.25, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.3);
+                    break;
+                case 'land':
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(200, audioCtx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.15);
+                    gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.2);
+                    break;
                 case 'launch':
                     osc.type = 'sawtooth';
                     osc.frequency.setValueAtTime(100, audioCtx.currentTime);
-                    osc.frequency.exponentialRampToValueAtTime(400, audioCtx.currentTime + 0.2);
+                    osc.frequency.exponentialRampToValueAtTime(500, audioCtx.currentTime + 0.25);
                     gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
-                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.25);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
                     osc.start();
-                    osc.stop(audioCtx.currentTime + 0.25);
+                    osc.stop(audioCtx.currentTime + 0.3);
+                    break;
+                case 'engine':
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(60 + Math.random() * 30, audioCtx.currentTime);
+                    gain.gain.setValueAtTime(0.06, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.08);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.08);
+                    break;
+                case 'unlock':
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(523, audioCtx.currentTime);
+                    osc.frequency.setValueAtTime(659, audioCtx.currentTime + 0.12);
+                    osc.frequency.setValueAtTime(784, audioCtx.currentTime + 0.24);
+                    osc.frequency.setValueAtTime(1047, audioCtx.currentTime + 0.36);
+                    gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.6);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.6);
+                    break;
+                case 'combo':
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(600, audioCtx.currentTime);
+                    osc.frequency.setValueAtTime(900, audioCtx.currentTime + 0.1);
+                    gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.2);
                     break;
             }
         }
@@ -807,27 +853,34 @@
 
         // Game state
         let isPlaying = false;
+        let isBoosting = false;
         let truckX = 100;
         let truckY = 0;
         let truckVelocityX = 0;
         let truckVelocityY = 0;
         let cameraX = 0;
-        let maxHeight = 0;
+        let cameraY = 0;
         let truckAngle = 0;
-        let truckBounce = 0;
-        let truckHappy = 0;
+        let truckAngularVelocity = 0;
+        let totalRotation = 0;
         let isInAir = false;
         let airTime = 0;
-        let maxAirTime = 0;
-        let truckSpin = 0;
-        let lastTrailTime = 0;
-        let bigAirShown = false;
-        let landingBoost = 0;
+        let boostFuel = 100;
+        let trickScore = 0;
+        let comboCount = 0;
+        let comboTimer = 0;
+        let lastFlipCount = 0;
+
+        // Suspension
+        let frontSuspension = 0;
+        let rearSuspension = 0;
+
+        // Particles
+        const dustParticles = [];
+        const boostParticles = [];
 
         // Collections
         let stars = 0;
-        let balloons = 0;
-        let smileys = 0;
 
         // Customization
         let currentColor = '#e74c3c';
@@ -857,168 +910,203 @@
             { emoji: '🌈', name: 'Rainbow', height: 2000 }
         ];
 
-        // Mountain terrain
+        // Terrain and scenery
         const terrainPoints = [];
         const collectibles = [];
-        const animals = [];
+        const sceneryItems = [];
+        const backgroundMountains = [];
+        const clouds = [];
+        const birds = [];
+
+        // Zone definitions
+        const zones = [
+            { name: 'Meadow', icon: '🌿', minHeight: 0, grassColor: '#55efc4', groundColor: '#00b894', skyTop: '#74b9ff', skyBottom: '#a8e6cf' },
+            { name: 'Forest', icon: '🌲', minHeight: 300, grassColor: '#2ecc71', groundColor: '#27ae60', skyTop: '#5f9ea0', skyBottom: '#90ee90' },
+            { name: 'Rocky', icon: '🪨', minHeight: 600, grassColor: '#95a5a6', groundColor: '#7f8c8d', skyTop: '#778899', skyBottom: '#b0c4de' },
+            { name: 'Snow', icon: '❄️', minHeight: 1000, grassColor: '#ecf0f1', groundColor: '#bdc3c7', skyTop: '#87ceeb', skyBottom: '#e0ffff' },
+            { name: 'Peak', icon: '⛰️', minHeight: 1500, grassColor: '#fff', groundColor: '#dfe6e9', skyTop: '#4a69bd', skyBottom: '#6a89cc' }
+        ];
+
+        function getCurrentZone() {
+            const height = canvas.height - truckY;
+            for (let i = zones.length - 1; i >= 0; i--) {
+                if (height >= zones[i].minHeight) return zones[i];
+            }
+            return zones[0];
+        }
 
         function generateTerrain() {
             terrainPoints.length = 0;
             collectibles.length = 0;
-            animals.length = 0;
+            sceneryItems.length = 0;
 
             let x = 0;
             let y = canvas.height - 150;
-            const totalLength = 25000;
+            const totalLength = 30000;
 
             while (x < totalLength) {
                 terrainPoints.push({ x, y });
 
-                // More exciting terrain with big jumps!
                 const segmentType = Math.random();
                 let segmentLength, yChange;
 
-                if (segmentType < 0.25) {
-                    // BIG JUMP RAMP - steep up then flat launch!
-                    segmentLength = 60;
-                    yChange = -(80 + Math.random() * 60); // Steep climb
+                if (segmentType < 0.2) {
+                    // BIG JUMP RAMP
+                    segmentLength = 70;
+                    yChange = -(100 + Math.random() * 80);
                     terrainPoints.push({ x: x + segmentLength, y: y + yChange });
-                    // Flat launch pad at top
                     x += segmentLength;
-                    y = Math.max(120, y + yChange);
-                    terrainPoints.push({ x: x + 40, y: y });
-                    // Drop off! (creates the jump)
+                    y = Math.max(100, y + yChange);
+                    terrainPoints.push({ x: x + 50, y: y });
+                    x += 50;
+                    terrainPoints.push({ x: x + 40, y: y + 30 });
                     x += 40;
-                    terrainPoints.push({ x: x + 30, y: y + 20 });
-                    // Landing zone (gentle slope down)
-                    x += 30;
-                    segmentLength = 150 + Math.random() * 100;
-                    yChange = 60 + Math.random() * 40;
+                    segmentLength = 180;
+                    yChange = 70;
 
-                    // Add collectibles in the air above the jump!
-                    for (let i = 0; i < 3; i++) {
+                    // Collectibles in air
+                    for (let i = 0; i < 4; i++) {
                         collectibles.push({
-                            x: x + 40 + i * 50,
-                            y: y - 80 - Math.random() * 60,
-                            type: i === 1 ? 'star' : (Math.random() < 0.5 ? 'balloon' : 'smiley'),
+                            x: x + 30 + i * 45,
+                            y: y - 100 - Math.random() * 80,
+                            type: i === 2 ? 'star' : 'fuel',
                             collected: false,
                             bobOffset: Math.random() * Math.PI * 2
                         });
                     }
-                } else if (segmentType < 0.4) {
-                    // MEGA RAMP - long smooth ramp for big air!
-                    segmentLength = 180 + Math.random() * 80;
-                    yChange = -(100 + Math.random() * 50);
-                    // Create smooth curve using multiple points
-                    const steps = 4;
+                } else if (segmentType < 0.35) {
+                    // MEGA RAMP
+                    segmentLength = 200 + Math.random() * 100;
+                    yChange = -(120 + Math.random() * 60);
+                    const steps = 5;
                     for (let i = 1; i <= steps; i++) {
                         const progress = i / steps;
-                        const curveY = y + yChange * Math.pow(progress, 0.7); // Ease out curve
+                        const curveY = y + yChange * Math.pow(progress, 0.6);
                         terrainPoints.push({ x: x + segmentLength * progress, y: curveY });
                     }
                     x += segmentLength;
-                    y = Math.max(100, y + yChange);
-                    // Flat top
-                    terrainPoints.push({ x: x + 50, y: y });
-                    x += 50;
-                    // Gentle landing
-                    segmentLength = 200;
-                    yChange = 80;
+                    y = Math.max(80, y + yChange);
+                    terrainPoints.push({ x: x + 60, y: y });
+                    x += 60;
+                    segmentLength = 220;
+                    yChange = 100;
 
-                    // Stars at the peak!
                     collectibles.push({
-                        x: x - 30,
-                        y: y - 100,
+                        x: x,
+                        y: y - 120,
                         type: 'star',
                         collected: false,
-                        bobOffset: Math.random() * Math.PI * 2
+                        bobOffset: 0
                     });
-                } else if (segmentType < 0.55) {
-                    // BOUNCY HILLS - series of small bumps
-                    for (let bump = 0; bump < 3; bump++) {
-                        const bumpWidth = 50 + Math.random() * 30;
-                        const bumpHeight = 40 + Math.random() * 30;
+                } else if (segmentType < 0.5) {
+                    // LOOP-DE-LOOP hills
+                    for (let bump = 0; bump < 4; bump++) {
+                        const bumpWidth = 60 + Math.random() * 40;
+                        const bumpHeight = 50 + Math.random() * 40;
                         terrainPoints.push({ x: x + bumpWidth * 0.5, y: y - bumpHeight });
-                        terrainPoints.push({ x: x + bumpWidth, y: y + 5 });
+                        terrainPoints.push({ x: x + bumpWidth, y: y });
                         x += bumpWidth;
 
-                        if (Math.random() < 0.6) {
+                        if (Math.random() < 0.5) {
                             collectibles.push({
                                 x: x - bumpWidth * 0.5,
-                                y: y - bumpHeight - 50,
-                                type: Math.random() < 0.5 ? 'balloon' : 'smiley',
+                                y: y - bumpHeight - 60,
+                                type: Math.random() < 0.3 ? 'star' : 'fuel',
                                 collected: false,
                                 bobOffset: Math.random() * Math.PI * 2
                             });
                         }
                     }
-                    segmentLength = 80;
-                    yChange = -(10 + Math.random() * 20);
-                } else if (segmentType < 0.7) {
-                    // STUNT RAMP - sharp angle for spins!
-                    segmentLength = 40;
-                    yChange = -(60 + Math.random() * 40);
-                    // Sharp up
+                    segmentLength = 100;
+                    yChange = -(20 + Math.random() * 30);
+                } else if (segmentType < 0.65) {
+                    // STUNT RAMP
+                    segmentLength = 50;
+                    yChange = -(80 + Math.random() * 50);
                     terrainPoints.push({ x: x + segmentLength, y: y + yChange });
                     x += segmentLength;
-                    y = Math.max(120, y + yChange);
-                    // Tiny flat
-                    terrainPoints.push({ x: x + 15, y: y });
-                    x += 15;
-                    // Gap!
-                    segmentLength = 120 + Math.random() * 60;
-                    yChange = 50 + Math.random() * 30;
+                    y = Math.max(100, y + yChange);
+                    terrainPoints.push({ x: x + 20, y: y });
+                    x += 20;
+                    segmentLength = 150;
+                    yChange = 60;
 
-                    // Collectibles in the gap
                     collectibles.push({
-                        x: x + segmentLength / 2,
-                        y: y - 40,
+                        x: x + 70,
+                        y: y - 50,
                         type: 'star',
                         collected: false,
-                        bobOffset: Math.random() * Math.PI * 2
+                        bobOffset: 0
                     });
-                } else if (segmentType < 0.85) {
-                    // Gentle upward slope (rest area)
-                    segmentLength = 100 + Math.random() * 80;
-                    yChange = -(15 + Math.random() * 25);
+                } else if (segmentType < 0.8) {
+                    // Gentle slope
+                    segmentLength = 120 + Math.random() * 100;
+                    yChange = -(20 + Math.random() * 35);
 
-                    if (Math.random() < 0.5) {
-                        const type = Math.random();
+                    if (Math.random() < 0.4) {
                         collectibles.push({
                             x: x + segmentLength / 2,
-                            y: y - 60,
-                            type: type < 0.4 ? 'star' : type < 0.7 ? 'balloon' : 'smiley',
+                            y: y - 70,
+                            type: Math.random() < 0.5 ? 'star' : 'fuel',
                             collected: false,
                             bobOffset: Math.random() * Math.PI * 2
                         });
                     }
                 } else {
-                    // Flat cruising area
-                    segmentLength = 80 + Math.random() * 60;
-                    yChange = Math.random() * 10 - 5;
+                    // Flat
+                    segmentLength = 100 + Math.random() * 80;
+                    yChange = Math.random() * 15 - 7;
                 }
 
                 x += segmentLength;
-                y = Math.max(100, Math.min(canvas.height - 80, y + yChange));
+                y = Math.max(80, Math.min(canvas.height - 60, y + yChange));
 
-                // Add cheering animals near jumps
-                if (Math.random() < 0.2) {
-                    const animalTypes = ['🐻', '🐰', '🦊', '🐸', '🐱', '🐶', '🐼', '🦁', '🐨', '🐷', '🦄', '🐯'];
-                    animals.push({
-                        x: x - segmentLength / 2 + Math.random() * 60 - 30,
-                        y: y - 50,
-                        emoji: animalTypes[Math.floor(Math.random() * animalTypes.length)],
-                        cheerOffset: Math.random() * Math.PI * 2
+                // Add scenery
+                if (Math.random() < 0.4) {
+                    const items = ['🌲', '🌳', '🪨', '🌸', '🌻', '🍄'];
+                    sceneryItems.push({
+                        x: x - segmentLength / 2 + (Math.random() - 0.5) * 80,
+                        type: items[Math.floor(Math.random() * items.length)],
+                        scale: 0.8 + Math.random() * 0.6,
+                        layer: Math.random() < 0.5 ? 'front' : 'back'
                     });
                 }
             }
 
-            // Ensure we end at a reasonable height
-            terrainPoints.push({ x: totalLength, y: 100 });
+            terrainPoints.push({ x: totalLength, y: 80 });
+
+            // Generate background mountains
+            for (let i = 0; i < 15; i++) {
+                backgroundMountains.push({
+                    x: i * 800 + Math.random() * 400,
+                    width: 300 + Math.random() * 400,
+                    height: 150 + Math.random() * 200,
+                    layer: Math.floor(Math.random() * 3)
+                });
+            }
+
+            // Generate clouds
+            for (let i = 0; i < 20; i++) {
+                clouds.push({
+                    x: i * 500 + Math.random() * 300,
+                    y: 50 + Math.random() * 150,
+                    width: 80 + Math.random() * 80,
+                    speed: 0.2 + Math.random() * 0.3
+                });
+            }
+
+            // Generate birds
+            for (let i = 0; i < 10; i++) {
+                birds.push({
+                    x: Math.random() * totalLength,
+                    y: 100 + Math.random() * 200,
+                    wingPhase: Math.random() * Math.PI * 2,
+                    speed: 1 + Math.random() * 2
+                });
+            }
         }
 
         function getTerrainY(x) {
-            // Find the two points we're between
             for (let i = 0; i < terrainPoints.length - 1; i++) {
                 if (x >= terrainPoints[i].x && x <= terrainPoints[i + 1].x) {
                     const t = (x - terrainPoints[i].x) / (terrainPoints[i + 1].x - terrainPoints[i].x);
@@ -1029,21 +1117,135 @@
         }
 
         function getTerrainAngle(x) {
-            const y1 = getTerrainY(x - 10);
-            const y2 = getTerrainY(x + 10);
-            return Math.atan2(y1 - y2, 20);
+            const y1 = getTerrainY(x - 15);
+            const y2 = getTerrainY(x + 15);
+            return Math.atan2(y1 - y2, 30);
         }
 
-        // Draw functions
-        function drawMountain() {
-            // Draw terrain
-            ctx.beginPath();
-            ctx.moveTo(terrainPoints[0].x - cameraX, terrainPoints[0].y);
+        // Drawing functions
+        function drawSky() {
+            const zone = getCurrentZone();
+            const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+            gradient.addColorStop(0, zone.skyTop);
+            gradient.addColorStop(1, zone.skyBottom);
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            for (let i = 1; i < terrainPoints.length; i++) {
+            // Sun
+            const sunX = canvas.width - 100;
+            const sunY = 80;
+            const sunGradient = ctx.createRadialGradient(sunX, sunY, 0, sunX, sunY, 60);
+            sunGradient.addColorStop(0, '#fff9c4');
+            sunGradient.addColorStop(0.5, '#ffd93d');
+            sunGradient.addColorStop(1, 'rgba(255, 217, 61, 0)');
+            ctx.fillStyle = sunGradient;
+            ctx.beginPath();
+            ctx.arc(sunX, sunY, 60, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Sun rays
+            ctx.strokeStyle = 'rgba(255, 217, 61, 0.3)';
+            ctx.lineWidth = 3;
+            for (let i = 0; i < 12; i++) {
+                const angle = (i / 12) * Math.PI * 2 + Date.now() / 5000;
+                ctx.beginPath();
+                ctx.moveTo(sunX + Math.cos(angle) * 50, sunY + Math.sin(angle) * 50);
+                ctx.lineTo(sunX + Math.cos(angle) * 90, sunY + Math.sin(angle) * 90);
+                ctx.stroke();
+            }
+        }
+
+        function drawClouds() {
+            const time = Date.now() / 1000;
+            clouds.forEach(cloud => {
+                const cx = (cloud.x - cameraX * 0.1 + time * cloud.speed * 20) % (canvas.width + 200) - 100;
+                const cy = cloud.y - cameraY * 0.05;
+
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
+                ctx.beginPath();
+                ctx.ellipse(cx, cy, cloud.width * 0.5, cloud.width * 0.25, 0, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.beginPath();
+                ctx.ellipse(cx - cloud.width * 0.3, cy + 5, cloud.width * 0.35, cloud.width * 0.2, 0, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.beginPath();
+                ctx.ellipse(cx + cloud.width * 0.25, cy + 3, cloud.width * 0.3, cloud.width * 0.18, 0, 0, Math.PI * 2);
+                ctx.fill();
+            });
+        }
+
+        function drawBackgroundMountains() {
+            const zone = getCurrentZone();
+            const layers = [
+                { parallax: 0.15, alpha: 0.25, yOffset: 100 },
+                { parallax: 0.25, alpha: 0.4, yOffset: 50 },
+                { parallax: 0.4, alpha: 0.6, yOffset: 0 }
+            ];
+
+            layers.forEach((layer, li) => {
+                backgroundMountains.filter(m => m.layer === li).forEach(mountain => {
+                    const mx = mountain.x - cameraX * layer.parallax;
+                    const screenX = ((mx % (canvas.width * 3)) + canvas.width * 3) % (canvas.width * 3) - canvas.width;
+                    const my = canvas.height - mountain.height + layer.yOffset - cameraY * layer.parallax * 0.5;
+
+                    ctx.fillStyle = `rgba(${hexToRgb(zone.groundColor)}, ${layer.alpha})`;
+                    ctx.beginPath();
+                    ctx.moveTo(screenX - mountain.width / 2, canvas.height);
+                    ctx.lineTo(screenX, my);
+                    ctx.lineTo(screenX + mountain.width / 2, canvas.height);
+                    ctx.closePath();
+                    ctx.fill();
+
+                    // Snow cap for high mountains
+                    if (mountain.height > 250) {
+                        ctx.fillStyle = `rgba(255, 255, 255, ${layer.alpha * 0.8})`;
+                        ctx.beginPath();
+                        ctx.moveTo(screenX - mountain.width * 0.15, my + mountain.height * 0.3);
+                        ctx.lineTo(screenX, my);
+                        ctx.lineTo(screenX + mountain.width * 0.15, my + mountain.height * 0.3);
+                        ctx.closePath();
+                        ctx.fill();
+                    }
+                });
+            });
+        }
+
+        function drawBirds() {
+            const time = Date.now() / 1000;
+            ctx.fillStyle = '#2d3436';
+            birds.forEach(bird => {
+                const bx = bird.x - cameraX * 0.3;
+                const by = bird.y - cameraY * 0.2 + Math.sin(time * 2 + bird.wingPhase) * 10;
+                const screenX = ((bx % (canvas.width * 2)) + canvas.width * 2) % (canvas.width * 2) - canvas.width * 0.5;
+
+                if (screenX > -50 && screenX < canvas.width + 50) {
+                    const wingY = Math.sin(time * 8 + bird.wingPhase) * 8;
+                    ctx.beginPath();
+                    ctx.moveTo(screenX - 15, by + wingY);
+                    ctx.quadraticCurveTo(screenX, by - 5, screenX + 15, by + wingY);
+                    ctx.lineWidth = 3;
+                    ctx.strokeStyle = '#2d3436';
+                    ctx.stroke();
+                }
+            });
+        }
+
+        function drawTerrain() {
+            const zone = getCurrentZone();
+
+            // Main terrain
+            ctx.beginPath();
+            ctx.moveTo(-100, canvas.height + 100);
+
+            for (let i = 0; i < terrainPoints.length; i++) {
                 const px = terrainPoints[i].x - cameraX;
-                if (px > -200 && px < canvas.width + 200) {
-                    ctx.lineTo(px, terrainPoints[i].y);
+                const py = terrainPoints[i].y - cameraY;
+                if (px > -300 && px < canvas.width + 300) {
+                    if (i === 0 || terrainPoints[i - 1].x - cameraX <= -300) {
+                        ctx.moveTo(px, py);
+                    } else {
+                        ctx.lineTo(px, py);
+                    }
                 }
             }
 
@@ -1051,42 +1253,70 @@
             ctx.lineTo(-100, canvas.height + 100);
             ctx.closePath();
 
-            // Mountain gradient
-            const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
-            gradient.addColorStop(0, '#55efc4');
-            gradient.addColorStop(0.5, '#00b894');
-            gradient.addColorStop(1, '#00a085');
-            ctx.fillStyle = gradient;
+            // Terrain gradient
+            const terrainGradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+            terrainGradient.addColorStop(0, zone.grassColor);
+            terrainGradient.addColorStop(0.3, zone.groundColor);
+            terrainGradient.addColorStop(1, darkenColor(zone.groundColor, 30));
+            ctx.fillStyle = terrainGradient;
             ctx.fill();
 
-            // Add grass tufts
-            ctx.fillStyle = '#2ecc71';
+            // Terrain edge highlight
+            ctx.strokeStyle = lightenColor(zone.grassColor, 20);
+            ctx.lineWidth = 4;
+            ctx.beginPath();
+            for (let i = 0; i < terrainPoints.length; i++) {
+                const px = terrainPoints[i].x - cameraX;
+                const py = terrainPoints[i].y - cameraY;
+                if (px > -100 && px < canvas.width + 100) {
+                    if (i === 0) ctx.moveTo(px, py);
+                    else ctx.lineTo(px, py);
+                }
+            }
+            ctx.stroke();
+
+            // Ground texture lines
+            ctx.strokeStyle = darkenColor(zone.groundColor, 15);
+            ctx.lineWidth = 1;
             for (let i = 0; i < terrainPoints.length - 1; i++) {
                 const px = terrainPoints[i].x - cameraX;
                 if (px > -50 && px < canvas.width + 50) {
-                    for (let j = 0; j < 3; j++) {
-                        const gx = px + Math.random() * 40;
-                        const gy = getTerrainY(terrainPoints[i].x + j * 15);
+                    const py = terrainPoints[i].y - cameraY;
+                    for (let j = 1; j < 4; j++) {
                         ctx.beginPath();
-                        ctx.moveTo(gx, gy);
-                        ctx.lineTo(gx - 5, gy - 15);
-                        ctx.lineTo(gx + 5, gy - 15);
-                        ctx.closePath();
-                        ctx.fill();
+                        ctx.moveTo(px, py + j * 25);
+                        ctx.lineTo(px + 30, py + j * 25 + 5);
+                        ctx.stroke();
                     }
                 }
             }
         }
 
-        function drawAnimals() {
-            const time = Date.now() / 1000;
-            animals.forEach(animal => {
-                const ax = animal.x - cameraX;
-                if (ax > -100 && ax < canvas.width + 100) {
-                    const cheerY = Math.sin(time * 3 + animal.cheerOffset) * 8;
-                    ctx.font = `${Math.min(40, canvas.width * 0.08)}px Arial`;
+        function drawSceneryBack() {
+            const zone = getCurrentZone();
+            sceneryItems.filter(s => s.layer === 'back').forEach(item => {
+                const sx = item.x - cameraX * 0.8;
+                const sy = getTerrainY(item.x) - cameraY - 20;
+
+                if (sx > -100 && sx < canvas.width + 100) {
+                    ctx.globalAlpha = 0.6;
+                    ctx.font = `${40 * item.scale}px Arial`;
                     ctx.textAlign = 'center';
-                    ctx.fillText(animal.emoji, ax, animal.y + cheerY);
+                    ctx.fillText(item.type, sx, sy);
+                    ctx.globalAlpha = 1;
+                }
+            });
+        }
+
+        function drawSceneryFront() {
+            sceneryItems.filter(s => s.layer === 'front').forEach(item => {
+                const sx = item.x - cameraX;
+                const sy = getTerrainY(item.x) - cameraY - 20;
+
+                if (sx > -100 && sx < canvas.width + 100) {
+                    ctx.font = `${50 * item.scale}px Arial`;
+                    ctx.textAlign = 'center';
+                    ctx.fillText(item.type, sx, sy);
                 }
             });
         }
@@ -1097,207 +1327,250 @@
                 if (item.collected) return;
 
                 const ix = item.x - cameraX;
+                const iy = item.y - cameraY;
                 if (ix > -50 && ix < canvas.width + 50) {
-                    const bobY = Math.sin(time * 2 + item.bobOffset) * 8;
-                    const scale = 1 + Math.sin(time * 3 + item.bobOffset) * 0.1;
+                    const bobY = Math.sin(time * 3 + item.bobOffset) * 8;
+                    const scale = 1 + Math.sin(time * 4 + item.bobOffset) * 0.1;
 
                     ctx.save();
-                    ctx.translate(ix, item.y + bobY);
+                    ctx.translate(ix, iy + bobY);
                     ctx.scale(scale, scale);
 
-                    ctx.font = `${Math.min(45, canvas.width * 0.1)}px Arial`;
+                    // Glow effect
+                    const glowColor = item.type === 'star' ? 'rgba(255, 215, 0, 0.4)' : 'rgba(255, 107, 107, 0.4)';
+                    ctx.shadowColor = glowColor;
+                    ctx.shadowBlur = 20;
+
+                    ctx.font = `${Math.min(50, canvas.width * 0.1)}px Arial`;
                     ctx.textAlign = 'center';
                     ctx.textBaseline = 'middle';
 
                     if (item.type === 'star') {
                         ctx.fillText('⭐', 0, 0);
-                    } else if (item.type === 'balloon') {
-                        ctx.fillText('🎈', 0, 0);
                     } else {
-                        ctx.fillText('😊', 0, 0);
+                        ctx.fillText('⛽', 0, 0);
                     }
 
+                    ctx.shadowBlur = 0;
                     ctx.restore();
                 }
             });
         }
 
+        function drawDustParticles() {
+            ctx.globalAlpha = 0.6;
+            dustParticles.forEach((p, i) => {
+                p.x -= truckVelocityX * 0.3;
+                p.y += p.vy;
+                p.life--;
+                p.vy -= 0.05;
+
+                if (p.life <= 0) {
+                    dustParticles.splice(i, 1);
+                    return;
+                }
+
+                const alpha = p.life / p.maxLife;
+                const zone = getCurrentZone();
+                ctx.fillStyle = zone.groundColor;
+                ctx.globalAlpha = alpha * 0.5;
+                ctx.beginPath();
+                ctx.arc(p.x - cameraX, p.y - cameraY, p.size * (1 + (1 - alpha) * 2), 0, Math.PI * 2);
+                ctx.fill();
+            });
+            ctx.globalAlpha = 1;
+        }
+
+        function drawBoostParticles() {
+            boostParticles.forEach((p, i) => {
+                p.x -= p.vx;
+                p.y += p.vy;
+                p.life--;
+
+                if (p.life <= 0) {
+                    boostParticles.splice(i, 1);
+                    return;
+                }
+
+                const alpha = p.life / p.maxLife;
+                const gradient = ctx.createRadialGradient(p.x - cameraX, p.y - cameraY, 0, p.x - cameraX, p.y - cameraY, p.size);
+                gradient.addColorStop(0, `rgba(255, 150, 50, ${alpha})`);
+                gradient.addColorStop(0.5, `rgba(255, 100, 50, ${alpha * 0.5})`);
+                gradient.addColorStop(1, 'rgba(255, 50, 0, 0)');
+                ctx.fillStyle = gradient;
+                ctx.beginPath();
+                ctx.arc(p.x - cameraX, p.y - cameraY, p.size, 0, Math.PI * 2);
+                ctx.fill();
+            });
+        }
+
         function drawTruck() {
             const tx = truckX - cameraX;
-            const ty = truckY;
+            const ty = truckY - cameraY;
 
             ctx.save();
             ctx.translate(tx, ty);
             ctx.rotate(truckAngle);
 
-            // Bounce effect
-            const bounceY = Math.sin(truckBounce) * 5;
-            ctx.translate(0, bounceY);
+            const truckWidth = 90;
+            const truckHeight = 55;
 
-            // Truck body
-            const truckWidth = 80;
-            const truckHeight = 50;
+            // Calculate suspension
+            const targetFront = isInAir ? 5 : (truckVelocityY > 0 ? -8 : 3);
+            const targetRear = isInAir ? -5 : (truckVelocityY > 0 ? 8 : -3);
+            frontSuspension += (targetFront - frontSuspension) * 0.2;
+            rearSuspension += (targetRear - rearSuspension) * 0.2;
 
-            // Motion lines when in air!
-            if (isInAir && truckVelocityX > 3) {
-                ctx.strokeStyle = 'rgba(255, 255, 255, 0.6)';
-                ctx.lineWidth = 3;
-                for (let i = 0; i < 5; i++) {
-                    const lineY = -truckHeight / 2 + (Math.random() - 0.5) * 60;
-                    const lineLen = 30 + Math.random() * 40;
-                    ctx.beginPath();
-                    ctx.moveTo(-truckWidth / 2 - 20 - i * 15, lineY);
-                    ctx.lineTo(-truckWidth / 2 - 20 - i * 15 - lineLen, lineY);
-                    ctx.stroke();
-                }
+            // Shadow
+            if (!isInAir) {
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.25)';
+                ctx.beginPath();
+                ctx.ellipse(0, 30, 50, 15, 0, 0, Math.PI * 2);
+                ctx.fill();
             }
 
-            // Sparkle effect when in big air!
-            if (isInAir && airTime > 20) {
-                const sparkleTime = Date.now() / 200;
-                ctx.fillStyle = '#ffd700';
-                for (let i = 0; i < 4; i++) {
-                    const angle = sparkleTime + i * Math.PI / 2;
-                    const dist = 50 + Math.sin(sparkleTime * 2 + i) * 15;
-                    const sx = Math.cos(angle) * dist;
-                    const sy = Math.sin(angle) * dist - 20;
-                    const size = 4 + Math.sin(sparkleTime * 3 + i) * 2;
-
+            // Boost flames
+            if (isBoosting && boostFuel > 0) {
+                const flameTime = Date.now() / 50;
+                for (let i = 0; i < 5; i++) {
+                    const flameLen = 30 + Math.sin(flameTime + i) * 15;
+                    const flameY = -20 + Math.sin(flameTime * 2 + i * 0.5) * 8;
+                    const gradient = ctx.createLinearGradient(-truckWidth / 2 - 10, flameY, -truckWidth / 2 - 10 - flameLen, flameY);
+                    gradient.addColorStop(0, 'rgba(255, 200, 50, 0.9)');
+                    gradient.addColorStop(0.5, 'rgba(255, 100, 50, 0.7)');
+                    gradient.addColorStop(1, 'rgba(255, 50, 0, 0)');
+                    ctx.fillStyle = gradient;
                     ctx.beginPath();
-                    ctx.arc(sx, sy, size, 0, Math.PI * 2);
+                    ctx.moveTo(-truckWidth / 2 - 10, flameY - 12);
+                    ctx.lineTo(-truckWidth / 2 - 10 - flameLen, flameY);
+                    ctx.lineTo(-truckWidth / 2 - 10, flameY + 12);
+                    ctx.closePath();
                     ctx.fill();
                 }
             }
 
-            // Shadow (smaller when in air)
-            const shadowScale = isInAir ? 0.5 : 1;
-            const shadowY = isInAir ? 25 + airTime * 0.5 : 25;
-            ctx.fillStyle = `rgba(0, 0, 0, ${isInAir ? 0.1 : 0.2})`;
-            ctx.beginPath();
-            ctx.ellipse(0, shadowY, 45 * shadowScale, 12 * shadowScale, 0, 0, Math.PI * 2);
-            ctx.fill();
-
-            // Glow effect when in air
-            if (isInAir && airTime > 15) {
-                ctx.shadowColor = currentColor;
-                ctx.shadowBlur = 20 + airTime * 0.3;
-            }
+            // Truck body with gradient
+            const bodyGradient = ctx.createLinearGradient(0, -truckHeight, 0, 10);
+            bodyGradient.addColorStop(0, lightenColor(currentColor, 15));
+            bodyGradient.addColorStop(0.5, currentColor);
+            bodyGradient.addColorStop(1, darkenColor(currentColor, 15));
+            ctx.fillStyle = bodyGradient;
 
             // Main body
-            ctx.fillStyle = currentColor;
             ctx.beginPath();
-            ctx.roundRect(-truckWidth / 2, -truckHeight, truckWidth, truckHeight, 12);
+            ctx.roundRect(-truckWidth / 2, -truckHeight + frontSuspension, truckWidth, truckHeight, 15);
             ctx.fill();
 
-            ctx.shadowBlur = 0;
+            // Body highlight
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
+            ctx.beginPath();
+            ctx.roundRect(-truckWidth / 2 + 5, -truckHeight + 5 + frontSuspension, truckWidth - 10, 15, [10, 10, 0, 0]);
+            ctx.fill();
+
+            // Roll cage
+            ctx.strokeStyle = darkenColor(currentColor, 30);
+            ctx.lineWidth = 4;
+            ctx.beginPath();
+            ctx.moveTo(-truckWidth / 2 + 15, -truckHeight + frontSuspension);
+            ctx.lineTo(-truckWidth / 2 + 15, -truckHeight - 30 + frontSuspension);
+            ctx.lineTo(truckWidth / 2 - 25, -truckHeight - 30 + frontSuspension);
+            ctx.lineTo(truckWidth / 2 - 25, -truckHeight + frontSuspension);
+            ctx.stroke();
 
             // Cabin
-            ctx.fillStyle = lightenColor(currentColor, 20);
+            const cabinGradient = ctx.createLinearGradient(0, -truckHeight - 30, 0, -truckHeight);
+            cabinGradient.addColorStop(0, lightenColor(currentColor, 25));
+            cabinGradient.addColorStop(1, lightenColor(currentColor, 10));
+            ctx.fillStyle = cabinGradient;
             ctx.beginPath();
-            ctx.roundRect(-truckWidth / 2 + 10, -truckHeight - 25, truckWidth - 30, 28, [10, 10, 0, 0]);
+            ctx.roundRect(-truckWidth / 2 + 12, -truckHeight - 28 + frontSuspension, truckWidth - 34, 28, [12, 12, 0, 0]);
             ctx.fill();
 
             // Windows
             ctx.fillStyle = '#74b9ff';
             ctx.beginPath();
-            ctx.roundRect(-truckWidth / 2 + 15, -truckHeight - 20, truckWidth - 40, 18, 5);
+            ctx.roundRect(-truckWidth / 2 + 18, -truckHeight - 22 + frontSuspension, truckWidth - 46, 18, 6);
             ctx.fill();
 
-            // Window shine
+            // Window reflections
             ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
             ctx.beginPath();
-            ctx.roundRect(-truckWidth / 2 + 17, -truckHeight - 18, 15, 8, 3);
+            ctx.roundRect(-truckWidth / 2 + 20, -truckHeight - 20 + frontSuspension, 18, 10, 4);
             ctx.fill();
 
-            // Face on truck - different expressions!
-            ctx.font = '24px Arial';
-            ctx.textAlign = 'center';
-            if (isInAir && airTime > 20) {
-                // Excited face during big jumps!
-                ctx.fillText('🤩', 0, -truckHeight / 2);
-            } else if (isInAir) {
-                // Happy during any jump
-                ctx.fillText('😆', 0, -truckHeight / 2);
-            } else if (truckHappy > 0) {
-                ctx.fillText('😄', 0, -truckHeight / 2);
-            } else if (truckVelocityX > 5) {
-                // Determined face when going fast
-                ctx.fillText('😎', 0, -truckHeight / 2);
-            }
+            // Wheels with suspension
+            const wheelRadius = 22;
+            const leftWheelY = 12 + rearSuspension;
+            const rightWheelY = 12 + frontSuspension;
 
-            // Wheels - bigger monster truck wheels!
-            const wheelRadius = 20;
-            const wheelY = 8;
+            // Suspension arms
+            ctx.strokeStyle = '#2d3436';
+            ctx.lineWidth = 6;
+            ctx.beginPath();
+            ctx.moveTo(-28, -5);
+            ctx.lineTo(-28, leftWheelY - 5);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(28, -5);
+            ctx.lineTo(28, rightWheelY - 5);
+            ctx.stroke();
 
             // Left wheel
-            ctx.fillStyle = '#2d3436';
-            ctx.beginPath();
-            ctx.arc(-25, wheelY, wheelRadius, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.fillStyle = '#636e72';
-            ctx.beginPath();
-            ctx.arc(-25, wheelY, wheelRadius - 6, 0, Math.PI * 2);
-            ctx.fill();
+            this.drawWheel(-28, leftWheelY, wheelRadius);
 
             // Right wheel
-            ctx.fillStyle = '#2d3436';
-            ctx.beginPath();
-            ctx.arc(25, wheelY, wheelRadius, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.fillStyle = '#636e72';
-            ctx.beginPath();
-            ctx.arc(25, wheelY, wheelRadius - 6, 0, Math.PI * 2);
-            ctx.fill();
+            this.drawWheel(28, rightWheelY, wheelRadius);
 
-            // Wheel spokes/rotation indicator (spin faster in air!)
-            const wheelSpeed = isInAir ? 10 : 20;
-            const wheelRotation = (truckX / wheelSpeed) % (Math.PI * 2);
-            ctx.strokeStyle = '#dfe6e9';
-            ctx.lineWidth = 3;
-            for (let i = 0; i < 4; i++) {
-                const angle = wheelRotation + (i * Math.PI / 2);
-                ctx.beginPath();
-                ctx.moveTo(-25, wheelY);
-                ctx.lineTo(-25 + Math.cos(angle) * 12, wheelY + Math.sin(angle) * 12);
-                ctx.stroke();
-                ctx.beginPath();
-                ctx.moveTo(25, wheelY);
-                ctx.lineTo(25 + Math.cos(angle) * 12, wheelY + Math.sin(angle) * 12);
-                ctx.stroke();
-            }
-
-            // Headlights (glow when in air!)
-            if (isInAir) {
+            // Headlights
+            if (isInAir || isBoosting) {
                 ctx.shadowColor = '#ffeaa7';
-                ctx.shadowBlur = 15;
+                ctx.shadowBlur = 20;
             }
             ctx.fillStyle = '#ffeaa7';
             ctx.beginPath();
-            ctx.arc(truckWidth / 2 - 5, -15, 8, 0, Math.PI * 2);
+            ctx.arc(truckWidth / 2 - 8, -18 + frontSuspension, 10, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = '#fff';
+            ctx.beginPath();
+            ctx.arc(truckWidth / 2 - 10, -20 + frontSuspension, 4, 0, Math.PI * 2);
             ctx.fill();
             ctx.shadowBlur = 0;
 
-            // Hat (bounces during jumps!)
+            // Tail lights
+            ctx.fillStyle = '#e74c3c';
+            ctx.beginPath();
+            ctx.arc(-truckWidth / 2 + 8, -18 + rearSuspension, 6, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Number plate / decal
+            ctx.fillStyle = 'white';
+            ctx.fillRect(-15, -25 + (frontSuspension + rearSuspension) / 2, 30, 18);
+            ctx.fillStyle = '#2d3436';
+            ctx.font = 'bold 12px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('#1', 0, -12 + (frontSuspension + rearSuspension) / 2);
+
+            // Hat
             if (currentHat) {
-                const hatBounce = isInAir ? Math.sin(Date.now() / 100) * 5 : 0;
-                const hatRotate = isInAir ? Math.sin(Date.now() / 150) * 0.2 : 0;
+                const hatBounce = isInAir ? Math.sin(Date.now() / 80) * 6 : 0;
+                const hatRotate = isInAir ? Math.sin(Date.now() / 120) * 0.25 : 0;
                 ctx.save();
                 ctx.rotate(hatRotate);
-                ctx.font = '40px Arial';
+                ctx.font = '45px Arial';
                 ctx.textAlign = 'center';
-                ctx.fillText(currentHat, 0, -truckHeight - 35 + hatBounce);
+                ctx.fillText(currentHat, -5, -truckHeight - 40 + frontSuspension + hatBounce);
                 ctx.restore();
             }
 
-            // Exhaust puffs when moving (bigger puffs when launching!)
+            // Exhaust
             if (isPlaying || truckVelocityX > 1) {
-                const puffIntensity = isInAir && truckVelocityY < 0 ? 2 : 1;
-                ctx.fillStyle = `rgba(200, 200, 200, ${0.4 + puffIntensity * 0.2})`;
-                const puffTime = Date.now() / 80;
-                for (let i = 0; i < 4 * puffIntensity; i++) {
-                    const px = -truckWidth / 2 - 15 - i * 12;
-                    const py = -15 + Math.sin(puffTime + i) * 8;
-                    const psize = (6 + i * 4) * puffIntensity;
+                const puffCount = isBoosting ? 6 : 3;
+                const time = Date.now() / 60;
+                ctx.fillStyle = 'rgba(180, 180, 180, 0.5)';
+                for (let i = 0; i < puffCount; i++) {
+                    const px = -truckWidth / 2 - 18 - i * 14;
+                    const py = -10 + rearSuspension + Math.sin(time + i) * 6;
+                    const psize = 8 + i * 5;
                     ctx.beginPath();
                     ctx.arc(px, py, psize, 0, Math.PI * 2);
                     ctx.fill();
@@ -1307,16 +1580,79 @@
             ctx.restore();
         }
 
+        drawWheel = function(x, y, radius) {
+            // Tire
+            const tireGradient = ctx.createRadialGradient(x, y, radius - 8, x, y, radius);
+            tireGradient.addColorStop(0, '#3d3d3d');
+            tireGradient.addColorStop(1, '#1a1a1a');
+            ctx.fillStyle = tireGradient;
+            ctx.beginPath();
+            ctx.arc(x, y, radius, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Tire treads
+            ctx.strokeStyle = '#2a2a2a';
+            ctx.lineWidth = 2;
+            const wheelRotation = (truckX / 15) % (Math.PI * 2);
+            for (let i = 0; i < 8; i++) {
+                const angle = wheelRotation + (i * Math.PI / 4);
+                ctx.beginPath();
+                ctx.arc(x, y, radius - 2, angle - 0.15, angle + 0.15);
+                ctx.stroke();
+            }
+
+            // Rim
+            const rimGradient = ctx.createRadialGradient(x - 3, y - 3, 0, x, y, radius - 6);
+            rimGradient.addColorStop(0, '#c0c0c0');
+            rimGradient.addColorStop(0.5, '#808080');
+            rimGradient.addColorStop(1, '#505050');
+            ctx.fillStyle = rimGradient;
+            ctx.beginPath();
+            ctx.arc(x, y, radius - 6, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Rim spokes
+            ctx.strokeStyle = '#606060';
+            ctx.lineWidth = 3;
+            for (let i = 0; i < 5; i++) {
+                const angle = wheelRotation + (i * Math.PI * 2 / 5);
+                ctx.beginPath();
+                ctx.moveTo(x, y);
+                ctx.lineTo(x + Math.cos(angle) * (radius - 8), y + Math.sin(angle) * (radius - 8));
+                ctx.stroke();
+            }
+
+            // Center cap
+            ctx.fillStyle = '#707070';
+            ctx.beginPath();
+            ctx.arc(x, y, 6, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
         function lightenColor(color, percent) {
             const num = parseInt(color.replace('#', ''), 16);
             const amt = Math.round(2.55 * percent);
             const R = Math.min(255, (num >> 16) + amt);
-            const G = Math.min(255, (num >> 8 & 0x00FF) + amt);
+            const G = Math.min(255, ((num >> 8) & 0x00FF) + amt);
             const B = Math.min(255, (num & 0x0000FF) + amt);
             return '#' + (0x1000000 + R * 0x10000 + G * 0x100 + B).toString(16).slice(1);
         }
 
-        // Check collectibles
+        function darkenColor(color, percent) {
+            const num = parseInt(color.replace('#', ''), 16);
+            const amt = Math.round(2.55 * percent);
+            const R = Math.max(0, (num >> 16) - amt);
+            const G = Math.max(0, ((num >> 8) & 0x00FF) - amt);
+            const B = Math.max(0, (num & 0x0000FF) - amt);
+            return '#' + (0x1000000 + R * 0x10000 + G * 0x100 + B).toString(16).slice(1);
+        }
+
+        function hexToRgb(hex) {
+            const num = parseInt(hex.replace('#', ''), 16);
+            return `${(num >> 16)}, ${(num >> 8) & 0xFF}, ${num & 0xFF}`;
+        }
+
+        // Collision detection
         function checkCollisions() {
             collectibles.forEach(item => {
                 if (item.collected) return;
@@ -1325,28 +1661,23 @@
                 const dy = truckY - 30 - item.y;
                 const dist = Math.sqrt(dx * dx + dy * dy);
 
-                if (dist < 60) {
+                if (dist < 65) {
                     item.collected = true;
 
                     if (item.type === 'star') {
                         stars++;
+                        trickScore += 50 * Math.max(1, comboCount);
                         document.getElementById('starCount').textContent = stars;
+                        document.getElementById('trickScore').textContent = trickScore;
                         playSound('ding');
-                        showCollectEffect(item.x - cameraX, item.y, '⭐ +1');
-                    } else if (item.type === 'balloon') {
-                        balloons++;
-                        document.getElementById('balloonCount').textContent = balloons;
-                        playSound('boing');
-                        showCollectEffect(item.x - cameraX, item.y, '🎈 +1');
+                        showCollectEffect(item.x - cameraX, item.y - cameraY, '⭐ +50');
                     } else {
-                        smileys++;
-                        document.getElementById('smileyCount').textContent = smileys;
-                        playSound('honk');
-                        showCollectEffect(item.x - cameraX, item.y, '😊 +1');
+                        boostFuel = Math.min(100, boostFuel + 30);
+                        playSound('boost');
+                        showCollectEffect(item.x - cameraX, item.y - cameraY, '⛽ +30%');
                     }
 
-                    truckHappy = 30;
-                    createSparkles(item.x - cameraX, item.y);
+                    createSparkles(item.x - cameraX, item.y - cameraY);
                 }
             });
         }
@@ -1362,19 +1693,41 @@
         }
 
         function createSparkles(x, y) {
-            for (let i = 0; i < 6; i++) {
+            for (let i = 0; i < 8; i++) {
                 setTimeout(() => {
                     const sparkle = document.createElement('div');
                     sparkle.className = 'sparkle';
-                    sparkle.style.left = (x + (Math.random() - 0.5) * 60) + 'px';
-                    sparkle.style.top = (y + (Math.random() - 0.5) * 60) + 'px';
+                    sparkle.style.left = (x + (Math.random() - 0.5) * 80) + 'px';
+                    sparkle.style.top = (y + (Math.random() - 0.5) * 80) + 'px';
                     document.getElementById('gameContainer').appendChild(sparkle);
                     setTimeout(() => sparkle.remove(), 600);
-                }, i * 50);
+                }, i * 40);
             }
         }
 
-        // Check for unlocks
+        function showTrick(text, points) {
+            const display = document.getElementById('trickDisplay');
+            const el = document.createElement('div');
+            el.className = 'trick-text';
+            el.textContent = `${text} +${points}`;
+            display.innerHTML = '';
+            display.appendChild(el);
+            setTimeout(() => el.remove(), 1000);
+
+            trickScore += points * Math.max(1, comboCount);
+            document.getElementById('trickScore').textContent = trickScore;
+        }
+
+        function updateCombo() {
+            if (comboCount > 1) {
+                document.getElementById('comboDisplay').classList.remove('hidden');
+                document.getElementById('comboMultiplier').textContent = `x${comboCount}`;
+            }
+
+            comboTimer = 120;
+        }
+
+        // Unlock system
         function checkUnlocks() {
             const height = canvas.height - truckY;
 
@@ -1389,9 +1742,7 @@
             allHats.forEach(h => {
                 if (height >= h.height && !unlockedHats.includes(h.emoji)) {
                     unlockedHats.push(h.emoji);
-                    if (h.emoji) {
-                        showUnlock('New Hat!', h.emoji, h.name);
-                    }
+                    if (h.emoji) showUnlock('New Hat!', h.emoji, h.name);
                     updateCustomizePanel();
                 }
             });
@@ -1399,16 +1750,14 @@
 
         function showUnlock(title, item, name) {
             playSound('unlock');
-
             const notification = document.createElement('div');
             notification.className = 'unlock-notification';
             notification.innerHTML = `
                 <h2>${title}</h2>
-                <div class="unlock-item" style="${item.startsWith('#') ? `background: ${item}; width: 80px; height: 80px; border-radius: 50%; margin: 15px auto;` : ''}">${item.startsWith('#') ? '' : item}</div>
+                <div class="unlock-item" style="${item.startsWith('#') ? `background: ${item}; width: 70px; height: 70px; border-radius: 50%; margin: 10px auto;` : ''}">${item.startsWith('#') ? '' : item}</div>
                 <p>${name} Unlocked!</p>
             `;
             document.getElementById('gameContainer').appendChild(notification);
-
             setTimeout(() => notification.remove(), 2500);
         }
 
@@ -1421,12 +1770,10 @@
                 btn.style.background = c.color;
                 btn.title = c.name;
                 if (unlockedColors.includes(c.color)) {
-                    btn.onclick = () => {
-                        currentColor = c.color;
-                        updateCustomizePanel();
-                    };
+                    btn.onclick = () => { currentColor = c.color; updateCustomizePanel(); };
                 } else {
                     btn.textContent = '🔒';
+                    btn.style.fontSize = '0.7rem';
                 }
                 colorOptions.appendChild(btn);
             });
@@ -1440,210 +1787,210 @@
                 btn.title = h.name;
                 if (unlockedHats.includes(h.emoji)) {
                     btn.textContent = h.emoji || '❌';
-                    btn.onclick = () => {
-                        currentHat = h.emoji;
-                        updateCustomizePanel();
-                    };
+                    btn.onclick = () => { currentHat = h.emoji; updateCustomizePanel(); };
                 } else {
                     btn.textContent = '🔒';
+                    btn.style.fontSize = '0.7rem';
                 }
                 hatOptions.appendChild(btn);
             });
         }
 
-        // Update sky based on height
-        function updateSky() {
-            const height = canvas.height - truckY;
-            const sky = document.getElementById('sky');
-
-            if (height > 1000) {
-                sky.className = 'sky rainbow';
-            } else if (height > 500) {
-                sky.className = 'sky sunset';
-            } else {
-                sky.className = 'sky';
-            }
+        function updateZoneIndicator() {
+            const zone = getCurrentZone();
+            const indicator = document.getElementById('zoneIndicator');
+            indicator.innerHTML = `<span>${zone.icon}</span><span>${zone.name} Zone</span>`;
         }
 
         // Game loop
         let lastEngineSound = 0;
 
         function update() {
-            if (isPlaying) {
-                // Move forward - faster for more exciting jumps!
-                truckVelocityX = Math.min(truckVelocityX + 0.4, 8);
+            const maxSpeed = isBoosting && boostFuel > 0 ? 14 : 10;
+            const accel = isBoosting && boostFuel > 0 ? 0.6 : 0.35;
 
-                // Engine sound
-                if (Date.now() - lastEngineSound > 150) {
+            if (isPlaying) {
+                truckVelocityX = Math.min(truckVelocityX + accel, maxSpeed);
+
+                if (Date.now() - lastEngineSound > 120) {
                     playSound('engine');
                     lastEngineSound = Date.now();
                 }
             } else {
-                // Slow down when not pressing
-                truckVelocityX *= 0.96;
+                truckVelocityX *= 0.97;
                 if (truckVelocityX < 0.1) truckVelocityX = 0;
             }
 
-            // Move truck
-            truckX += truckVelocityX + landingBoost;
-            landingBoost *= 0.9;
+            // Boost fuel consumption
+            if (isBoosting && boostFuel > 0) {
+                boostFuel -= 0.8;
+                if (boostFuel <= 0) {
+                    boostFuel = 0;
+                    document.getElementById('boostButton').classList.add('empty');
+                }
 
-            // Get terrain info
+                // Boost particles
+                if (Math.random() < 0.5) {
+                    boostParticles.push({
+                        x: truckX - 50,
+                        y: truckY - 20 + (Math.random() - 0.5) * 30,
+                        vx: 8 + Math.random() * 4,
+                        vy: (Math.random() - 0.5) * 3,
+                        size: 15 + Math.random() * 15,
+                        life: 30,
+                        maxLife: 30
+                    });
+                }
+            }
+
+            // Update boost UI
+            document.getElementById('boostFill').style.height = boostFuel + '%';
+            if (boostFuel > 0) {
+                document.getElementById('boostButton').classList.remove('empty');
+            }
+
+            truckX += truckVelocityX;
+
             const groundY = getTerrainY(truckX);
             const targetAngle = getTerrainAngle(truckX);
 
-            // Check if we're in the air
             const wasInAir = isInAir;
-            isInAir = truckY < groundY - 30;
+            isInAir = truckY < groundY - 35;
 
             if (isInAir) {
-                // IN THE AIR!
                 airTime++;
+                truckVelocityY += 0.38;
 
-                // Gravity (slightly reduced for floatier jumps)
-                truckVelocityY += 0.4;
+                // Angular momentum in air
+                truckAngularVelocity += targetAngle * 0.02;
+                truckAngle += truckAngularVelocity;
+                totalRotation += Math.abs(truckAngularVelocity);
 
-                // Spin in the air based on launch angle!
-                if (truckVelocityX > 4) {
-                    truckSpin += targetAngle * 0.3;
-                }
-
-                // Truck tilts back during jump
-                truckAngle += (truckSpin - truckAngle) * 0.1;
-
-                // Create trail effect while in air
-                if (Date.now() - lastTrailTime > 50 && truckVelocityX > 3) {
-                    createJumpTrail(truckX - cameraX, truckY);
-                    lastTrailTime = Date.now();
-                }
-
-                // Show "BIG AIR!" for long jumps
-                if (airTime > 40 && !bigAirShown) {
-                    showBigAir();
-                    bigAirShown = true;
-                    playSound('boing');
-                }
-
-                // Track max air time
-                if (airTime > maxAirTime) {
-                    maxAirTime = airTime;
+                // Check for flips
+                const flipCount = Math.floor(Math.abs(totalRotation) / (Math.PI * 2));
+                if (flipCount > lastFlipCount) {
+                    const direction = truckAngularVelocity > 0 ? 'BACKFLIP!' : 'FRONTFLIP!';
+                    showTrick(direction, 200);
+                    playSound('flip');
+                    comboCount++;
+                    updateCombo();
+                    lastFlipCount = flipCount;
                 }
 
             } else {
-                // ON THE GROUND
+                // Landing
+                if (wasInAir && airTime > 8) {
+                    playSound('land');
 
-                // Just landed?
-                if (wasInAir && airTime > 10) {
-                    // Landing effects!
-                    playSound('boing');
-                    truckBounce = Math.min(airTime * 0.15, 3);
-                    truckHappy = 40;
+                    // Successful trick landing
+                    if (lastFlipCount > 0) {
+                        const bonus = lastFlipCount * 100;
+                        showTrick('LANDED!', bonus);
+                        comboCount++;
+                        updateCombo();
+                    } else if (airTime > 25) {
+                        showTrick('BIG AIR!', 50);
+                        comboCount++;
+                        updateCombo();
+                    }
 
-                    // Bonus speed boost from big landings!
-                    if (airTime > 30) {
-                        landingBoost = 3;
-                        createSparkles(truckX - cameraX, truckY);
-                        showCollectEffect(truckX - cameraX, truckY - 50, 'NICE LANDING!');
+                    // Create dust on landing
+                    for (let i = 0; i < 15; i++) {
+                        dustParticles.push({
+                            x: truckX + (Math.random() - 0.5) * 60,
+                            y: groundY,
+                            vy: -2 - Math.random() * 3,
+                            size: 5 + Math.random() * 8,
+                            life: 40 + Math.random() * 20,
+                            maxLife: 60
+                        });
                     }
                 }
 
-                // Reset air state
                 airTime = 0;
-                bigAirShown = false;
-                truckSpin = 0;
+                totalRotation = 0;
+                lastFlipCount = 0;
+                truckAngularVelocity = 0;
 
-                // Snap to ground
-                truckY = groundY - 25;
+                truckY = groundY - 28;
+                truckVelocityY = 0;
 
-                // Launch off ramps!
-                if (targetAngle < -0.3 && truckVelocityX > 4) {
-                    // Going up a steep ramp - LAUNCH!
-                    const launchPower = Math.abs(targetAngle) * truckVelocityX * 3;
+                // Launch from ramps
+                if (targetAngle < -0.35 && truckVelocityX > 5) {
+                    const launchPower = Math.abs(targetAngle) * truckVelocityX * 3.2;
                     truckVelocityY = -launchPower;
-                    truckSpin = targetAngle * 0.5;
+                    truckAngularVelocity = targetAngle * 0.08;
                     playSound('launch');
 
-                    // Extra boost for really steep ramps!
-                    if (targetAngle < -0.5) {
-                        truckVelocityY *= 1.3;
-                        playSound('whoosh');
+                    if (targetAngle < -0.6) {
+                        truckVelocityY *= 1.25;
                     }
-                } else {
-                    truckVelocityY = 0;
                 }
 
-                // Smooth angle on ground
-                truckAngle += (targetAngle - truckAngle) * 0.2;
+                truckAngle += (targetAngle - truckAngle) * 0.25;
 
-                // Bouncy effect on hills
-                if (Math.abs(targetAngle) > 0.15 && truckVelocityX > 2) {
-                    truckBounce += 0.3;
+                // Dust while driving
+                if (truckVelocityX > 3 && Math.random() < 0.3) {
+                    dustParticles.push({
+                        x: truckX - 30 + (Math.random() - 0.5) * 20,
+                        y: groundY - 5,
+                        vy: -1 - Math.random() * 2,
+                        size: 4 + Math.random() * 5,
+                        life: 25 + Math.random() * 15,
+                        maxLife: 40
+                    });
                 }
             }
 
             truckY += truckVelocityY;
+            truckY = Math.max(30, truckY);
 
-            // Keep truck from going too high off screen
-            truckY = Math.max(50, truckY);
-
-            // Bounce animation decay
-            truckBounce *= 0.9;
-
-            // Happy face decay
-            if (truckHappy > 0) truckHappy--;
-
-            // Camera follows truck (with some vertical follow during big jumps)
-            const targetCameraX = truckX - canvas.width * 0.3;
-            cameraX += (targetCameraX - cameraX) * 0.08;
-            cameraX = Math.max(0, cameraX);
-
-            // Track max height
-            const currentHeight = canvas.height - truckY;
-            if (currentHeight > maxHeight) {
-                maxHeight = currentHeight;
+            // Combo timer
+            if (comboTimer > 0) {
+                comboTimer--;
+                if (comboTimer === 0) {
+                    comboCount = 0;
+                    document.getElementById('comboDisplay').classList.add('hidden');
+                }
             }
 
-            // Update height indicator
-            const heightPercent = Math.min(100, (currentHeight / 2000) * 100);
-            document.getElementById('heightFill').style.height = heightPercent + '%';
+            // Camera - improved vertical tracking
+            const targetCameraX = truckX - canvas.width * 0.3;
 
-            // Check collisions
+            // Keep truck vertically centered in the middle portion of screen
+            // Target: truck should appear at about 55% down the screen
+            const targetScreenY = canvas.height * 0.55;
+            const targetCameraY = truckY - targetScreenY;
+
+            cameraX += (targetCameraX - cameraX) * 0.08;
+            cameraY += (targetCameraY - cameraY) * 0.12;
+            cameraX = Math.max(0, cameraX);
+
+            // Update UI
+            const speed = Math.round(truckVelocityX * 8);
+            document.getElementById('speedValue').textContent = speed;
+            document.getElementById('speedFill').style.width = Math.min(100, speed) + '%';
+
+            const height = Math.round((canvas.height - truckY) / 5);
+            document.getElementById('heightValue').textContent = height + 'm';
+            document.getElementById('heightFill').style.height = Math.min(100, height / 30 * 100) + '%';
+
             checkCollisions();
-
-            // Check unlocks
             checkUnlocks();
-
-            // Update sky
-            updateSky();
-        }
-
-        function createJumpTrail(x, y) {
-            const trail = document.createElement('div');
-            trail.className = 'jump-trail';
-            trail.style.left = x + 'px';
-            trail.style.top = y + 'px';
-            trail.style.background = `radial-gradient(circle, ${currentColor}88, transparent)`;
-            document.getElementById('gameContainer').appendChild(trail);
-            setTimeout(() => trail.remove(), 800);
-        }
-
-        function showBigAir() {
-            const messages = ['BIG AIR!', 'WOOHOO!', 'AMAZING!', 'SO HIGH!', 'WOW!'];
-            const msg = messages[Math.floor(Math.random() * messages.length)];
-
-            const el = document.createElement('div');
-            el.className = 'big-air';
-            el.textContent = msg + ' 🚀';
-            document.getElementById('gameContainer').appendChild(el);
-            setTimeout(() => el.remove(), 1500);
+            updateZoneIndicator();
         }
 
         function draw() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-            drawMountain();
-            drawAnimals();
+            drawSky();
+            drawClouds();
+            drawBackgroundMountains();
+            drawBirds();
+            drawSceneryBack();
+            drawTerrain();
+            drawDustParticles();
             drawCollectibles();
+            drawSceneryFront();
+            drawBoostParticles();
             drawTruck();
         }
 
@@ -1655,12 +2002,12 @@
 
         // Controls
         const playButton = document.getElementById('playButton');
+        const boostButton = document.getElementById('boostButton');
 
         function startDriving() {
             initAudio();
             isPlaying = true;
             playButton.classList.add('pressed');
-            playSound('vroom');
         }
 
         function stopDriving() {
@@ -1668,60 +2015,74 @@
             playButton.classList.remove('pressed');
         }
 
-        // Mouse/touch controls
-        playButton.addEventListener('mousedown', (e) => {
-            e.preventDefault();
-            startDriving();
-        });
+        function startBoost() {
+            if (boostFuel > 0) {
+                isBoosting = true;
+                playSound('boost');
+            }
+        }
+
+        function stopBoost() {
+            isBoosting = false;
+        }
+
+        // Play button events
+        playButton.addEventListener('mousedown', e => { e.preventDefault(); startDriving(); });
         playButton.addEventListener('mouseup', stopDriving);
         playButton.addEventListener('mouseleave', stopDriving);
-
-        playButton.addEventListener('touchstart', (e) => {
-            e.preventDefault();
-            startDriving();
-        });
+        playButton.addEventListener('touchstart', e => { e.preventDefault(); startDriving(); });
         playButton.addEventListener('touchend', stopDriving);
-        playButton.addEventListener('touchcancel', stopDriving);
 
-        // Keyboard controls
-        document.addEventListener('keydown', (e) => {
-            if (e.code === 'Space' || e.code === 'ArrowRight' || e.code === 'ArrowUp') {
+        // Boost button events
+        boostButton.addEventListener('mousedown', e => { e.preventDefault(); startBoost(); });
+        boostButton.addEventListener('mouseup', stopBoost);
+        boostButton.addEventListener('mouseleave', stopBoost);
+        boostButton.addEventListener('touchstart', e => { e.preventDefault(); startBoost(); });
+        boostButton.addEventListener('touchend', stopBoost);
+
+        // Keyboard
+        document.addEventListener('keydown', e => {
+            if (e.code === 'Space' || e.code === 'ArrowUp') {
                 e.preventDefault();
                 if (!isPlaying) startDriving();
             }
-        });
-
-        document.addEventListener('keyup', (e) => {
-            if (e.code === 'Space' || e.code === 'ArrowRight' || e.code === 'ArrowUp') {
+            if (e.code === 'ShiftLeft' || e.code === 'ShiftRight' || e.code === 'KeyX') {
                 e.preventDefault();
-                stopDriving();
+                startBoost();
             }
         });
 
-        // Click anywhere to drive (for very young kids)
-        document.addEventListener('mousedown', (e) => {
-            if (e.target.closest('.home-btn, .sound-toggle, .customize-panel')) return;
+        document.addEventListener('keyup', e => {
+            if (e.code === 'Space' || e.code === 'ArrowUp') {
+                e.preventDefault();
+                stopDriving();
+            }
+            if (e.code === 'ShiftLeft' || e.code === 'ShiftRight' || e.code === 'KeyX') {
+                stopBoost();
+            }
+        });
+
+        // Click anywhere
+        document.addEventListener('mousedown', e => {
+            if (e.target.closest('.home-btn, .sound-toggle, .customize-panel, .boost-button')) return;
             if (!isPlaying) startDriving();
         });
 
-        document.addEventListener('mouseup', (e) => {
-            if (e.target.closest('.home-btn, .sound-toggle, .customize-panel')) return;
+        document.addEventListener('mouseup', e => {
+            if (e.target.closest('.home-btn, .sound-toggle, .customize-panel, .boost-button')) return;
             stopDriving();
         });
 
         // Initialize
         generateTerrain();
         updateCustomizePanel();
-        truckY = getTerrainY(truckX) - 25;
+        truckY = getTerrainY(truckX) - 28;
         gameLoop();
 
-        // Hide instruction after a few seconds
         setTimeout(() => {
             document.getElementById('instruction').style.opacity = '0';
-            setTimeout(() => {
-                document.getElementById('instruction').style.display = 'none';
-            }, 500);
-        }, 8000);
+            setTimeout(() => document.getElementById('instruction').style.display = 'none', 500);
+        }, 6000);
     </script>
 </body>
 

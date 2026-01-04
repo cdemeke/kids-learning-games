@@ -1,0 +1,1449 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Farm Garden - Grow Your Crops!</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@600;700;800&display=swap"
+        rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Nunito', sans-serif;
+            background: linear-gradient(180deg, #87CEEB 0%, #98D8C8 50%, #7CB342 100%);
+            min-height: 100vh;
+            overflow: hidden;
+            touch-action: manipulation;
+        }
+
+        .game-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            max-width: 900px;
+            margin: 0 auto;
+            background: linear-gradient(180deg,
+                    #87CEEB 0%,
+                    #B3E5FC 25%,
+                    #C8E6C9 45%,
+                    #8D6E63 60%,
+                    #6D4C41 100%);
+            overflow: hidden;
+        }
+
+        /* Clouds */
+        .clouds-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 35%;
+            overflow: hidden;
+            pointer-events: none;
+        }
+
+        .cloud {
+            position: absolute;
+            background: white;
+            border-radius: 50px;
+            opacity: 0.9;
+            animation: cloudFloat 20s linear infinite;
+        }
+
+        .cloud::before,
+        .cloud::after {
+            content: '';
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+        }
+
+        .cloud::before {
+            width: 50%;
+            height: 120%;
+            top: -40%;
+            left: 20%;
+        }
+
+        .cloud::after {
+            width: 40%;
+            height: 100%;
+            top: -30%;
+            right: 20%;
+        }
+
+        @keyframes cloudFloat {
+            from {
+                transform: translateX(-150px);
+            }
+
+            to {
+                transform: translateX(calc(100vw + 150px));
+            }
+        }
+
+        /* Sun */
+        .sun {
+            position: absolute;
+            top: 20px;
+            right: 60px;
+            width: 70px;
+            height: 70px;
+            background: radial-gradient(circle at 30% 30%, #FFF59D, #FFD54F, #FF9800);
+            border-radius: 50%;
+            box-shadow:
+                0 0 60px rgba(255, 193, 7, 0.6),
+                0 0 100px rgba(255, 152, 0, 0.4);
+            animation: sunPulse 3s ease-in-out infinite;
+        }
+
+        @keyframes sunPulse {
+            0%, 100% { box-shadow: 0 0 60px rgba(255, 193, 7, 0.6), 0 0 100px rgba(255, 152, 0, 0.4); }
+            50% { box-shadow: 0 0 80px rgba(255, 193, 7, 0.8), 0 0 120px rgba(255, 152, 0, 0.5); }
+        }
+
+        .sun-rays {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 100px;
+            height: 100px;
+            transform: translate(-50%, -50%);
+            animation: raysSpin 20s linear infinite;
+        }
+
+        .sun-rays::before {
+            content: '';
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            width: 4px;
+            height: 30px;
+            background: linear-gradient(to bottom, #FFD54F, transparent);
+            transform: translateX(-50%);
+            box-shadow:
+                0 100px 0 0 #FFD54F,
+                -50px 50px 0 0 #FFD54F,
+                50px 50px 0 0 #FFD54F,
+                -50px -50px 0 0 transparent,
+                50px -50px 0 0 transparent;
+        }
+
+        @keyframes raysSpin {
+            from { transform: translate(-50%, -50%) rotate(0deg); }
+            to { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+
+        /* Title */
+        h1 {
+            position: absolute;
+            top: 12px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-family: 'Fredoka One', cursive;
+            color: #33691E;
+            font-size: clamp(1.5rem, 5vw, 2.2rem);
+            text-shadow:
+                0 3px 0 #8BC34A,
+                0 4px 10px rgba(0, 0, 0, 0.2);
+            z-index: 10;
+            letter-spacing: 1px;
+        }
+
+        /* Score board */
+        .score-board {
+            position: absolute;
+            top: 55px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: clamp(8px, 2vw, 15px);
+            z-index: 10;
+        }
+
+        .score-item {
+            background: linear-gradient(180deg, #FFF8E1, #FFECB3);
+            padding: 8px clamp(12px, 3vw, 20px);
+            border-radius: 25px;
+            color: #5D4037;
+            font-size: clamp(0.8rem, 2vw, 1rem);
+            font-weight: 800;
+            border: 3px solid #8D6E63;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+        }
+
+        .score-item span {
+            color: #E65100;
+            text-shadow: none;
+        }
+
+        /* Seed tray area */
+        .seed-tray-area {
+            position: absolute;
+            top: 105px;
+            left: 0;
+            right: 0;
+            height: 110px;
+            background: linear-gradient(180deg,
+                    #D7CCC8 0%,
+                    #BCAAA4 50%,
+                    #A1887F 100%);
+            border-top: 4px solid #8D6E63;
+            border-bottom: 4px solid #5D4037;
+            box-shadow: inset 0 5px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .wood-texture {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 22px;
+            background: repeating-linear-gradient(90deg,
+                    #6D4C41 0px,
+                    #6D4C41 30px,
+                    #5D4037 30px,
+                    #5D4037 32px,
+                    #795548 32px,
+                    #795548 60px);
+            box-shadow: inset 0 3px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Seeds queue */
+        .seed-queue {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            right: 15px;
+            height: 75px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .seed {
+            font-size: clamp(2.5rem, 7vw, 3.5rem);
+            filter: drop-shadow(3px 5px 5px rgba(0, 0, 0, 0.3));
+            transition: transform 0.15s ease;
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .seed.current {
+            transform: scale(1.2);
+            animation: seedBounce 0.4s ease-in-out infinite;
+            filter: drop-shadow(0 0 15px rgba(255, 255, 255, 0.5)) drop-shadow(3px 5px 5px rgba(0, 0, 0, 0.3));
+        }
+
+        @keyframes seedBounce {
+            0%, 100% { transform: scale(1.2) translateY(0); }
+            50% { transform: scale(1.2) translateY(-6px); }
+        }
+
+        .seed-color-indicator {
+            position: absolute;
+            bottom: -6px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 35px;
+            height: 8px;
+            border-radius: 4px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Garden plots */
+        .garden-plots {
+            position: absolute;
+            bottom: 90px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: clamp(8px, 2vw, 18px);
+        }
+
+        .plot {
+            width: clamp(70px, 18vw, 95px);
+            height: clamp(100px, 24vw, 125px);
+            border-radius: 20px 20px 10px 10px;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: transform 0.1s, box-shadow 0.1s;
+            cursor: pointer;
+        }
+
+        /* Soil texture */
+        .plot::before {
+            content: '';
+            position: absolute;
+            top: 35px;
+            left: 8px;
+            right: 8px;
+            bottom: 30px;
+            background: linear-gradient(180deg, #5D4037, #4E342E);
+            border-radius: 10px;
+            box-shadow: inset 0 5px 15px rgba(0, 0, 0, 0.4);
+        }
+
+        /* Fence top */
+        .plot::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 35px;
+            border-radius: 20px 20px 0 0;
+            background: inherit;
+            filter: brightness(1.1);
+        }
+
+        .plot.pressed {
+            transform: scale(0.92) translateY(3px);
+        }
+
+        .plot.correct {
+            animation: plotGlow 0.5s ease-out;
+        }
+
+        @keyframes plotGlow {
+            0%, 100% { box-shadow: 0 0 0 rgba(255, 255, 255, 0); }
+            50% { box-shadow: 0 0 40px rgba(255, 255, 255, 0.9), 0 0 60px currentColor; }
+        }
+
+        .plot.wrong {
+            animation: plotShake 0.4s ease-out;
+        }
+
+        @keyframes plotShake {
+            0%, 100% { transform: translateX(0); }
+            20% { transform: translateX(-12px) rotate(-3deg); }
+            40% { transform: translateX(12px) rotate(3deg); }
+            60% { transform: translateX(-8px) rotate(-2deg); }
+            80% { transform: translateX(8px) rotate(2deg); }
+        }
+
+        .plot-tomato {
+            background: linear-gradient(180deg, #FFCDD2 0%, #EF5350 50%, #C62828 100%);
+            box-shadow: 0 8px 0 #8E2323, 0 12px 30px rgba(198, 40, 40, 0.4);
+        }
+
+        .plot-carrot {
+            background: linear-gradient(180deg, #FFE0B2 0%, #FF9800 50%, #E65100 100%);
+            box-shadow: 0 8px 0 #BF360C, 0 12px 30px rgba(230, 81, 0, 0.4);
+        }
+
+        .plot-corn {
+            background: linear-gradient(180deg, #FFF9C4 0%, #FFEB3B 50%, #F9A825 100%);
+            box-shadow: 0 8px 0 #F57F17, 0 12px 30px rgba(249, 168, 37, 0.4);
+        }
+
+        .plot-lettuce {
+            background: linear-gradient(180deg, #C8E6C9 0%, #66BB6A 50%, #388E3C 100%);
+            box-shadow: 0 8px 0 #1B5E20, 0 12px 30px rgba(56, 142, 60, 0.4);
+        }
+
+        .plot-key {
+            position: absolute;
+            bottom: 5px;
+            background: rgba(255, 255, 255, 0.9);
+            color: #5D4037;
+            width: clamp(28px, 7vw, 35px);
+            height: clamp(28px, 7vw, 35px);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: clamp(1rem, 3vw, 1.3rem);
+            font-weight: bold;
+            box-shadow: 0 3px 0 rgba(0, 0, 0, 0.2);
+            border: 2px solid #8D6E63;
+        }
+
+        .plot-icon {
+            position: absolute;
+            top: 8px;
+            font-size: clamp(1.5rem, 4vw, 2rem);
+            z-index: 1;
+            filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.3));
+        }
+
+        .plot-count {
+            position: absolute;
+            top: -12px;
+            right: -8px;
+            background: linear-gradient(180deg, #fff, #eee);
+            color: #5D4037;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.85rem;
+            font-weight: bold;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
+            border: 2px solid #8D6E63;
+        }
+
+        /* Growing plants in plots */
+        .plot-plants {
+            position: absolute;
+            top: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 1.2rem;
+            display: flex;
+            gap: 2px;
+            opacity: 0.8;
+        }
+
+        /* Grass */
+        .grass {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 90px;
+            background: linear-gradient(180deg, #7CB342, #558B2F, #33691E);
+        }
+
+        .grass-blades {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 20px;
+            background: repeating-linear-gradient(90deg,
+                    transparent 0px,
+                    transparent 8px,
+                    #8BC34A 8px,
+                    #8BC34A 12px,
+                    transparent 12px,
+                    transparent 20px);
+            filter: blur(1px);
+        }
+
+        .grass-flowers {
+            position: absolute;
+            top: 25px;
+            left: 0;
+            right: 0;
+            height: 50px;
+            display: flex;
+            justify-content: space-around;
+            padding: 0 20px;
+        }
+
+        .grass-flower {
+            font-size: 1rem;
+            animation: flowerSway 3s ease-in-out infinite;
+        }
+
+        @keyframes flowerSway {
+            0%, 100% { transform: rotate(-5deg); }
+            50% { transform: rotate(5deg); }
+        }
+
+        /* Lives */
+        .lives {
+            position: absolute;
+            top: 100px;
+            left: 15px;
+            display: flex;
+            gap: 4px;
+            z-index: 10;
+        }
+
+        .life {
+            font-size: clamp(1.2rem, 3vw, 1.5rem);
+            transition: transform 0.3s, opacity 0.3s;
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+        }
+
+        .life.lost {
+            transform: scale(0) rotate(180deg);
+            opacity: 0;
+        }
+
+        /* Water indicator */
+        .water-indicator {
+            position: absolute;
+            top: 100px;
+            right: 15px;
+            background: rgba(255, 255, 255, 0.85);
+            padding: 5px 12px;
+            border-radius: 15px;
+            color: #1565C0;
+            font-size: clamp(0.7rem, 2vw, 0.85rem);
+            z-index: 10;
+            font-weight: 700;
+            border: 2px solid #42A5F5;
+        }
+
+        .water-indicator span {
+            color: #E65100;
+            font-weight: bold;
+        }
+
+        /* Combo display */
+        .combo-display {
+            position: absolute;
+            top: 220px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-family: 'Fredoka One', cursive;
+            font-size: clamp(1.5rem, 5vw, 2.2rem);
+            color: #FF6F00;
+            text-shadow:
+                0 0 20px rgba(255, 111, 0, 0.6),
+                2px 2px 4px rgba(0, 0, 0, 0.3);
+            opacity: 0;
+            transition: opacity 0.3s;
+            z-index: 20;
+        }
+
+        .combo-display.show {
+            opacity: 1;
+            animation: comboPop 0.3s ease-out;
+        }
+
+        @keyframes comboPop {
+            0% { transform: translateX(-50%) scale(0.5); }
+            70% { transform: translateX(-50%) scale(1.2); }
+            100% { transform: translateX(-50%) scale(1); }
+        }
+
+        /* Flying seed */
+        .flying-seed {
+            position: absolute;
+            font-size: 2.5rem;
+            pointer-events: none;
+            z-index: 50;
+        }
+
+        /* Sparkles */
+        .sparkle {
+            position: absolute;
+            width: 18px;
+            height: 18px;
+            pointer-events: none;
+            z-index: 60;
+        }
+
+        .sparkle::before,
+        .sparkle::after {
+            content: '';
+            position: absolute;
+            background: #FFEB3B;
+            border-radius: 2px;
+        }
+
+        .sparkle::before {
+            width: 100%;
+            height: 4px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        .sparkle::after {
+            width: 4px;
+            height: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .sparkle {
+            animation: sparkleAnim 0.5s ease-out forwards;
+        }
+
+        @keyframes sparkleAnim {
+            0% { transform: scale(0) rotate(0deg); opacity: 1; }
+            100% { transform: scale(2) rotate(45deg); opacity: 0; }
+        }
+
+        /* Level up notification */
+        .level-up {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-family: 'Fredoka One', cursive;
+            font-size: clamp(2rem, 8vw, 3.5rem);
+            color: #4CAF50;
+            text-shadow:
+                0 0 30px rgba(76, 175, 80, 0.8),
+                3px 3px 6px rgba(0, 0, 0, 0.3);
+            z-index: 100;
+            animation: levelUpAnim 1.5s ease-out forwards;
+            pointer-events: none;
+        }
+
+        @keyframes levelUpAnim {
+            0% { transform: translate(-50%, -50%) scale(0); opacity: 1; }
+            30% { transform: translate(-50%, -50%) scale(1.3); opacity: 1; }
+            100% { transform: translate(-50%, -100%) scale(1); opacity: 0; }
+        }
+
+        /* Instructions */
+        .instructions {
+            position: absolute;
+            bottom: 12px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 255, 255, 0.9);
+            padding: 10px 25px;
+            border-radius: 30px;
+            color: #5D4037;
+            font-size: clamp(0.75rem, 2vw, 0.95rem);
+            z-index: 10;
+            font-weight: 700;
+            border: 2px solid #8D6E63;
+        }
+
+        /* Overlay screens */
+        .overlay-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            z-index: 1000;
+        }
+
+        .start-screen {
+            background: linear-gradient(180deg, #87CEEB 0%, #C8E6C9 50%, #8BC34A 100%);
+        }
+
+        .game-over {
+            background: rgba(0, 0, 0, 0.85);
+        }
+
+        .overlay-screen h2 {
+            font-family: 'Fredoka One', cursive;
+            font-size: clamp(2rem, 7vw, 3rem);
+            color: #33691E;
+            text-shadow: 0 4px 0 #8BC34A;
+            margin-bottom: 10px;
+        }
+
+        .game-over h2 {
+            color: white;
+            text-shadow: 0 4px 0 rgba(0, 0, 0, 0.3);
+        }
+
+        .overlay-screen .crops-display {
+            font-size: clamp(3rem, 10vw, 5rem);
+            margin: 20px 0;
+            animation: cropsFloat 2s ease-in-out infinite;
+        }
+
+        @keyframes cropsFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .overlay-screen p {
+            font-size: clamp(1rem, 3vw, 1.3rem);
+            color: #5D4037;
+            margin-bottom: 15px;
+            text-align: center;
+            max-width: 450px;
+            line-height: 1.5;
+            padding: 0 20px;
+            font-weight: 700;
+        }
+
+        .game-over p {
+            color: #B0B0B0;
+        }
+
+        .keys-hint {
+            display: flex;
+            gap: clamp(6px, 2vw, 12px);
+            margin: 20px 0;
+        }
+
+        .key-demo {
+            width: clamp(40px, 10vw, 55px);
+            height: clamp(40px, 10vw, 55px);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: clamp(1.2rem, 4vw, 1.6rem);
+            font-weight: bold;
+            color: white;
+            box-shadow: 0 5px 0 rgba(0, 0, 0, 0.3), 0 8px 20px rgba(0, 0, 0, 0.2);
+            text-shadow: 0 2px 0 rgba(0, 0, 0, 0.2);
+        }
+
+        .btn {
+            background: linear-gradient(180deg, #66BB6A 0%, #43A047 100%);
+            color: white;
+            border: none;
+            padding: clamp(14px, 4vw, 20px) clamp(35px, 10vw, 55px);
+            font-size: clamp(1.3rem, 4vw, 1.7rem);
+            border-radius: 50px;
+            cursor: pointer;
+            font-family: 'Fredoka One', cursive;
+            box-shadow: 0 6px 0 #2E7D32, 0 10px 30px rgba(67, 160, 71, 0.4);
+            transition: transform 0.2s;
+            margin-top: 20px;
+            letter-spacing: 1px;
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+        }
+
+        .btn:active {
+            transform: translateY(3px);
+            box-shadow: 0 3px 0 #2E7D32, 0 6px 15px rgba(67, 160, 71, 0.4);
+        }
+
+        .game-over .btn {
+            background: linear-gradient(180deg, #FFB74D 0%, #FF9800 100%);
+            box-shadow: 0 6px 0 #E65100, 0 10px 30px rgba(255, 152, 0, 0.4);
+        }
+
+        .game-over .btn:active {
+            box-shadow: 0 3px 0 #E65100, 0 6px 15px rgba(255, 152, 0, 0.4);
+        }
+
+        .final-score {
+            font-family: 'Fredoka One', cursive;
+            font-size: clamp(3rem, 12vw, 5rem);
+            color: #FFEB3B;
+            text-shadow: 0 0 30px rgba(255, 235, 59, 0.6);
+            margin: 15px 0;
+        }
+
+        .stats {
+            color: #B0B0B0;
+            font-size: clamp(1rem, 3vw, 1.3rem);
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* Sound toggle */
+        .sound-toggle {
+            position: fixed;
+            top: 12px;
+            right: 12px;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.9);
+            border: 2px solid #8D6E63;
+            color: #5D4037;
+            font-size: 1.3rem;
+            cursor: pointer;
+            z-index: 2000;
+        }
+
+        .sound-toggle.muted {
+            opacity: 0.5;
+        }
+
+        /* Mobile touch buttons */
+        .mobile-controls {
+            display: none;
+            position: fixed;
+            bottom: 15px;
+            left: 0;
+            right: 0;
+            justify-content: center;
+            gap: 10px;
+            z-index: 100;
+            padding: 0 10px;
+        }
+
+        .mobile-btn {
+            flex: 1;
+            max-width: 80px;
+            height: 70px;
+            border-radius: 15px;
+            border: none;
+            font-size: 1.8rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        .mobile-btn-tomato {
+            background: linear-gradient(180deg, #FFCDD2, #EF5350);
+            box-shadow: 0 5px 0 #C62828;
+        }
+
+        .mobile-btn-carrot {
+            background: linear-gradient(180deg, #FFE0B2, #FF9800);
+            box-shadow: 0 5px 0 #E65100;
+        }
+
+        .mobile-btn-corn {
+            background: linear-gradient(180deg, #FFF9C4, #FFEB3B);
+            box-shadow: 0 5px 0 #F9A825;
+        }
+
+        .mobile-btn-lettuce {
+            background: linear-gradient(180deg, #C8E6C9, #66BB6A);
+            box-shadow: 0 5px 0 #388E3C;
+        }
+
+        .mobile-btn:active {
+            transform: translateY(3px);
+            box-shadow: 0 2px 0 currentColor;
+        }
+
+        @media (hover: none) and (pointer: coarse) {
+            .mobile-controls {
+                display: flex;
+            }
+
+            .garden-plots {
+                bottom: 100px;
+            }
+
+            .instructions {
+                display: none;
+            }
+
+            .grass {
+                height: 90px;
+            }
+        }
+
+        @media (hover: none) and (pointer: coarse) and (max-height: 600px) {
+            .garden-plots {
+                bottom: 95px;
+            }
+
+            .plot {
+                width: clamp(60px, 16vw, 80px);
+                height: clamp(85px, 20vw, 105px);
+            }
+
+            .mobile-btn {
+                height: 60px;
+                max-width: 70px;
+            }
+        }
+
+        .home-btn {
+            position: fixed;
+            top: 15px;
+            left: 15px;
+            z-index: 1000;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.85));
+            border: 2px solid #8D6E63;
+            color: #5D4037;
+            padding: 10px 18px;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: 700;
+            text-decoration: none;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .home-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Butterflies */
+        .butterfly {
+            position: absolute;
+            font-size: 1.2rem;
+            animation: butterflyFly 8s ease-in-out infinite;
+            pointer-events: none;
+            z-index: 5;
+        }
+
+        @keyframes butterflyFly {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            25% { transform: translate(30px, -20px) rotate(10deg); }
+            50% { transform: translate(60px, 10px) rotate(-5deg); }
+            75% { transform: translate(30px, 30px) rotate(5deg); }
+        }
+    </style>
+</head>
+
+<body>
+    <a href="index.html" class="home-btn">🏠 Home</a>
+    <button class="sound-toggle" id="soundToggle" onclick="toggleSound()">🔊</button>
+
+    <div class="game-container" id="gameContainer">
+        <!-- Clouds -->
+        <div class="clouds-layer" id="cloudsLayer"></div>
+        <div class="sun"><div class="sun-rays"></div></div>
+
+        <!-- Butterflies -->
+        <div class="butterfly" style="top: 180px; left: 10%;">🦋</div>
+        <div class="butterfly" style="top: 220px; left: 70%; animation-delay: -3s;">🦋</div>
+
+        <h1>Farm Garden!</h1>
+
+        <!-- Score board -->
+        <div class="score-board">
+            <div class="score-item">Crops: <span id="score">0</span></div>
+            <div class="score-item">Level: <span id="level">1</span></div>
+            <div class="score-item">Best: <span id="best">0</span></div>
+        </div>
+
+        <!-- Lives -->
+        <div class="lives" id="lives">
+            <div class="life">💧</div>
+            <div class="life">💧</div>
+            <div class="life">💧</div>
+        </div>
+
+        <!-- Speed indicator -->
+        <div class="water-indicator">Growth: <span id="speed">1.0x</span></div>
+
+        <!-- Seed tray area -->
+        <div class="seed-tray-area">
+            <div class="seed-queue" id="seedQueue"></div>
+            <div class="wood-texture"></div>
+        </div>
+
+        <!-- Combo display -->
+        <div class="combo-display" id="comboDisplay">HARVEST x5!</div>
+
+        <!-- Garden plots -->
+        <div class="garden-plots">
+            <div class="plot plot-tomato" id="plot1" onclick="selectPlot(0)">
+                <div class="plot-icon">🍅</div>
+                <div class="plot-plants" id="plants1"></div>
+                <div class="plot-key">1</div>
+                <div class="plot-count" id="count1">0</div>
+            </div>
+            <div class="plot plot-carrot" id="plot2" onclick="selectPlot(1)">
+                <div class="plot-icon">🥕</div>
+                <div class="plot-plants" id="plants2"></div>
+                <div class="plot-key">2</div>
+                <div class="plot-count" id="count2">0</div>
+            </div>
+            <div class="plot plot-corn" id="plot3" onclick="selectPlot(2)">
+                <div class="plot-icon">🌽</div>
+                <div class="plot-plants" id="plants3"></div>
+                <div class="plot-key">3</div>
+                <div class="plot-count" id="count3">0</div>
+            </div>
+            <div class="plot plot-lettuce" id="plot4" onclick="selectPlot(3)">
+                <div class="plot-icon">🥬</div>
+                <div class="plot-plants" id="plants4"></div>
+                <div class="plot-key">4</div>
+                <div class="plot-count" id="count4">0</div>
+            </div>
+        </div>
+
+        <!-- Grass -->
+        <div class="grass">
+            <div class="grass-blades"></div>
+            <div class="grass-flowers">
+                <span class="grass-flower">🌷</span>
+                <span class="grass-flower" style="animation-delay: -1s;">🌻</span>
+                <span class="grass-flower" style="animation-delay: -2s;">🌸</span>
+                <span class="grass-flower" style="animation-delay: -0.5s;">🌼</span>
+                <span class="grass-flower" style="animation-delay: -1.5s;">🌺</span>
+            </div>
+        </div>
+
+        <!-- Instructions -->
+        <div class="instructions">
+            Press <strong>1-4</strong> or tap to plant seeds in the right garden!
+        </div>
+    </div>
+
+    <!-- Mobile controls -->
+    <div class="mobile-controls" id="mobileControls">
+        <button class="mobile-btn mobile-btn-tomato" onclick="selectPlot(0)">🍅</button>
+        <button class="mobile-btn mobile-btn-carrot" onclick="selectPlot(1)">🥕</button>
+        <button class="mobile-btn mobile-btn-corn" onclick="selectPlot(2)">🌽</button>
+        <button class="mobile-btn mobile-btn-lettuce" onclick="selectPlot(3)">🥬</button>
+    </div>
+
+    <!-- Start screen -->
+    <div class="overlay-screen start-screen" id="startScreen">
+        <h2>Farm Garden!</h2>
+        <div class="crops-display">🍅 🥕 🌽 🥬</div>
+        <p>Plant the seeds in the matching garden plots!</p>
+        <div class="keys-hint">
+            <div class="key-demo" style="background: linear-gradient(180deg, #FFCDD2, #EF5350);">1</div>
+            <div class="key-demo" style="background: linear-gradient(180deg, #FFE0B2, #FF9800);">2</div>
+            <div class="key-demo" style="background: linear-gradient(180deg, #FFF9C4, #FFEB3B);">3</div>
+            <div class="key-demo" style="background: linear-gradient(180deg, #C8E6C9, #66BB6A);">4</div>
+        </div>
+        <p style="font-size: 0.95rem; color: #795548;">Grows faster as you level up!</p>
+        <button class="btn" onclick="startGame()">Start Planting!</button>
+    </div>
+
+    <!-- Game over screen -->
+    <div class="overlay-screen game-over hidden" id="gameOver">
+        <h2>Harvest Time!</h2>
+        <div class="final-score" id="finalScore">0</div>
+        <div class="stats" id="statsText">You planted 0 crops!</div>
+        <button class="btn" onclick="startGame()">Plant Again!</button>
+    </div>
+
+    <script>
+        // Audio
+        let audioCtx = null;
+        let soundEnabled = true;
+
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+        }
+
+        function playSound(type) {
+            if (!soundEnabled || !audioCtx) return;
+
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            switch (type) {
+                case 'correct':
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(440, audioCtx.currentTime);
+                    osc.frequency.setValueAtTime(554, audioCtx.currentTime + 0.08);
+                    osc.frequency.setValueAtTime(659, audioCtx.currentTime + 0.16);
+                    gain.gain.setValueAtTime(0.25, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.35);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.35);
+                    break;
+                case 'wrong':
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(180, audioCtx.currentTime);
+                    osc.frequency.setValueAtTime(120, audioCtx.currentTime + 0.1);
+                    gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.2);
+                    break;
+                case 'levelup':
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(523, audioCtx.currentTime);
+                    osc.frequency.setValueAtTime(659, audioCtx.currentTime + 0.1);
+                    osc.frequency.setValueAtTime(784, audioCtx.currentTime + 0.2);
+                    osc.frequency.setValueAtTime(1047, audioCtx.currentTime + 0.3);
+                    gain.gain.setValueAtTime(0.25, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.5);
+                    break;
+                case 'gameover':
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(400, audioCtx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(200, audioCtx.currentTime + 0.4);
+                    gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.4);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.4);
+                    break;
+            }
+        }
+
+        function toggleSound() {
+            soundEnabled = !soundEnabled;
+            const btn = document.getElementById('soundToggle');
+            btn.textContent = soundEnabled ? '🔊' : '🔇';
+            btn.classList.toggle('muted', !soundEnabled);
+        }
+
+        // Create clouds
+        function createClouds() {
+            const cloudsEl = document.getElementById('cloudsLayer');
+            cloudsEl.innerHTML = '';
+            for (let i = 0; i < 5; i++) {
+                const cloud = document.createElement('div');
+                cloud.className = 'cloud';
+                cloud.style.top = (10 + Math.random() * 60) + '%';
+                cloud.style.width = (60 + Math.random() * 80) + 'px';
+                cloud.style.height = (25 + Math.random() * 25) + 'px';
+                cloud.style.animationDelay = (-Math.random() * 20) + 's';
+                cloud.style.animationDuration = (18 + Math.random() * 10) + 's';
+                cloudsEl.appendChild(cloud);
+            }
+        }
+
+        // Game state
+        let score = 0;
+        let level = 1;
+        let lives = 3;
+        let combo = 0;
+        let maxCombo = 0;
+        let cropsPlanted = 0;
+        let plotCounts = [0, 0, 0, 0];
+        let seedQueue = [];
+        let gameRunning = false;
+        let spawnInterval = null;
+        let bestScore = parseInt(localStorage.getItem('farmGardenBest')) || 0;
+
+        const container = document.getElementById('gameContainer');
+        const seedQueueEl = document.getElementById('seedQueue');
+
+        // Crop types
+        const cropTypes = [
+            { emoji: '🍅', color: 'tomato', colorHex: '#EF5350', plant: '🌱' },
+            { emoji: '🥕', color: 'carrot', colorHex: '#FF9800', plant: '🌱' },
+            { emoji: '🌽', color: 'corn', colorHex: '#FFEB3B', plant: '🌱' },
+            { emoji: '🥬', color: 'lettuce', colorHex: '#66BB6A', plant: '🌱' }
+        ];
+
+        function startGame() {
+            initAudio();
+            document.getElementById('startScreen').classList.add('hidden');
+            document.getElementById('gameOver').classList.add('hidden');
+
+            // Reset state
+            score = 0;
+            level = 1;
+            lives = 3;
+            combo = 0;
+            maxCombo = 0;
+            cropsPlanted = 0;
+            plotCounts = [0, 0, 0, 0];
+            seedQueue = [];
+            gameRunning = true;
+
+            // Clear plant displays
+            for (let i = 1; i <= 4; i++) {
+                document.getElementById('plants' + i).innerHTML = '';
+            }
+
+            // Update UI
+            updateUI();
+            updateLives();
+            updatePlotCounts();
+
+            // Clear queue
+            seedQueueEl.innerHTML = '';
+
+            // Start spawning seeds
+            spawnSeed();
+            scheduleNextSpawn();
+        }
+
+        function scheduleNextSpawn() {
+            if (spawnInterval) clearTimeout(spawnInterval);
+
+            const baseDelay = 2200;
+            const minDelay = 700;
+            const delay = Math.max(minDelay, baseDelay - (level - 1) * 180);
+
+            spawnInterval = setTimeout(() => {
+                if (gameRunning) {
+                    spawnSeed();
+                    scheduleNextSpawn();
+                }
+            }, delay);
+        }
+
+        function spawnSeed() {
+            if (!gameRunning) return;
+
+            const maxSeeds = Math.min(6, 3 + Math.floor(level / 2));
+            if (seedQueue.length >= maxSeeds) {
+                loseLife();
+                return;
+            }
+
+            const cropType = cropTypes[Math.floor(Math.random() * cropTypes.length)];
+
+            const seed = {
+                type: cropType,
+                element: createSeedElement(cropType)
+            };
+
+            seedQueue.push(seed);
+            seedQueueEl.appendChild(seed.element);
+
+            updateCurrentSeed();
+        }
+
+        function createSeedElement(cropType) {
+            const seedEl = document.createElement('div');
+            seedEl.className = 'seed';
+            seedEl.textContent = cropType.emoji;
+
+            const indicator = document.createElement('div');
+            indicator.className = 'seed-color-indicator';
+            indicator.style.background = cropType.colorHex;
+            seedEl.appendChild(indicator);
+
+            return seedEl;
+        }
+
+        function updateCurrentSeed() {
+            document.querySelectorAll('.seed').forEach(s => s.classList.remove('current'));
+            if (seedQueue.length > 0) {
+                seedQueue[0].element.classList.add('current');
+            }
+        }
+
+        function selectPlot(index) {
+            if (!gameRunning || seedQueue.length === 0) return;
+            initAudio();
+
+            const plotEl = document.getElementById('plot' + (index + 1));
+
+            plotEl.classList.add('pressed');
+            setTimeout(() => plotEl.classList.remove('pressed'), 100);
+
+            const currentSeed = seedQueue[0];
+            const correctIndex = cropTypes.findIndex(t => t.color === currentSeed.type.color);
+
+            if (index === correctIndex) {
+                handleCorrect(index, currentSeed);
+            } else {
+                handleWrong(index);
+            }
+        }
+
+        function handleCorrect(plotIndex, seed) {
+            const plotEl = document.getElementById('plot' + (plotIndex + 1));
+            plotEl.classList.add('correct');
+            setTimeout(() => plotEl.classList.remove('correct'), 500);
+
+            flySeedToPlot(seed, plotIndex);
+
+            seedQueue.shift();
+            seed.element.remove();
+
+            plotCounts[plotIndex]++;
+            updatePlotCounts();
+            updatePlantDisplay(plotIndex);
+
+            combo++;
+            maxCombo = Math.max(maxCombo, combo);
+            const points = 10 * Math.min(combo, 10);
+            score += points;
+            cropsPlanted++;
+
+            if (combo >= 3) {
+                showCombo();
+            }
+
+            createSparkles(plotEl);
+            playSound('correct');
+
+            if (cropsPlanted > 0 && cropsPlanted % 10 === 0) {
+                levelUp();
+            }
+
+            updateUI();
+            updateCurrentSeed();
+        }
+
+        function handleWrong(plotIndex) {
+            const plotEl = document.getElementById('plot' + (plotIndex + 1));
+            plotEl.classList.add('wrong');
+            setTimeout(() => plotEl.classList.remove('wrong'), 400);
+
+            combo = 0;
+            hideCombo();
+            playSound('wrong');
+
+            loseLife();
+        }
+
+        function loseLife() {
+            lives--;
+            updateLives();
+
+            if (lives <= 0) {
+                gameOver();
+            }
+        }
+
+        function updateLives() {
+            const livesEl = document.getElementById('lives');
+            const hearts = livesEl.querySelectorAll('.life');
+            hearts.forEach((heart, i) => {
+                heart.classList.toggle('lost', i >= lives);
+            });
+        }
+
+        function flySeedToPlot(seed, plotIndex) {
+            const seedRect = seed.element.getBoundingClientRect();
+            const plotEl = document.getElementById('plot' + (plotIndex + 1));
+            const plotRect = plotEl.getBoundingClientRect();
+            const containerRect = container.getBoundingClientRect();
+
+            const flyingSeed = document.createElement('div');
+            flyingSeed.className = 'flying-seed';
+            flyingSeed.textContent = seed.type.emoji;
+            flyingSeed.style.left = (seedRect.left - containerRect.left) + 'px';
+            flyingSeed.style.top = (seedRect.top - containerRect.top) + 'px';
+
+            container.appendChild(flyingSeed);
+
+            const endX = plotRect.left - containerRect.left + plotRect.width / 2 - 30;
+            const endY = plotRect.top - containerRect.top + 30;
+
+            flyingSeed.animate([
+                { transform: 'translate(0, 0) scale(1) rotate(0deg)', opacity: 1 },
+                { transform: `translate(${endX - parseFloat(flyingSeed.style.left)}px, ${endY - parseFloat(flyingSeed.style.top)}px) scale(0.4) rotate(360deg)`, opacity: 0.5 }
+            ], {
+                duration: 400,
+                easing: 'ease-in'
+            });
+
+            setTimeout(() => flyingSeed.remove(), 400);
+        }
+
+        function updatePlantDisplay(plotIndex) {
+            const plantsEl = document.getElementById('plants' + (plotIndex + 1));
+            const count = plotCounts[plotIndex];
+            const plant = cropTypes[plotIndex].plant;
+
+            // Show up to 3 plant emojis
+            let display = '';
+            for (let i = 0; i < Math.min(count, 3); i++) {
+                display += plant;
+            }
+            plantsEl.textContent = display;
+        }
+
+        function showCombo() {
+            const comboEl = document.getElementById('comboDisplay');
+            comboEl.textContent = `HARVEST x${combo}!`;
+            comboEl.classList.add('show');
+        }
+
+        function hideCombo() {
+            document.getElementById('comboDisplay').classList.remove('show');
+        }
+
+        function createSparkles(element) {
+            const rect = element.getBoundingClientRect();
+            const containerRect = container.getBoundingClientRect();
+
+            for (let i = 0; i < 6; i++) {
+                setTimeout(() => {
+                    const sparkle = document.createElement('div');
+                    sparkle.className = 'sparkle';
+                    sparkle.style.left = (rect.left - containerRect.left + Math.random() * rect.width) + 'px';
+                    sparkle.style.top = (rect.top - containerRect.top + Math.random() * rect.height) + 'px';
+                    container.appendChild(sparkle);
+                    setTimeout(() => sparkle.remove(), 500);
+                }, i * 40);
+            }
+        }
+
+        function levelUp() {
+            level++;
+            updateUI();
+            playSound('levelup');
+
+            const levelUpEl = document.createElement('div');
+            levelUpEl.className = 'level-up';
+            levelUpEl.textContent = `LEVEL ${level}!`;
+            container.appendChild(levelUpEl);
+            setTimeout(() => levelUpEl.remove(), 1500);
+
+            if (lives < 5) {
+                lives++;
+                updateLives();
+            }
+        }
+
+        function updateUI() {
+            document.getElementById('score').textContent = score;
+            document.getElementById('level').textContent = level;
+            document.getElementById('best').textContent = bestScore;
+
+            const speedMultiplier = 1 + (level - 1) * 0.2;
+            document.getElementById('speed').textContent = speedMultiplier.toFixed(1) + 'x';
+        }
+
+        function updatePlotCounts() {
+            for (let i = 0; i < 4; i++) {
+                document.getElementById('count' + (i + 1)).textContent = plotCounts[i];
+            }
+        }
+
+        function gameOver() {
+            gameRunning = false;
+            if (spawnInterval) clearTimeout(spawnInterval);
+            playSound('gameover');
+
+            if (score > bestScore) {
+                bestScore = score;
+                localStorage.setItem('farmGardenBest', bestScore);
+            }
+
+            document.getElementById('finalScore').textContent = score;
+            document.getElementById('statsText').textContent =
+                `You planted ${cropsPlanted} crops! Max combo: ${maxCombo}x`;
+            document.getElementById('gameOver').classList.remove('hidden');
+        }
+
+        // Keyboard controls
+        document.addEventListener('keydown', (e) => {
+            // Start game
+            if (!document.getElementById('startScreen').classList.contains('hidden')) {
+                if (['1', '2', '3', '4', ' ', 'Enter'].includes(e.key)) {
+                    e.preventDefault();
+                    startGame();
+                    return;
+                }
+            }
+
+            // Restart game
+            if (!document.getElementById('gameOver').classList.contains('hidden')) {
+                if ([' ', 'Enter'].includes(e.key)) {
+                    e.preventDefault();
+                    startGame();
+                    return;
+                }
+            }
+
+            // Game controls
+            if (e.key === '1') { e.preventDefault(); selectPlot(0); }
+            else if (e.key === '2') { e.preventDefault(); selectPlot(1); }
+            else if (e.key === '3') { e.preventDefault(); selectPlot(2); }
+            else if (e.key === '4') { e.preventDefault(); selectPlot(3); }
+
+            // Arrow keys
+            if (e.key === 'ArrowLeft') { e.preventDefault(); selectPlot(0); }
+            else if (e.key === 'ArrowUp') { e.preventDefault(); selectPlot(1); }
+            else if (e.key === 'ArrowDown') { e.preventDefault(); selectPlot(2); }
+            else if (e.key === 'ArrowRight') { e.preventDefault(); selectPlot(3); }
+        });
+
+        // Initialize
+        createClouds();
+        document.getElementById('best').textContent = bestScore;
+    </script>
+</body>
+
+</html>
