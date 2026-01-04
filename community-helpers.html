@@ -1,0 +1,1588 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Community Helpers - Help Your Neighbors!</title>
+    <link href="https://fonts.googleapis.com/css2?family=Bubblegum+Sans&family=Nunito:wght@700;800;900&display=swap"
+        rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html, body {
+            overflow: hidden;
+            touch-action: manipulation;
+        }
+
+        body {
+            font-family: 'Nunito', sans-serif;
+            background: linear-gradient(180deg, #74b9ff 0%, #81ecec 100%);
+            min-height: 100vh;
+        }
+
+        .game-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Sky and scenery */
+        .sky {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(180deg, #74b9ff 0%, #a8e6cf 100%);
+        }
+
+        .sun {
+            position: absolute;
+            top: 20px;
+            right: 50px;
+            width: 80px;
+            height: 80px;
+            background: radial-gradient(circle at 40% 40%, #fff9c4, #ffd93d);
+            border-radius: 50%;
+            box-shadow: 0 0 60px rgba(255, 217, 61, 0.8);
+            animation: sunPulse 3s ease-in-out infinite;
+        }
+
+        @keyframes sunPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.08); }
+        }
+
+        .cloud {
+            position: absolute;
+            background: white;
+            border-radius: 50px;
+            opacity: 0.9;
+        }
+
+        .cloud::before, .cloud::after {
+            content: '';
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+        }
+
+        .cloud-1 {
+            width: 100px;
+            height: 40px;
+            top: 60px;
+            left: 10%;
+            animation: floatCloud 20s linear infinite;
+        }
+
+        .cloud-1::before {
+            width: 50px;
+            height: 50px;
+            top: -25px;
+            left: 15px;
+        }
+
+        .cloud-1::after {
+            width: 35px;
+            height: 35px;
+            top: -15px;
+            left: 55px;
+        }
+
+        .cloud-2 {
+            width: 80px;
+            height: 35px;
+            top: 100px;
+            left: 60%;
+            animation: floatCloud 25s linear infinite reverse;
+        }
+
+        .cloud-2::before {
+            width: 40px;
+            height: 40px;
+            top: -20px;
+            left: 12px;
+        }
+
+        .cloud-2::after {
+            width: 30px;
+            height: 30px;
+            top: -10px;
+            left: 45px;
+        }
+
+        @keyframes floatCloud {
+            0% { transform: translateX(-100px); }
+            100% { transform: translateX(calc(100vw + 100px)); }
+        }
+
+        /* Ground */
+        .ground {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 35%;
+            background: linear-gradient(180deg, #55efc4 0%, #00b894 100%);
+        }
+
+        .road {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 80px;
+            background: linear-gradient(180deg, #636e72, #2d3436);
+        }
+
+        .road::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 6px;
+            background: repeating-linear-gradient(90deg, #ffeaa7 0px, #ffeaa7 30px, transparent 30px, transparent 60px);
+            transform: translateY(-50%);
+        }
+
+        /* Header */
+        .header {
+            position: absolute;
+            top: 15px;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+            z-index: 100;
+        }
+
+        .title {
+            font-family: 'Bubblegum Sans', cursive;
+            font-size: clamp(1.8rem, 6vw, 3rem);
+            color: #2d3436;
+            text-shadow: 0 3px 0 white, 0 6px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .subtitle {
+            font-size: clamp(0.9rem, 3vw, 1.2rem);
+            color: #636e72;
+            font-weight: 700;
+        }
+
+        /* Stats */
+        .stats {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            display: flex;
+            gap: 10px;
+            z-index: 100;
+        }
+
+        .stat {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 10px 18px;
+            border-radius: 30px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 800;
+            font-size: clamp(1rem, 3vw, 1.3rem);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-icon {
+            font-size: 1.4rem;
+        }
+
+        .stat-value {
+            color: #e17055;
+        }
+
+        /* Home button */
+        .home-btn {
+            position: fixed;
+            top: 15px;
+            left: 15px;
+            z-index: 1000;
+            background: rgba(255, 255, 255, 0.95);
+            border: 3px solid #ffd93d;
+            color: #2d3436;
+            padding: 10px 18px;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: 700;
+            text-decoration: none;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: transform 0.2s;
+        }
+
+        .home-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        /* Sound toggle */
+        .sound-toggle {
+            position: fixed;
+            bottom: 15px;
+            right: 15px;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.95);
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            z-index: 1000;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+        }
+
+        .sound-toggle.muted {
+            opacity: 0.5;
+        }
+
+        /* Hub view - three stations */
+        .hub-view {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 100px 20px 120px;
+        }
+
+        .stations {
+            display: flex;
+            gap: clamp(15px, 4vw, 40px);
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: flex-end;
+            max-width: 1000px;
+        }
+
+        .station {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+            transition: transform 0.3s;
+            animation: stationBounce 3s ease-in-out infinite;
+        }
+
+        .station:nth-child(2) { animation-delay: -1s; }
+        .station:nth-child(3) { animation-delay: -2s; }
+
+        @keyframes stationBounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .station:hover {
+            transform: scale(1.05) translateY(-10px);
+            animation: none;
+        }
+
+        .station:active {
+            transform: scale(0.98);
+        }
+
+        .building {
+            width: clamp(120px, 25vw, 180px);
+            height: clamp(140px, 30vw, 200px);
+            border-radius: 20px 20px 0 0;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .building::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 30%;
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.4), transparent);
+            border-radius: 20px 20px 0 0;
+        }
+
+        .police-building {
+            background: linear-gradient(180deg, #74b9ff, #0984e3);
+        }
+
+        .fire-building {
+            background: linear-gradient(180deg, #ff7675, #d63031);
+        }
+
+        .ambulance-building {
+            background: linear-gradient(180deg, #81ecec, #00cec9);
+        }
+
+        .building-icon {
+            font-size: clamp(3rem, 10vw, 5rem);
+            filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
+            animation: iconWiggle 2s ease-in-out infinite;
+        }
+
+        @keyframes iconWiggle {
+            0%, 100% { transform: rotate(-5deg); }
+            50% { transform: rotate(5deg); }
+        }
+
+        .building-door {
+            position: absolute;
+            bottom: 0;
+            width: 50%;
+            height: 40%;
+            background: linear-gradient(180deg, rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.5));
+            border-radius: 10px 10px 0 0;
+        }
+
+        .station-label {
+            margin-top: 15px;
+            background: white;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-weight: 800;
+            font-size: clamp(0.8rem, 2.5vw, 1.1rem);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            white-space: nowrap;
+        }
+
+        .police-label { color: #0984e3; }
+        .fire-label { color: #d63031; }
+        .ambulance-label { color: #00b894; }
+
+        /* Activity view */
+        .activity-view {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            display: none;
+            flex-direction: column;
+        }
+
+        .activity-view.active {
+            display: flex;
+        }
+
+        .activity-header {
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+        }
+
+        .back-btn {
+            background: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 30px;
+            font-size: clamp(1rem, 3vw, 1.2rem);
+            font-weight: 800;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s;
+        }
+
+        .back-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .activity-title {
+            font-family: 'Bubblegum Sans', cursive;
+            font-size: clamp(1.3rem, 4vw, 2rem);
+            color: white;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .activity-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            gap: 30px;
+        }
+
+        /* Scenario display */
+        .scenario {
+            background: rgba(255, 255, 255, 0.95);
+            padding: clamp(20px, 5vw, 40px);
+            border-radius: 30px;
+            text-align: center;
+            max-width: 600px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        .scenario-icon {
+            font-size: clamp(4rem, 15vw, 7rem);
+            margin-bottom: 15px;
+            animation: scenarioFloat 2s ease-in-out infinite;
+        }
+
+        @keyframes scenarioFloat {
+            0%, 100% { transform: translateY(0) rotate(-3deg); }
+            50% { transform: translateY(-15px) rotate(3deg); }
+        }
+
+        .scenario-text {
+            font-size: clamp(1.2rem, 4vw, 1.8rem);
+            color: #2d3436;
+            font-weight: 700;
+            margin-bottom: 20px;
+            line-height: 1.4;
+        }
+
+        .scenario-hint {
+            font-size: clamp(0.9rem, 3vw, 1.2rem);
+            color: #636e72;
+            font-weight: 600;
+        }
+
+        /* Clickable targets */
+        .targets {
+            display: flex;
+            gap: clamp(20px, 5vw, 40px);
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .target {
+            width: clamp(100px, 25vw, 150px);
+            height: clamp(100px, 25vw, 150px);
+            background: white;
+            border-radius: 25px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+            transition: transform 0.2s, box-shadow 0.2s;
+            border: 4px solid transparent;
+        }
+
+        .target:hover {
+            transform: scale(1.1) translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        .target:active {
+            transform: scale(0.95);
+        }
+
+        .target.correct {
+            border-color: #00b894;
+            animation: targetPulse 0.5s ease;
+        }
+
+        @keyframes targetPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.15); }
+        }
+
+        .target-icon {
+            font-size: clamp(2.5rem, 8vw, 4rem);
+        }
+
+        .target-label {
+            font-size: clamp(0.7rem, 2vw, 0.9rem);
+            font-weight: 700;
+            color: #636e72;
+            margin-top: 8px;
+        }
+
+        /* Vehicle display */
+        .vehicle-area {
+            position: absolute;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+        }
+
+        .vehicle {
+            font-size: clamp(4rem, 12vw, 6rem);
+            filter: drop-shadow(0 8px 15px rgba(0, 0, 0, 0.3));
+            transition: transform 0.3s;
+        }
+
+        .vehicle.driving {
+            animation: vehicleDrive 1s ease-in-out;
+        }
+
+        @keyframes vehicleDrive {
+            0% { transform: translateX(-100px) rotate(-5deg); }
+            50% { transform: translateX(0) rotate(3deg); }
+            100% { transform: translateX(0) rotate(0); }
+        }
+
+        .vehicle.celebrating {
+            animation: vehicleCelebrate 0.5s ease-in-out 3;
+        }
+
+        @keyframes vehicleCelebrate {
+            0%, 100% { transform: translateY(0) rotate(-5deg); }
+            50% { transform: translateY(-20px) rotate(5deg); }
+        }
+
+        .vehicle-hat {
+            position: absolute;
+            top: -40px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 2.5rem;
+        }
+
+        /* Success overlay */
+        .success-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.3);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 500;
+        }
+
+        .success-overlay.active {
+            display: flex;
+        }
+
+        .success-card {
+            background: white;
+            padding: clamp(30px, 8vw, 50px);
+            border-radius: 40px;
+            text-align: center;
+            animation: successPop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            max-width: 90%;
+        }
+
+        @keyframes successPop {
+            0% { transform: scale(0); }
+            70% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        .success-icon {
+            font-size: clamp(4rem, 15vw, 7rem);
+            animation: successBounce 0.6s ease infinite;
+        }
+
+        @keyframes successBounce {
+            0%, 100% { transform: scale(1) rotate(-5deg); }
+            50% { transform: scale(1.15) rotate(5deg); }
+        }
+
+        .success-text {
+            font-family: 'Bubblegum Sans', cursive;
+            font-size: clamp(1.8rem, 6vw, 3rem);
+            color: #00b894;
+            margin: 15px 0;
+        }
+
+        .success-message {
+            font-size: clamp(1rem, 3vw, 1.4rem);
+            color: #636e72;
+            font-weight: 700;
+            margin-bottom: 20px;
+        }
+
+        .success-reward {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            font-size: clamp(1.2rem, 4vw, 1.6rem);
+            color: #f39c12;
+            font-weight: 800;
+        }
+
+        .continue-btn {
+            margin-top: 25px;
+            background: linear-gradient(180deg, #00b894, #00a085);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: clamp(1.2rem, 4vw, 1.6rem);
+            font-family: 'Bubblegum Sans', cursive;
+            border-radius: 40px;
+            cursor: pointer;
+            box-shadow: 0 6px 0 #007a63;
+            transition: transform 0.1s;
+        }
+
+        .continue-btn:active {
+            transform: translateY(4px);
+            box-shadow: 0 2px 0 #007a63;
+        }
+
+        /* Customization panel */
+        .customize-panel {
+            position: fixed;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 255, 255, 0.95);
+            padding: 12px 20px;
+            border-radius: 30px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            z-index: 100;
+        }
+
+        .customize-label {
+            font-size: 0.85rem;
+            font-weight: 800;
+            color: #636e72;
+        }
+
+        .hat-options {
+            display: flex;
+            gap: 8px;
+        }
+
+        .hat-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 3px solid transparent;
+            background: #f8f9fa;
+            cursor: pointer;
+            font-size: 1.3rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.2s;
+        }
+
+        .hat-btn:hover {
+            transform: scale(1.15);
+        }
+
+        .hat-btn.active {
+            border-color: #00b894;
+        }
+
+        .hat-btn.locked {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        /* Sparkles */
+        .sparkle {
+            position: absolute;
+            width: 25px;
+            height: 25px;
+            pointer-events: none;
+            z-index: 200;
+        }
+
+        .sparkle::before, .sparkle::after {
+            content: '';
+            position: absolute;
+            background: #ffd700;
+            border-radius: 3px;
+        }
+
+        .sparkle::before {
+            width: 100%;
+            height: 5px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        .sparkle::after {
+            width: 5px;
+            height: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .sparkle {
+            animation: sparkleAnim 0.7s ease-out forwards;
+        }
+
+        @keyframes sparkleAnim {
+            0% { transform: scale(0) rotate(0deg); opacity: 1; }
+            100% { transform: scale(2) rotate(45deg); opacity: 0; }
+        }
+
+        /* Confetti */
+        .confetti {
+            position: fixed;
+            width: 12px;
+            height: 12px;
+            z-index: 300;
+            animation: confettiFall 3s linear forwards;
+        }
+
+        @keyframes confettiFall {
+            0% { transform: translateY(-50px) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+        }
+
+        /* Floating text */
+        .float-text {
+            position: fixed;
+            font-family: 'Bubblegum Sans', cursive;
+            font-size: clamp(1.5rem, 5vw, 2.5rem);
+            pointer-events: none;
+            z-index: 250;
+            animation: floatUp 1.5s ease-out forwards;
+        }
+
+        @keyframes floatUp {
+            0% { transform: translateY(0) scale(0.5); opacity: 1; }
+            100% { transform: translateY(-100px) scale(1.2); opacity: 0; }
+        }
+
+        /* Action effects */
+        .water-spray {
+            position: absolute;
+            font-size: 3rem;
+            animation: sprayWater 1s ease-out forwards;
+        }
+
+        @keyframes sprayWater {
+            0% { transform: translateX(0) scale(0); opacity: 1; }
+            100% { transform: translateX(100px) scale(1.5); opacity: 0; }
+        }
+
+        .bandage-effect {
+            position: absolute;
+            font-size: 3rem;
+            animation: applyBandage 0.8s ease-out forwards;
+        }
+
+        @keyframes applyBandage {
+            0% { transform: scale(0) rotate(-180deg); opacity: 1; }
+            70% { transform: scale(1.3) rotate(10deg); }
+            100% { transform: scale(1) rotate(0deg); opacity: 1; }
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* Police activity background */
+        .activity-view.police {
+            background: linear-gradient(180deg, #74b9ff 0%, #a8e6cf 100%);
+        }
+
+        /* Fire activity background */
+        .activity-view.fire {
+            background: linear-gradient(180deg, #ff7675 0%, #fdcb6e 100%);
+        }
+
+        /* Ambulance activity background */
+        .activity-view.ambulance {
+            background: linear-gradient(180deg, #81ecec 0%, #a8e6cf 100%);
+        }
+
+        /* Mobile adjustments */
+        @media (max-width: 600px) {
+            .stations {
+                gap: 15px;
+            }
+
+            .building {
+                width: 100px;
+                height: 120px;
+            }
+
+            .building-icon {
+                font-size: 2.5rem;
+            }
+
+            .station-label {
+                padding: 8px 15px;
+                font-size: 0.75rem;
+            }
+
+            .stats {
+                top: auto;
+                bottom: 70px;
+                right: 50%;
+                transform: translateX(50%);
+            }
+
+            .customize-panel {
+                bottom: 120px;
+                flex-wrap: wrap;
+                justify-content: center;
+                max-width: 90%;
+            }
+
+            .target {
+                width: 90px;
+                height: 90px;
+            }
+        }
+
+        @media (max-height: 600px) {
+            .hub-view {
+                padding: 80px 15px 100px;
+            }
+
+            .building {
+                height: 100px;
+            }
+
+            .scenario {
+                padding: 15px 25px;
+            }
+
+            .scenario-icon {
+                font-size: 3rem;
+                margin-bottom: 10px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="game-container" id="gameContainer">
+        <!-- Sky and scenery -->
+        <div class="sky"></div>
+        <div class="sun"></div>
+        <div class="cloud cloud-1"></div>
+        <div class="cloud cloud-2"></div>
+        <div class="ground"></div>
+        <div class="road"></div>
+
+        <!-- Header -->
+        <div class="header">
+            <h1 class="title">Community Helpers!</h1>
+            <p class="subtitle">Choose a station to help!</p>
+        </div>
+
+        <!-- Stats -->
+        <div class="stats">
+            <div class="stat">
+                <span class="stat-icon">⭐</span>
+                <span class="stat-value" id="starCount">0</span>
+            </div>
+        </div>
+
+        <!-- Home button -->
+        <a href="index.html" class="home-btn">🏠 Home</a>
+
+        <!-- Sound toggle -->
+        <button class="sound-toggle" id="soundToggle">🔊</button>
+
+        <!-- HUB VIEW - Station Selection -->
+        <div class="hub-view" id="hubView">
+            <div class="stations">
+                <!-- Police Station -->
+                <div class="station" onclick="enterStation('police')">
+                    <div class="building police-building">
+                        <div class="building-icon">🚓</div>
+                        <div class="building-door"></div>
+                    </div>
+                    <div class="station-label police-label">Police Station</div>
+                </div>
+
+                <!-- Fire Station -->
+                <div class="station" onclick="enterStation('fire')">
+                    <div class="building fire-building">
+                        <div class="building-icon">🚒</div>
+                        <div class="building-door"></div>
+                    </div>
+                    <div class="station-label fire-label">Fire Station</div>
+                </div>
+
+                <!-- Ambulance Station -->
+                <div class="station" onclick="enterStation('ambulance')">
+                    <div class="building ambulance-building">
+                        <div class="building-icon">🚑</div>
+                        <div class="building-door"></div>
+                    </div>
+                    <div class="station-label ambulance-label">Ambulance Station</div>
+                </div>
+            </div>
+
+            <!-- Customization panel -->
+            <div class="customize-panel">
+                <span class="customize-label">Vehicle Hats:</span>
+                <div class="hat-options" id="hatOptions"></div>
+            </div>
+        </div>
+
+        <!-- POLICE ACTIVITY VIEW -->
+        <div class="activity-view police" id="policeView">
+            <div class="activity-header">
+                <button class="back-btn" onclick="goBack()">⬅️ Back</button>
+                <h2 class="activity-title">🚓 Find & Help!</h2>
+                <div></div>
+            </div>
+
+            <div class="activity-area">
+                <div class="scenario" id="policeScenario">
+                    <div class="scenario-icon" id="policeScenarioIcon">🐶</div>
+                    <div class="scenario-text" id="policeScenarioText">Oh no! A puppy is lost!</div>
+                    <div class="scenario-hint">Click where the puppy might be hiding!</div>
+                </div>
+
+                <div class="targets" id="policeTargets">
+                    <!-- Targets will be generated by JS -->
+                </div>
+
+                <div class="vehicle-area">
+                    <div class="vehicle" id="policeVehicle">🚓</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- FIRE ACTIVITY VIEW -->
+        <div class="activity-view fire" id="fireView">
+            <div class="activity-header">
+                <button class="back-btn" onclick="goBack()">⬅️ Back</button>
+                <h2 class="activity-title">🚒 Put Out Fires!</h2>
+                <div></div>
+            </div>
+
+            <div class="activity-area">
+                <div class="scenario" id="fireScenario">
+                    <div class="scenario-icon" id="fireScenarioIcon">🔥</div>
+                    <div class="scenario-text" id="fireScenarioText">A campfire needs to be put out!</div>
+                    <div class="scenario-hint">Click the fire to spray water!</div>
+                </div>
+
+                <div class="targets" id="fireTargets">
+                    <!-- Targets will be generated by JS -->
+                </div>
+
+                <div class="vehicle-area">
+                    <div class="vehicle" id="fireVehicle">🚒</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- AMBULANCE ACTIVITY VIEW -->
+        <div class="activity-view ambulance" id="ambulanceView">
+            <div class="activity-header">
+                <button class="back-btn" onclick="goBack()">⬅️ Back</button>
+                <h2 class="activity-title">🚑 Care & Comfort!</h2>
+                <div></div>
+            </div>
+
+            <div class="activity-area">
+                <div class="scenario" id="ambulanceScenario">
+                    <div class="scenario-icon" id="ambulanceScenarioIcon">🧸</div>
+                    <div class="scenario-text" id="ambulanceScenarioText">Teddy is feeling tired!</div>
+                    <div class="scenario-hint">Click to help teddy feel better!</div>
+                </div>
+
+                <div class="targets" id="ambulanceTargets">
+                    <!-- Targets will be generated by JS -->
+                </div>
+
+                <div class="vehicle-area">
+                    <div class="vehicle" id="ambulanceVehicle">🚑</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Success overlay -->
+        <div class="success-overlay" id="successOverlay">
+            <div class="success-card">
+                <div class="success-icon" id="successIcon">🎉</div>
+                <div class="success-text" id="successText">Great Job!</div>
+                <div class="success-message" id="successMessage">You helped someone today!</div>
+                <div class="success-reward">
+                    <span>+1</span>
+                    <span>⭐</span>
+                </div>
+                <button class="continue-btn" onclick="continueHelping()">Help More!</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Audio context
+        let audioCtx = null;
+        let soundEnabled = true;
+
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+        }
+
+        function playSound(type) {
+            if (!soundEnabled || !audioCtx) return;
+
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            switch (type) {
+                case 'click':
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(600, audioCtx.currentTime);
+                    osc.frequency.setValueAtTime(800, audioCtx.currentTime + 0.1);
+                    gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.15);
+                    break;
+                case 'success':
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(523, audioCtx.currentTime);
+                    osc.frequency.setValueAtTime(659, audioCtx.currentTime + 0.1);
+                    osc.frequency.setValueAtTime(784, audioCtx.currentTime + 0.2);
+                    osc.frequency.setValueAtTime(1047, audioCtx.currentTime + 0.3);
+                    gain.gain.setValueAtTime(0.25, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.5);
+                    break;
+                case 'honk':
+                    osc.type = 'square';
+                    osc.frequency.setValueAtTime(400, audioCtx.currentTime);
+                    osc.frequency.setValueAtTime(350, audioCtx.currentTime + 0.15);
+                    osc.frequency.setValueAtTime(400, audioCtx.currentTime + 0.3);
+                    gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.4);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.4);
+                    break;
+                case 'siren':
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(600, audioCtx.currentTime);
+                    osc.frequency.setValueAtTime(800, audioCtx.currentTime + 0.2);
+                    osc.frequency.setValueAtTime(600, audioCtx.currentTime + 0.4);
+                    osc.frequency.setValueAtTime(800, audioCtx.currentTime + 0.6);
+                    gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.8);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.8);
+                    break;
+                case 'water':
+                    osc.type = 'sine';
+                    for (let i = 0; i < 5; i++) {
+                        const t = audioCtx.currentTime + i * 0.1;
+                        osc.frequency.setValueAtTime(200 + Math.random() * 300, t);
+                    }
+                    gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.5);
+                    break;
+                case 'care':
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(440, audioCtx.currentTime);
+                    osc.frequency.setValueAtTime(554, audioCtx.currentTime + 0.15);
+                    osc.frequency.setValueAtTime(659, audioCtx.currentTime + 0.3);
+                    gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.5);
+                    break;
+                case 'unlock':
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(523, audioCtx.currentTime);
+                    osc.frequency.setValueAtTime(659, audioCtx.currentTime + 0.12);
+                    osc.frequency.setValueAtTime(784, audioCtx.currentTime + 0.24);
+                    osc.frequency.setValueAtTime(1047, audioCtx.currentTime + 0.36);
+                    gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.6);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.6);
+                    break;
+            }
+        }
+
+        document.getElementById('soundToggle').addEventListener('click', () => {
+            soundEnabled = !soundEnabled;
+            const btn = document.getElementById('soundToggle');
+            btn.textContent = soundEnabled ? '🔊' : '🔇';
+            btn.classList.toggle('muted', !soundEnabled);
+        });
+
+        // Game state
+        let currentStation = null;
+        let stars = 0;
+        let currentHat = '';
+        const unlockedHats = [''];
+        let helpCount = 0;
+
+        const allHats = [
+            { emoji: '', name: 'None', stars: 0 },
+            { emoji: '🎩', name: 'Top Hat', stars: 3 },
+            { emoji: '👑', name: 'Crown', stars: 5 },
+            { emoji: '🎀', name: 'Bow', stars: 8 },
+            { emoji: '⭐', name: 'Star', stars: 10 },
+            { emoji: '🌈', name: 'Rainbow', stars: 15 },
+            { emoji: '🦋', name: 'Butterfly', stars: 20 },
+            { emoji: '🎪', name: 'Party', stars: 25 }
+        ];
+
+        // Scenarios
+        const policeScenarios = [
+            {
+                icon: '🐶',
+                text: 'Oh no! A puppy is lost!',
+                hint: 'Click where the puppy might be hiding!',
+                targets: [
+                    { icon: '🌳', label: 'Tree', correct: false },
+                    { icon: '🏠', label: 'Doghouse', correct: true },
+                    { icon: '🚗', label: 'Car', correct: false }
+                ],
+                successIcon: '🐶',
+                successText: 'Puppy Found!',
+                successMessage: 'The puppy is so happy to be home!'
+            },
+            {
+                icon: '🧸',
+                text: 'Someone lost their teddy bear!',
+                hint: 'Click where the teddy might be!',
+                targets: [
+                    { icon: '🛝', label: 'Playground', correct: true },
+                    { icon: '🏪', label: 'Store', correct: false },
+                    { icon: '🌸', label: 'Garden', correct: false }
+                ],
+                successIcon: '🧸',
+                successText: 'Teddy Found!',
+                successMessage: 'The child is so happy!'
+            },
+            {
+                icon: '🚲',
+                text: 'A bicycle went missing!',
+                hint: 'Where could it be?',
+                targets: [
+                    { icon: '🏫', label: 'School', correct: false },
+                    { icon: '🏕️', label: 'Park', correct: true },
+                    { icon: '🏠', label: 'House', correct: false }
+                ],
+                successIcon: '🚲',
+                successText: 'Bike Found!',
+                successMessage: 'Great detective work!'
+            }
+        ];
+
+        const fireScenarios = [
+            {
+                icon: '🔥',
+                text: 'A campfire needs to be put out!',
+                hint: 'Click to spray water!',
+                targets: [
+                    { icon: '🔥🏕️', label: 'Campfire', correct: true }
+                ],
+                successIcon: '💨',
+                successText: 'Fire Out!',
+                successMessage: 'The campfire is safe now!'
+            },
+            {
+                icon: '🔥',
+                text: 'The barbecue grill is too hot!',
+                hint: 'Click to cool it down!',
+                targets: [
+                    { icon: '🔥🍖', label: 'Barbecue', correct: true }
+                ],
+                successIcon: '💨',
+                successText: 'All Cool!',
+                successMessage: 'Now we can cook safely!'
+            },
+            {
+                icon: '🔥',
+                text: 'Some leaves caught fire!',
+                hint: 'Quick, spray the water!',
+                targets: [
+                    { icon: '🔥🍂', label: 'Leaves', correct: true }
+                ],
+                successIcon: '💨',
+                successText: 'Fire Gone!',
+                successMessage: 'The garden is safe!'
+            }
+        ];
+
+        const ambulanceScenarios = [
+            {
+                icon: '🧸',
+                text: 'Teddy is feeling tired and needs rest!',
+                hint: 'Click to help teddy feel better!',
+                targets: [
+                    { icon: '🛏️', label: 'Cozy Bed', correct: true },
+                    { icon: '🤗', label: 'Big Hug', correct: true },
+                    { icon: '⭐', label: 'Gold Star', correct: true }
+                ],
+                successIcon: '🧸💤',
+                successText: 'Teddy Feels Better!',
+                successMessage: 'Thank you for the care!'
+            },
+            {
+                icon: '🤕',
+                text: 'Someone has a small scrape!',
+                hint: 'Click to help them feel better!',
+                targets: [
+                    { icon: '🩹', label: 'Bandage', correct: true },
+                    { icon: '💝', label: 'Love', correct: true },
+                    { icon: '🌟', label: 'Sticker', correct: true }
+                ],
+                successIcon: '😊',
+                successText: 'All Better!',
+                successMessage: 'A bandage and love helps!'
+            },
+            {
+                icon: '😢',
+                text: 'Someone is feeling sad!',
+                hint: 'What can make them happy?',
+                targets: [
+                    { icon: '🤗', label: 'Hug', correct: true },
+                    { icon: '🎈', label: 'Balloon', correct: true },
+                    { icon: '🍪', label: 'Cookie', correct: true }
+                ],
+                successIcon: '😄',
+                successText: 'Happy Again!',
+                successMessage: 'Kindness makes everyone smile!'
+            }
+        ];
+
+        let currentScenario = null;
+
+        // Initialize hat options
+        function updateHatOptions() {
+            const container = document.getElementById('hatOptions');
+            container.innerHTML = '';
+
+            allHats.forEach(hat => {
+                const btn = document.createElement('button');
+                btn.className = 'hat-btn' + (currentHat === hat.emoji ? ' active' : '') + (!unlockedHats.includes(hat.emoji) ? ' locked' : '');
+                btn.textContent = hat.emoji || '❌';
+                btn.title = hat.name + (hat.stars > 0 ? ` (${hat.stars} stars)` : '');
+
+                if (unlockedHats.includes(hat.emoji)) {
+                    btn.onclick = () => {
+                        currentHat = hat.emoji;
+                        updateHatOptions();
+                        playSound('click');
+                    };
+                }
+
+                container.appendChild(btn);
+            });
+        }
+
+        // Check for new unlocks
+        function checkUnlocks() {
+            allHats.forEach(hat => {
+                if (stars >= hat.stars && !unlockedHats.includes(hat.emoji)) {
+                    unlockedHats.push(hat.emoji);
+                    showUnlockNotification(hat);
+                }
+            });
+            updateHatOptions();
+        }
+
+        function showUnlockNotification(hat) {
+            playSound('unlock');
+
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background: white;
+                padding: 30px 50px;
+                border-radius: 30px;
+                text-align: center;
+                z-index: 600;
+                box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+                animation: successPop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            `;
+            notification.innerHTML = `
+                <div style="font-size: 4rem; animation: successBounce 0.6s ease infinite;">${hat.emoji || '🎉'}</div>
+                <div style="font-family: 'Bubblegum Sans', cursive; font-size: 1.8rem; color: #e17055; margin: 10px 0;">New Hat!</div>
+                <div style="color: #636e72; font-weight: 700;">${hat.name} Unlocked!</div>
+            `;
+
+            document.body.appendChild(notification);
+            createConfetti();
+
+            setTimeout(() => notification.remove(), 2500);
+        }
+
+        // Station functions
+        function enterStation(station) {
+            initAudio();
+            playSound('click');
+            currentStation = station;
+
+            document.getElementById('hubView').classList.add('hidden');
+            document.getElementById(station + 'View').classList.add('active');
+
+            // Load a random scenario
+            loadScenario(station);
+
+            // Animate vehicle entering
+            const vehicle = document.getElementById(station + 'Vehicle');
+            vehicle.classList.add('driving');
+            setTimeout(() => vehicle.classList.remove('driving'), 1000);
+        }
+
+        function goBack() {
+            playSound('click');
+
+            if (currentStation) {
+                document.getElementById(currentStation + 'View').classList.remove('active');
+            }
+            document.getElementById('hubView').classList.remove('hidden');
+            document.getElementById('successOverlay').classList.remove('active');
+
+            currentStation = null;
+        }
+
+        function loadScenario(station) {
+            let scenarios, scenarioEl, iconEl, textEl, targetsEl;
+
+            switch (station) {
+                case 'police':
+                    scenarios = policeScenarios;
+                    scenarioEl = document.getElementById('policeScenario');
+                    iconEl = document.getElementById('policeScenarioIcon');
+                    textEl = document.getElementById('policeScenarioText');
+                    targetsEl = document.getElementById('policeTargets');
+                    break;
+                case 'fire':
+                    scenarios = fireScenarios;
+                    scenarioEl = document.getElementById('fireScenario');
+                    iconEl = document.getElementById('fireScenarioIcon');
+                    textEl = document.getElementById('fireScenarioText');
+                    targetsEl = document.getElementById('fireTargets');
+                    break;
+                case 'ambulance':
+                    scenarios = ambulanceScenarios;
+                    scenarioEl = document.getElementById('ambulanceScenario');
+                    iconEl = document.getElementById('ambulanceScenarioIcon');
+                    textEl = document.getElementById('ambulanceScenarioText');
+                    targetsEl = document.getElementById('ambulanceTargets');
+                    break;
+            }
+
+            currentScenario = scenarios[Math.floor(Math.random() * scenarios.length)];
+
+            iconEl.textContent = currentScenario.icon;
+            textEl.textContent = currentScenario.text;
+
+            // Generate targets
+            targetsEl.innerHTML = '';
+            currentScenario.targets.forEach((target, index) => {
+                const targetEl = document.createElement('div');
+                targetEl.className = 'target';
+                targetEl.innerHTML = `
+                    <div class="target-icon">${target.icon}</div>
+                    <div class="target-label">${target.label}</div>
+                `;
+                targetEl.onclick = () => handleTargetClick(target, targetEl, station);
+                targetsEl.appendChild(targetEl);
+            });
+        }
+
+        function handleTargetClick(target, targetEl, station) {
+            initAudio();
+
+            if (target.correct) {
+                // Success!
+                targetEl.classList.add('correct');
+
+                // Play appropriate sound
+                switch (station) {
+                    case 'police':
+                        playSound('honk');
+                        break;
+                    case 'fire':
+                        playSound('water');
+                        createWaterEffect(targetEl);
+                        break;
+                    case 'ambulance':
+                        playSound('care');
+                        createCareEffect(targetEl);
+                        break;
+                }
+
+                // Celebrate vehicle
+                const vehicle = document.getElementById(station + 'Vehicle');
+                vehicle.classList.add('celebrating');
+
+                // Create sparkles
+                createSparkles(targetEl);
+
+                // Show success after delay
+                setTimeout(() => {
+                    showSuccess();
+                    vehicle.classList.remove('celebrating');
+                }, 1200);
+
+            } else {
+                // Gentle "try again" - just wiggle
+                targetEl.style.animation = 'none';
+                targetEl.offsetHeight;
+                targetEl.style.animation = 'shake 0.5s ease';
+                playSound('click');
+
+                showFloatText(targetEl, 'Try another!', '#636e72');
+            }
+        }
+
+        function createWaterEffect(targetEl) {
+            const rect = targetEl.getBoundingClientRect();
+
+            for (let i = 0; i < 5; i++) {
+                setTimeout(() => {
+                    const water = document.createElement('div');
+                    water.className = 'water-spray';
+                    water.textContent = '💧';
+                    water.style.left = (rect.left - 50) + 'px';
+                    water.style.top = (rect.top + Math.random() * 50) + 'px';
+                    document.body.appendChild(water);
+                    setTimeout(() => water.remove(), 1000);
+                }, i * 100);
+            }
+
+            // Change fire to smoke
+            setTimeout(() => {
+                targetEl.querySelector('.target-icon').textContent = '💨';
+            }, 500);
+        }
+
+        function createCareEffect(targetEl) {
+            const rect = targetEl.getBoundingClientRect();
+            const effects = ['💝', '🩹', '⭐', '🤗'];
+            const effect = effects[Math.floor(Math.random() * effects.length)];
+
+            const el = document.createElement('div');
+            el.className = 'bandage-effect';
+            el.textContent = effect;
+            el.style.left = (rect.left + rect.width / 2 - 25) + 'px';
+            el.style.top = (rect.top + rect.height / 2 - 25) + 'px';
+            document.body.appendChild(el);
+            setTimeout(() => el.remove(), 1500);
+        }
+
+        function createSparkles(element) {
+            const rect = element.getBoundingClientRect();
+
+            for (let i = 0; i < 8; i++) {
+                setTimeout(() => {
+                    const sparkle = document.createElement('div');
+                    sparkle.className = 'sparkle';
+                    sparkle.style.left = (rect.left + Math.random() * rect.width) + 'px';
+                    sparkle.style.top = (rect.top + Math.random() * rect.height) + 'px';
+                    document.body.appendChild(sparkle);
+                    setTimeout(() => sparkle.remove(), 700);
+                }, i * 60);
+            }
+        }
+
+        function showFloatText(element, text, color) {
+            const rect = element.getBoundingClientRect();
+            const el = document.createElement('div');
+            el.className = 'float-text';
+            el.textContent = text;
+            el.style.left = (rect.left + rect.width / 2) + 'px';
+            el.style.top = rect.top + 'px';
+            el.style.color = color;
+            el.style.transform = 'translateX(-50%)';
+            document.body.appendChild(el);
+            setTimeout(() => el.remove(), 1500);
+        }
+
+        function createConfetti() {
+            const colors = ['#ff7675', '#74b9ff', '#ffeaa7', '#55efc4', '#a29bfe', '#fd79a8'];
+
+            for (let i = 0; i < 50; i++) {
+                setTimeout(() => {
+                    const confetti = document.createElement('div');
+                    confetti.className = 'confetti';
+                    confetti.style.left = Math.random() * 100 + '%';
+                    confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
+                    confetti.style.borderRadius = Math.random() > 0.5 ? '50%' : '0';
+                    document.body.appendChild(confetti);
+                    setTimeout(() => confetti.remove(), 3000);
+                }, i * 40);
+            }
+        }
+
+        function showSuccess() {
+            // Award star
+            stars++;
+            document.getElementById('starCount').textContent = stars;
+            helpCount++;
+
+            // Update success overlay
+            document.getElementById('successIcon').textContent = currentScenario.successIcon;
+            document.getElementById('successText').textContent = currentScenario.successText;
+            document.getElementById('successMessage').textContent = currentScenario.successMessage;
+
+            document.getElementById('successOverlay').classList.add('active');
+
+            playSound('success');
+            playSound('siren');
+            createConfetti();
+
+            // Check for unlocks
+            checkUnlocks();
+        }
+
+        function continueHelping() {
+            playSound('click');
+            document.getElementById('successOverlay').classList.remove('active');
+
+            // Load new scenario
+            if (currentStation) {
+                loadScenario(currentStation);
+            }
+        }
+
+        // Add shake animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes shake {
+                0%, 100% { transform: translateX(0); }
+                20%, 60% { transform: translateX(-10px); }
+                40%, 80% { transform: translateX(10px); }
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Initialize
+        updateHatOptions();
+    </script>
+</body>
+
+</html>

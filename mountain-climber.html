@@ -1,0 +1,1728 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Mountain Climber - Happy Truck Adventure!</title>
+    <link href="https://fonts.googleapis.com/css2?family=Bubblegum+Sans&family=Nunito:wght@700;800&display=swap"
+        rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html {
+            overflow: hidden;
+        }
+
+        body {
+            font-family: 'Nunito', sans-serif;
+            overflow: hidden;
+            touch-action: manipulation;
+        }
+
+        .game-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Sky gradient - changes based on height */
+        .sky {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(180deg, #74b9ff 0%, #a8e6cf 100%);
+            transition: background 2s ease;
+        }
+
+        .sky.sunset {
+            background: linear-gradient(180deg, #fd79a8 0%, #fdcb6e 50%, #74b9ff 100%);
+        }
+
+        .sky.rainbow {
+            background: linear-gradient(180deg, #a29bfe 0%, #74b9ff 25%, #55efc4 50%, #ffeaa7 75%, #fab1a0 100%);
+        }
+
+        /* Sun */
+        .sun {
+            position: absolute;
+            top: 30px;
+            right: 60px;
+            width: 100px;
+            height: 100px;
+            background: radial-gradient(circle at 40% 40%, #fff9c4, #ffd93d);
+            border-radius: 50%;
+            box-shadow: 0 0 80px rgba(255, 217, 61, 0.8);
+            animation: sunPulse 3s ease-in-out infinite;
+        }
+
+        .sun::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 4rem;
+        }
+
+        @keyframes sunPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        /* Clouds */
+        .cloud {
+            position: absolute;
+            background: white;
+            border-radius: 50px;
+            opacity: 0.9;
+            animation: floatCloud 30s linear infinite;
+        }
+
+        .cloud::before, .cloud::after {
+            content: '';
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+        }
+
+        .cloud-1 {
+            width: 120px;
+            height: 50px;
+            top: 80px;
+            left: -150px;
+        }
+
+        .cloud-1::before {
+            width: 60px;
+            height: 60px;
+            top: -30px;
+            left: 20px;
+        }
+
+        .cloud-1::after {
+            width: 45px;
+            height: 45px;
+            top: -18px;
+            left: 65px;
+        }
+
+        .cloud-2 {
+            width: 100px;
+            height: 40px;
+            top: 140px;
+            left: -250px;
+            animation-delay: -15s;
+        }
+
+        .cloud-2::before {
+            width: 50px;
+            height: 50px;
+            top: -25px;
+            left: 15px;
+        }
+
+        .cloud-2::after {
+            width: 35px;
+            height: 35px;
+            top: -12px;
+            left: 55px;
+        }
+
+        @keyframes floatCloud {
+            from { transform: translateX(0); }
+            to { transform: translateX(calc(100vw + 300px)); }
+        }
+
+        /* Game canvas area */
+        .game-world {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 100%;
+        }
+
+        /* Mountain/ground - drawn with canvas */
+        #gameCanvas {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            display: block;
+        }
+
+        /* UI Elements */
+        .game-ui {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            z-index: 100;
+            pointer-events: none;
+        }
+
+        .home-btn {
+            position: fixed;
+            top: 15px;
+            left: 15px;
+            z-index: 1000;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.85));
+            border: 3px solid #ffd93d;
+            color: #2d3436;
+            padding: 10px 18px;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: 700;
+            text-decoration: none;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            pointer-events: all;
+        }
+
+        .home-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .stats-panel {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+        }
+
+        .stat-item {
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.85));
+            padding: 12px 20px;
+            border-radius: 50px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            font-weight: 800;
+            font-size: clamp(1rem, 3vw, 1.3rem);
+        }
+
+        .stat-item .icon {
+            font-size: clamp(1.3rem, 4vw, 1.8rem);
+        }
+
+        .stat-item .value {
+            color: #e17055;
+        }
+
+        /* Height indicator */
+        .height-indicator {
+            position: fixed;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.7));
+            padding: 15px 12px;
+            border-radius: 30px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            z-index: 100;
+        }
+
+        .height-bar {
+            width: 20px;
+            height: 150px;
+            background: #dfe6e9;
+            border-radius: 10px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .height-fill {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(180deg, #fd79a8, #e17055, #fdcb6e, #55efc4);
+            border-radius: 10px;
+            transition: height 0.3s ease;
+        }
+
+        .height-label {
+            font-size: 0.8rem;
+            font-weight: 800;
+            color: #636e72;
+            writing-mode: vertical-rl;
+            text-orientation: mixed;
+            transform: rotate(180deg);
+        }
+
+        /* Big play button */
+        .play-button {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(180deg, #00b894, #00a085);
+            color: white;
+            border: none;
+            padding: 25px 60px;
+            font-size: clamp(1.5rem, 5vw, 2.2rem);
+            border-radius: 60px;
+            cursor: pointer;
+            font-family: 'Bubblegum Sans', cursive;
+            box-shadow: 0 8px 0 #007a63, 0 15px 40px rgba(0, 184, 148, 0.4);
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            transition: transform 0.1s, box-shadow 0.1s;
+            -webkit-touch-callout: none;
+        }
+
+        .play-button:active, .play-button.pressed {
+            transform: translateX(-50%) translateY(5px);
+            box-shadow: 0 3px 0 #007a63, 0 8px 20px rgba(0, 184, 148, 0.4);
+        }
+
+        .play-button .icon {
+            font-size: clamp(2rem, 6vw, 2.8rem);
+            animation: truckBounce 0.5s ease-in-out infinite;
+        }
+
+        @keyframes truckBounce {
+            0%, 100% { transform: translateY(0) rotate(-3deg); }
+            50% { transform: translateY(-5px) rotate(3deg); }
+        }
+
+        /* Instruction text */
+        .instruction {
+            position: fixed;
+            bottom: 120px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 255, 255, 0.95);
+            padding: 15px 30px;
+            border-radius: 30px;
+            font-size: clamp(1rem, 3vw, 1.3rem);
+            font-weight: 700;
+            color: #2d3436;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            z-index: 100;
+            text-align: center;
+            animation: bounce 2s ease-in-out infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateX(-50%) translateY(0); }
+            50% { transform: translateX(-50%) translateY(-10px); }
+        }
+
+        /* Cheering animals */
+        .animal {
+            position: absolute;
+            font-size: clamp(2rem, 6vw, 3rem);
+            animation: animalCheer 1s ease-in-out infinite;
+            filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
+            z-index: 10;
+        }
+
+        @keyframes animalCheer {
+            0%, 100% { transform: translateY(0) rotate(-5deg); }
+            50% { transform: translateY(-10px) rotate(5deg); }
+        }
+
+        /* Collectible sparkle effect */
+        .sparkle {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            pointer-events: none;
+            z-index: 200;
+        }
+
+        .sparkle::before, .sparkle::after {
+            content: '';
+            position: absolute;
+            background: #ffd700;
+            border-radius: 3px;
+        }
+
+        .sparkle::before {
+            width: 100%;
+            height: 6px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        .sparkle::after {
+            width: 6px;
+            height: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .sparkle {
+            animation: sparkleAnim 0.6s ease-out forwards;
+        }
+
+        @keyframes sparkleAnim {
+            0% { transform: scale(0) rotate(0deg); opacity: 1; }
+            100% { transform: scale(2.5) rotate(45deg); opacity: 0; }
+        }
+
+        /* Floating collect text */
+        .collect-text {
+            position: absolute;
+            font-family: 'Bubblegum Sans', cursive;
+            font-size: clamp(1.5rem, 5vw, 2.2rem);
+            color: #ffd700;
+            text-shadow: 0 3px 0 rgba(0, 0, 0, 0.2), 0 0 20px rgba(255, 215, 0, 0.6);
+            pointer-events: none;
+            z-index: 200;
+            animation: floatUp 1.2s ease-out forwards;
+            white-space: nowrap;
+        }
+
+        /* Big air indicator */
+        .big-air {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-family: 'Bubblegum Sans', cursive;
+            font-size: clamp(3rem, 10vw, 5rem);
+            color: #ff6b6b;
+            text-shadow: 0 4px 0 rgba(0, 0, 0, 0.2), 0 0 30px rgba(255, 107, 107, 0.6);
+            pointer-events: none;
+            z-index: 200;
+            animation: bigAirPop 1.5s ease-out forwards;
+            white-space: nowrap;
+        }
+
+        @keyframes bigAirPop {
+            0% { transform: translate(-50%, -50%) scale(0) rotate(-10deg); opacity: 1; }
+            30% { transform: translate(-50%, -50%) scale(1.3) rotate(5deg); opacity: 1; }
+            100% { transform: translate(-50%, -50%) scale(1) rotate(0deg) translateY(-50px); opacity: 0; }
+        }
+
+        /* Jump trail */
+        .jump-trail {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 5;
+            animation: trailFade 0.8s ease-out forwards;
+        }
+
+        @keyframes trailFade {
+            0% { transform: scale(1); opacity: 0.8; }
+            100% { transform: scale(0); opacity: 0; }
+        }
+
+        @keyframes floatUp {
+            0% { transform: translateY(0) scale(0.5); opacity: 1; }
+            100% { transform: translateY(-80px) scale(1.2); opacity: 0; }
+        }
+
+        /* Unlock notification */
+        .unlock-notification {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(180deg, #fff, #f8f9fa);
+            padding: 30px 50px;
+            border-radius: 30px;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            z-index: 500;
+            animation: unlockPop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes unlockPop {
+            0% { transform: translate(-50%, -50%) scale(0); }
+            70% { transform: translate(-50%, -50%) scale(1.1); }
+            100% { transform: translate(-50%, -50%) scale(1); }
+        }
+
+        .unlock-notification h2 {
+            font-family: 'Bubblegum Sans', cursive;
+            font-size: clamp(1.8rem, 6vw, 2.5rem);
+            color: #e17055;
+            margin-bottom: 10px;
+        }
+
+        .unlock-notification .unlock-item {
+            font-size: clamp(3rem, 10vw, 5rem);
+            margin: 15px 0;
+            animation: unlockBounce 0.5s ease infinite;
+        }
+
+        @keyframes unlockBounce {
+            0%, 100% { transform: scale(1) rotate(-5deg); }
+            50% { transform: scale(1.1) rotate(5deg); }
+        }
+
+        .unlock-notification p {
+            font-size: clamp(1rem, 3vw, 1.3rem);
+            color: #636e72;
+            font-weight: 700;
+        }
+
+        /* Sound toggle */
+        .sound-toggle {
+            position: fixed;
+            top: 15px;
+            right: 15px;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.95);
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            z-index: 1000;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+            pointer-events: all;
+        }
+
+        .sound-toggle.muted {
+            opacity: 0.5;
+        }
+
+        /* Truck customization panel */
+        .customize-panel {
+            position: fixed;
+            top: 80px;
+            right: 15px;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 15px;
+            border-radius: 20px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .customize-label {
+            font-size: 0.85rem;
+            font-weight: 800;
+            color: #636e72;
+            text-align: center;
+        }
+
+        .color-options, .hat-options {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .color-btn, .hat-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 3px solid transparent;
+            cursor: pointer;
+            transition: transform 0.2s, border-color 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+        }
+
+        .color-btn:hover, .hat-btn:hover {
+            transform: scale(1.15);
+        }
+
+        .color-btn.active, .hat-btn.active {
+            border-color: #2d3436;
+        }
+
+        .color-btn.locked, .hat-btn.locked {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* Mobile adjustments */
+        @media (max-width: 600px) {
+            .stats-panel {
+                gap: 10px;
+            }
+
+            .stat-item {
+                padding: 10px 15px;
+            }
+
+            .height-indicator {
+                right: 10px;
+                padding: 10px 8px;
+            }
+
+            .height-bar {
+                height: 100px;
+            }
+
+            .customize-panel {
+                top: auto;
+                bottom: 140px;
+                right: 10px;
+                padding: 10px;
+            }
+
+            .color-btn, .hat-btn {
+                width: 35px;
+                height: 35px;
+                font-size: 1.1rem;
+            }
+
+            .instruction {
+                bottom: 110px;
+                padding: 12px 20px;
+            }
+
+            .play-button {
+                padding: 20px 45px;
+                bottom: 25px;
+            }
+        }
+
+        @media (max-height: 600px) {
+            .height-indicator {
+                display: none;
+            }
+
+            .customize-panel {
+                flex-direction: row;
+                top: 70px;
+                right: 50%;
+                transform: translateX(50%);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="game-container" id="gameContainer">
+        <!-- Sky -->
+        <div class="sky" id="sky"></div>
+        <div class="sun"></div>
+        <div class="cloud cloud-1"></div>
+        <div class="cloud cloud-2"></div>
+
+        <!-- Game world -->
+        <div class="game-world">
+            <canvas id="gameCanvas"></canvas>
+        </div>
+
+        <!-- UI -->
+        <div class="game-ui">
+            <div></div>
+            <div class="stats-panel">
+                <div class="stat-item">
+                    <span class="icon">⭐</span>
+                    <span class="value" id="starCount">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="icon">🎈</span>
+                    <span class="value" id="balloonCount">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="icon">😊</span>
+                    <span class="value" id="smileyCount">0</span>
+                </div>
+            </div>
+        </div>
+
+        <a href="index.html" class="home-btn">🏠 Home</a>
+        <button class="sound-toggle" id="soundToggle">🔊</button>
+
+        <!-- Height indicator -->
+        <div class="height-indicator">
+            <div class="height-bar">
+                <div class="height-fill" id="heightFill" style="height: 0%"></div>
+            </div>
+            <div class="height-label">HEIGHT</div>
+        </div>
+
+        <!-- Customization panel -->
+        <div class="customize-panel" id="customizePanel">
+            <div class="customize-label">Truck Color</div>
+            <div class="color-options" id="colorOptions"></div>
+            <div class="customize-label">Silly Hats</div>
+            <div class="hat-options" id="hatOptions"></div>
+        </div>
+
+        <!-- Instructions -->
+        <div class="instruction" id="instruction">
+            Hold the button to GO! Hit ramps for BIG JUMPS! 🚚🚀
+        </div>
+
+        <!-- Big play button -->
+        <button class="play-button" id="playButton">
+            <span class="icon">🚚</span>
+            <span>HOLD TO GO!</span>
+        </button>
+    </div>
+
+    <script>
+        // Canvas setup
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        // Audio
+        let audioCtx = null;
+        let soundEnabled = true;
+
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+        }
+
+        function playSound(type) {
+            if (!soundEnabled || !audioCtx) return;
+
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            switch (type) {
+                case 'ding':
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(880, audioCtx.currentTime);
+                    osc.frequency.setValueAtTime(1100, audioCtx.currentTime + 0.1);
+                    osc.frequency.setValueAtTime(1320, audioCtx.currentTime + 0.2);
+                    gain.gain.setValueAtTime(0.25, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.4);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.4);
+                    break;
+                case 'boing':
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(200, audioCtx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(600, audioCtx.currentTime + 0.1);
+                    osc.frequency.exponentialRampToValueAtTime(300, audioCtx.currentTime + 0.2);
+                    gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.25);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.25);
+                    break;
+                case 'vroom':
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(80, audioCtx.currentTime);
+                    osc.frequency.linearRampToValueAtTime(120, audioCtx.currentTime + 0.15);
+                    gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.2);
+                    break;
+                case 'honk':
+                    osc.type = 'square';
+                    osc.frequency.setValueAtTime(400, audioCtx.currentTime);
+                    osc.frequency.setValueAtTime(350, audioCtx.currentTime + 0.15);
+                    gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.3);
+                    break;
+                case 'unlock':
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(523, audioCtx.currentTime);
+                    osc.frequency.setValueAtTime(659, audioCtx.currentTime + 0.15);
+                    osc.frequency.setValueAtTime(784, audioCtx.currentTime + 0.3);
+                    osc.frequency.setValueAtTime(1047, audioCtx.currentTime + 0.45);
+                    gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.7);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.7);
+                    break;
+                case 'engine':
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(60 + Math.random() * 20, audioCtx.currentTime);
+                    gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.1);
+                    break;
+                case 'whoosh':
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(300, audioCtx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(800, audioCtx.currentTime + 0.15);
+                    osc.frequency.exponentialRampToValueAtTime(200, audioCtx.currentTime + 0.4);
+                    gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.4);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.4);
+                    break;
+                case 'launch':
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(100, audioCtx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(400, audioCtx.currentTime + 0.2);
+                    gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.25);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.25);
+                    break;
+            }
+        }
+
+        document.getElementById('soundToggle').addEventListener('click', () => {
+            soundEnabled = !soundEnabled;
+            const btn = document.getElementById('soundToggle');
+            btn.textContent = soundEnabled ? '🔊' : '🔇';
+            btn.classList.toggle('muted', !soundEnabled);
+        });
+
+        // Game state
+        let isPlaying = false;
+        let truckX = 100;
+        let truckY = 0;
+        let truckVelocityX = 0;
+        let truckVelocityY = 0;
+        let cameraX = 0;
+        let maxHeight = 0;
+        let truckAngle = 0;
+        let truckBounce = 0;
+        let truckHappy = 0;
+        let isInAir = false;
+        let airTime = 0;
+        let maxAirTime = 0;
+        let truckSpin = 0;
+        let lastTrailTime = 0;
+        let bigAirShown = false;
+        let landingBoost = 0;
+
+        // Collections
+        let stars = 0;
+        let balloons = 0;
+        let smileys = 0;
+
+        // Customization
+        let currentColor = '#e74c3c';
+        let currentHat = '';
+        const unlockedColors = ['#e74c3c'];
+        const unlockedHats = [''];
+
+        const allColors = [
+            { color: '#e74c3c', name: 'Red', height: 0 },
+            { color: '#3498db', name: 'Blue', height: 100 },
+            { color: '#2ecc71', name: 'Green', height: 200 },
+            { color: '#9b59b6', name: 'Purple', height: 400 },
+            { color: '#f39c12', name: 'Orange', height: 600 },
+            { color: '#1abc9c', name: 'Teal', height: 800 },
+            { color: '#e91e63', name: 'Pink', height: 1000 },
+            { color: '#ffd700', name: 'Gold', height: 1500 }
+        ];
+
+        const allHats = [
+            { emoji: '', name: 'None', height: 0 },
+            { emoji: '🎩', name: 'Top Hat', height: 150 },
+            { emoji: '👑', name: 'Crown', height: 300 },
+            { emoji: '🎀', name: 'Bow', height: 500 },
+            { emoji: '🌸', name: 'Flower', height: 700 },
+            { emoji: '⭐', name: 'Star', height: 900 },
+            { emoji: '🦋', name: 'Butterfly', height: 1200 },
+            { emoji: '🌈', name: 'Rainbow', height: 2000 }
+        ];
+
+        // Mountain terrain
+        const terrainPoints = [];
+        const collectibles = [];
+        const animals = [];
+
+        function generateTerrain() {
+            terrainPoints.length = 0;
+            collectibles.length = 0;
+            animals.length = 0;
+
+            let x = 0;
+            let y = canvas.height - 150;
+            const totalLength = 25000;
+
+            while (x < totalLength) {
+                terrainPoints.push({ x, y });
+
+                // More exciting terrain with big jumps!
+                const segmentType = Math.random();
+                let segmentLength, yChange;
+
+                if (segmentType < 0.25) {
+                    // BIG JUMP RAMP - steep up then flat launch!
+                    segmentLength = 60;
+                    yChange = -(80 + Math.random() * 60); // Steep climb
+                    terrainPoints.push({ x: x + segmentLength, y: y + yChange });
+                    // Flat launch pad at top
+                    x += segmentLength;
+                    y = Math.max(120, y + yChange);
+                    terrainPoints.push({ x: x + 40, y: y });
+                    // Drop off! (creates the jump)
+                    x += 40;
+                    terrainPoints.push({ x: x + 30, y: y + 20 });
+                    // Landing zone (gentle slope down)
+                    x += 30;
+                    segmentLength = 150 + Math.random() * 100;
+                    yChange = 60 + Math.random() * 40;
+
+                    // Add collectibles in the air above the jump!
+                    for (let i = 0; i < 3; i++) {
+                        collectibles.push({
+                            x: x + 40 + i * 50,
+                            y: y - 80 - Math.random() * 60,
+                            type: i === 1 ? 'star' : (Math.random() < 0.5 ? 'balloon' : 'smiley'),
+                            collected: false,
+                            bobOffset: Math.random() * Math.PI * 2
+                        });
+                    }
+                } else if (segmentType < 0.4) {
+                    // MEGA RAMP - long smooth ramp for big air!
+                    segmentLength = 180 + Math.random() * 80;
+                    yChange = -(100 + Math.random() * 50);
+                    // Create smooth curve using multiple points
+                    const steps = 4;
+                    for (let i = 1; i <= steps; i++) {
+                        const progress = i / steps;
+                        const curveY = y + yChange * Math.pow(progress, 0.7); // Ease out curve
+                        terrainPoints.push({ x: x + segmentLength * progress, y: curveY });
+                    }
+                    x += segmentLength;
+                    y = Math.max(100, y + yChange);
+                    // Flat top
+                    terrainPoints.push({ x: x + 50, y: y });
+                    x += 50;
+                    // Gentle landing
+                    segmentLength = 200;
+                    yChange = 80;
+
+                    // Stars at the peak!
+                    collectibles.push({
+                        x: x - 30,
+                        y: y - 100,
+                        type: 'star',
+                        collected: false,
+                        bobOffset: Math.random() * Math.PI * 2
+                    });
+                } else if (segmentType < 0.55) {
+                    // BOUNCY HILLS - series of small bumps
+                    for (let bump = 0; bump < 3; bump++) {
+                        const bumpWidth = 50 + Math.random() * 30;
+                        const bumpHeight = 40 + Math.random() * 30;
+                        terrainPoints.push({ x: x + bumpWidth * 0.5, y: y - bumpHeight });
+                        terrainPoints.push({ x: x + bumpWidth, y: y + 5 });
+                        x += bumpWidth;
+
+                        if (Math.random() < 0.6) {
+                            collectibles.push({
+                                x: x - bumpWidth * 0.5,
+                                y: y - bumpHeight - 50,
+                                type: Math.random() < 0.5 ? 'balloon' : 'smiley',
+                                collected: false,
+                                bobOffset: Math.random() * Math.PI * 2
+                            });
+                        }
+                    }
+                    segmentLength = 80;
+                    yChange = -(10 + Math.random() * 20);
+                } else if (segmentType < 0.7) {
+                    // STUNT RAMP - sharp angle for spins!
+                    segmentLength = 40;
+                    yChange = -(60 + Math.random() * 40);
+                    // Sharp up
+                    terrainPoints.push({ x: x + segmentLength, y: y + yChange });
+                    x += segmentLength;
+                    y = Math.max(120, y + yChange);
+                    // Tiny flat
+                    terrainPoints.push({ x: x + 15, y: y });
+                    x += 15;
+                    // Gap!
+                    segmentLength = 120 + Math.random() * 60;
+                    yChange = 50 + Math.random() * 30;
+
+                    // Collectibles in the gap
+                    collectibles.push({
+                        x: x + segmentLength / 2,
+                        y: y - 40,
+                        type: 'star',
+                        collected: false,
+                        bobOffset: Math.random() * Math.PI * 2
+                    });
+                } else if (segmentType < 0.85) {
+                    // Gentle upward slope (rest area)
+                    segmentLength = 100 + Math.random() * 80;
+                    yChange = -(15 + Math.random() * 25);
+
+                    if (Math.random() < 0.5) {
+                        const type = Math.random();
+                        collectibles.push({
+                            x: x + segmentLength / 2,
+                            y: y - 60,
+                            type: type < 0.4 ? 'star' : type < 0.7 ? 'balloon' : 'smiley',
+                            collected: false,
+                            bobOffset: Math.random() * Math.PI * 2
+                        });
+                    }
+                } else {
+                    // Flat cruising area
+                    segmentLength = 80 + Math.random() * 60;
+                    yChange = Math.random() * 10 - 5;
+                }
+
+                x += segmentLength;
+                y = Math.max(100, Math.min(canvas.height - 80, y + yChange));
+
+                // Add cheering animals near jumps
+                if (Math.random() < 0.2) {
+                    const animalTypes = ['🐻', '🐰', '🦊', '🐸', '🐱', '🐶', '🐼', '🦁', '🐨', '🐷', '🦄', '🐯'];
+                    animals.push({
+                        x: x - segmentLength / 2 + Math.random() * 60 - 30,
+                        y: y - 50,
+                        emoji: animalTypes[Math.floor(Math.random() * animalTypes.length)],
+                        cheerOffset: Math.random() * Math.PI * 2
+                    });
+                }
+            }
+
+            // Ensure we end at a reasonable height
+            terrainPoints.push({ x: totalLength, y: 100 });
+        }
+
+        function getTerrainY(x) {
+            // Find the two points we're between
+            for (let i = 0; i < terrainPoints.length - 1; i++) {
+                if (x >= terrainPoints[i].x && x <= terrainPoints[i + 1].x) {
+                    const t = (x - terrainPoints[i].x) / (terrainPoints[i + 1].x - terrainPoints[i].x);
+                    return terrainPoints[i].y + t * (terrainPoints[i + 1].y - terrainPoints[i].y);
+                }
+            }
+            return canvas.height - 150;
+        }
+
+        function getTerrainAngle(x) {
+            const y1 = getTerrainY(x - 10);
+            const y2 = getTerrainY(x + 10);
+            return Math.atan2(y1 - y2, 20);
+        }
+
+        // Draw functions
+        function drawMountain() {
+            // Draw terrain
+            ctx.beginPath();
+            ctx.moveTo(terrainPoints[0].x - cameraX, terrainPoints[0].y);
+
+            for (let i = 1; i < terrainPoints.length; i++) {
+                const px = terrainPoints[i].x - cameraX;
+                if (px > -200 && px < canvas.width + 200) {
+                    ctx.lineTo(px, terrainPoints[i].y);
+                }
+            }
+
+            ctx.lineTo(canvas.width + 100, canvas.height + 100);
+            ctx.lineTo(-100, canvas.height + 100);
+            ctx.closePath();
+
+            // Mountain gradient
+            const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+            gradient.addColorStop(0, '#55efc4');
+            gradient.addColorStop(0.5, '#00b894');
+            gradient.addColorStop(1, '#00a085');
+            ctx.fillStyle = gradient;
+            ctx.fill();
+
+            // Add grass tufts
+            ctx.fillStyle = '#2ecc71';
+            for (let i = 0; i < terrainPoints.length - 1; i++) {
+                const px = terrainPoints[i].x - cameraX;
+                if (px > -50 && px < canvas.width + 50) {
+                    for (let j = 0; j < 3; j++) {
+                        const gx = px + Math.random() * 40;
+                        const gy = getTerrainY(terrainPoints[i].x + j * 15);
+                        ctx.beginPath();
+                        ctx.moveTo(gx, gy);
+                        ctx.lineTo(gx - 5, gy - 15);
+                        ctx.lineTo(gx + 5, gy - 15);
+                        ctx.closePath();
+                        ctx.fill();
+                    }
+                }
+            }
+        }
+
+        function drawAnimals() {
+            const time = Date.now() / 1000;
+            animals.forEach(animal => {
+                const ax = animal.x - cameraX;
+                if (ax > -100 && ax < canvas.width + 100) {
+                    const cheerY = Math.sin(time * 3 + animal.cheerOffset) * 8;
+                    ctx.font = `${Math.min(40, canvas.width * 0.08)}px Arial`;
+                    ctx.textAlign = 'center';
+                    ctx.fillText(animal.emoji, ax, animal.y + cheerY);
+                }
+            });
+        }
+
+        function drawCollectibles() {
+            const time = Date.now() / 1000;
+            collectibles.forEach(item => {
+                if (item.collected) return;
+
+                const ix = item.x - cameraX;
+                if (ix > -50 && ix < canvas.width + 50) {
+                    const bobY = Math.sin(time * 2 + item.bobOffset) * 8;
+                    const scale = 1 + Math.sin(time * 3 + item.bobOffset) * 0.1;
+
+                    ctx.save();
+                    ctx.translate(ix, item.y + bobY);
+                    ctx.scale(scale, scale);
+
+                    ctx.font = `${Math.min(45, canvas.width * 0.1)}px Arial`;
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+
+                    if (item.type === 'star') {
+                        ctx.fillText('⭐', 0, 0);
+                    } else if (item.type === 'balloon') {
+                        ctx.fillText('🎈', 0, 0);
+                    } else {
+                        ctx.fillText('😊', 0, 0);
+                    }
+
+                    ctx.restore();
+                }
+            });
+        }
+
+        function drawTruck() {
+            const tx = truckX - cameraX;
+            const ty = truckY;
+
+            ctx.save();
+            ctx.translate(tx, ty);
+            ctx.rotate(truckAngle);
+
+            // Bounce effect
+            const bounceY = Math.sin(truckBounce) * 5;
+            ctx.translate(0, bounceY);
+
+            // Truck body
+            const truckWidth = 80;
+            const truckHeight = 50;
+
+            // Motion lines when in air!
+            if (isInAir && truckVelocityX > 3) {
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.6)';
+                ctx.lineWidth = 3;
+                for (let i = 0; i < 5; i++) {
+                    const lineY = -truckHeight / 2 + (Math.random() - 0.5) * 60;
+                    const lineLen = 30 + Math.random() * 40;
+                    ctx.beginPath();
+                    ctx.moveTo(-truckWidth / 2 - 20 - i * 15, lineY);
+                    ctx.lineTo(-truckWidth / 2 - 20 - i * 15 - lineLen, lineY);
+                    ctx.stroke();
+                }
+            }
+
+            // Sparkle effect when in big air!
+            if (isInAir && airTime > 20) {
+                const sparkleTime = Date.now() / 200;
+                ctx.fillStyle = '#ffd700';
+                for (let i = 0; i < 4; i++) {
+                    const angle = sparkleTime + i * Math.PI / 2;
+                    const dist = 50 + Math.sin(sparkleTime * 2 + i) * 15;
+                    const sx = Math.cos(angle) * dist;
+                    const sy = Math.sin(angle) * dist - 20;
+                    const size = 4 + Math.sin(sparkleTime * 3 + i) * 2;
+
+                    ctx.beginPath();
+                    ctx.arc(sx, sy, size, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+
+            // Shadow (smaller when in air)
+            const shadowScale = isInAir ? 0.5 : 1;
+            const shadowY = isInAir ? 25 + airTime * 0.5 : 25;
+            ctx.fillStyle = `rgba(0, 0, 0, ${isInAir ? 0.1 : 0.2})`;
+            ctx.beginPath();
+            ctx.ellipse(0, shadowY, 45 * shadowScale, 12 * shadowScale, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Glow effect when in air
+            if (isInAir && airTime > 15) {
+                ctx.shadowColor = currentColor;
+                ctx.shadowBlur = 20 + airTime * 0.3;
+            }
+
+            // Main body
+            ctx.fillStyle = currentColor;
+            ctx.beginPath();
+            ctx.roundRect(-truckWidth / 2, -truckHeight, truckWidth, truckHeight, 12);
+            ctx.fill();
+
+            ctx.shadowBlur = 0;
+
+            // Cabin
+            ctx.fillStyle = lightenColor(currentColor, 20);
+            ctx.beginPath();
+            ctx.roundRect(-truckWidth / 2 + 10, -truckHeight - 25, truckWidth - 30, 28, [10, 10, 0, 0]);
+            ctx.fill();
+
+            // Windows
+            ctx.fillStyle = '#74b9ff';
+            ctx.beginPath();
+            ctx.roundRect(-truckWidth / 2 + 15, -truckHeight - 20, truckWidth - 40, 18, 5);
+            ctx.fill();
+
+            // Window shine
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+            ctx.beginPath();
+            ctx.roundRect(-truckWidth / 2 + 17, -truckHeight - 18, 15, 8, 3);
+            ctx.fill();
+
+            // Face on truck - different expressions!
+            ctx.font = '24px Arial';
+            ctx.textAlign = 'center';
+            if (isInAir && airTime > 20) {
+                // Excited face during big jumps!
+                ctx.fillText('🤩', 0, -truckHeight / 2);
+            } else if (isInAir) {
+                // Happy during any jump
+                ctx.fillText('😆', 0, -truckHeight / 2);
+            } else if (truckHappy > 0) {
+                ctx.fillText('😄', 0, -truckHeight / 2);
+            } else if (truckVelocityX > 5) {
+                // Determined face when going fast
+                ctx.fillText('😎', 0, -truckHeight / 2);
+            }
+
+            // Wheels - bigger monster truck wheels!
+            const wheelRadius = 20;
+            const wheelY = 8;
+
+            // Left wheel
+            ctx.fillStyle = '#2d3436';
+            ctx.beginPath();
+            ctx.arc(-25, wheelY, wheelRadius, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = '#636e72';
+            ctx.beginPath();
+            ctx.arc(-25, wheelY, wheelRadius - 6, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Right wheel
+            ctx.fillStyle = '#2d3436';
+            ctx.beginPath();
+            ctx.arc(25, wheelY, wheelRadius, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = '#636e72';
+            ctx.beginPath();
+            ctx.arc(25, wheelY, wheelRadius - 6, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Wheel spokes/rotation indicator (spin faster in air!)
+            const wheelSpeed = isInAir ? 10 : 20;
+            const wheelRotation = (truckX / wheelSpeed) % (Math.PI * 2);
+            ctx.strokeStyle = '#dfe6e9';
+            ctx.lineWidth = 3;
+            for (let i = 0; i < 4; i++) {
+                const angle = wheelRotation + (i * Math.PI / 2);
+                ctx.beginPath();
+                ctx.moveTo(-25, wheelY);
+                ctx.lineTo(-25 + Math.cos(angle) * 12, wheelY + Math.sin(angle) * 12);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(25, wheelY);
+                ctx.lineTo(25 + Math.cos(angle) * 12, wheelY + Math.sin(angle) * 12);
+                ctx.stroke();
+            }
+
+            // Headlights (glow when in air!)
+            if (isInAir) {
+                ctx.shadowColor = '#ffeaa7';
+                ctx.shadowBlur = 15;
+            }
+            ctx.fillStyle = '#ffeaa7';
+            ctx.beginPath();
+            ctx.arc(truckWidth / 2 - 5, -15, 8, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.shadowBlur = 0;
+
+            // Hat (bounces during jumps!)
+            if (currentHat) {
+                const hatBounce = isInAir ? Math.sin(Date.now() / 100) * 5 : 0;
+                const hatRotate = isInAir ? Math.sin(Date.now() / 150) * 0.2 : 0;
+                ctx.save();
+                ctx.rotate(hatRotate);
+                ctx.font = '40px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText(currentHat, 0, -truckHeight - 35 + hatBounce);
+                ctx.restore();
+            }
+
+            // Exhaust puffs when moving (bigger puffs when launching!)
+            if (isPlaying || truckVelocityX > 1) {
+                const puffIntensity = isInAir && truckVelocityY < 0 ? 2 : 1;
+                ctx.fillStyle = `rgba(200, 200, 200, ${0.4 + puffIntensity * 0.2})`;
+                const puffTime = Date.now() / 80;
+                for (let i = 0; i < 4 * puffIntensity; i++) {
+                    const px = -truckWidth / 2 - 15 - i * 12;
+                    const py = -15 + Math.sin(puffTime + i) * 8;
+                    const psize = (6 + i * 4) * puffIntensity;
+                    ctx.beginPath();
+                    ctx.arc(px, py, psize, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+
+            ctx.restore();
+        }
+
+        function lightenColor(color, percent) {
+            const num = parseInt(color.replace('#', ''), 16);
+            const amt = Math.round(2.55 * percent);
+            const R = Math.min(255, (num >> 16) + amt);
+            const G = Math.min(255, (num >> 8 & 0x00FF) + amt);
+            const B = Math.min(255, (num & 0x0000FF) + amt);
+            return '#' + (0x1000000 + R * 0x10000 + G * 0x100 + B).toString(16).slice(1);
+        }
+
+        // Check collectibles
+        function checkCollisions() {
+            collectibles.forEach(item => {
+                if (item.collected) return;
+
+                const dx = truckX - item.x;
+                const dy = truckY - 30 - item.y;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+
+                if (dist < 60) {
+                    item.collected = true;
+
+                    if (item.type === 'star') {
+                        stars++;
+                        document.getElementById('starCount').textContent = stars;
+                        playSound('ding');
+                        showCollectEffect(item.x - cameraX, item.y, '⭐ +1');
+                    } else if (item.type === 'balloon') {
+                        balloons++;
+                        document.getElementById('balloonCount').textContent = balloons;
+                        playSound('boing');
+                        showCollectEffect(item.x - cameraX, item.y, '🎈 +1');
+                    } else {
+                        smileys++;
+                        document.getElementById('smileyCount').textContent = smileys;
+                        playSound('honk');
+                        showCollectEffect(item.x - cameraX, item.y, '😊 +1');
+                    }
+
+                    truckHappy = 30;
+                    createSparkles(item.x - cameraX, item.y);
+                }
+            });
+        }
+
+        function showCollectEffect(x, y, text) {
+            const el = document.createElement('div');
+            el.className = 'collect-text';
+            el.textContent = text;
+            el.style.left = x + 'px';
+            el.style.top = y + 'px';
+            document.getElementById('gameContainer').appendChild(el);
+            setTimeout(() => el.remove(), 1200);
+        }
+
+        function createSparkles(x, y) {
+            for (let i = 0; i < 6; i++) {
+                setTimeout(() => {
+                    const sparkle = document.createElement('div');
+                    sparkle.className = 'sparkle';
+                    sparkle.style.left = (x + (Math.random() - 0.5) * 60) + 'px';
+                    sparkle.style.top = (y + (Math.random() - 0.5) * 60) + 'px';
+                    document.getElementById('gameContainer').appendChild(sparkle);
+                    setTimeout(() => sparkle.remove(), 600);
+                }, i * 50);
+            }
+        }
+
+        // Check for unlocks
+        function checkUnlocks() {
+            const height = canvas.height - truckY;
+
+            allColors.forEach(c => {
+                if (height >= c.height && !unlockedColors.includes(c.color)) {
+                    unlockedColors.push(c.color);
+                    showUnlock('New Color!', c.color, c.name);
+                    updateCustomizePanel();
+                }
+            });
+
+            allHats.forEach(h => {
+                if (height >= h.height && !unlockedHats.includes(h.emoji)) {
+                    unlockedHats.push(h.emoji);
+                    if (h.emoji) {
+                        showUnlock('New Hat!', h.emoji, h.name);
+                    }
+                    updateCustomizePanel();
+                }
+            });
+        }
+
+        function showUnlock(title, item, name) {
+            playSound('unlock');
+
+            const notification = document.createElement('div');
+            notification.className = 'unlock-notification';
+            notification.innerHTML = `
+                <h2>${title}</h2>
+                <div class="unlock-item" style="${item.startsWith('#') ? `background: ${item}; width: 80px; height: 80px; border-radius: 50%; margin: 15px auto;` : ''}">${item.startsWith('#') ? '' : item}</div>
+                <p>${name} Unlocked!</p>
+            `;
+            document.getElementById('gameContainer').appendChild(notification);
+
+            setTimeout(() => notification.remove(), 2500);
+        }
+
+        function updateCustomizePanel() {
+            const colorOptions = document.getElementById('colorOptions');
+            colorOptions.innerHTML = '';
+            allColors.forEach(c => {
+                const btn = document.createElement('button');
+                btn.className = 'color-btn' + (currentColor === c.color ? ' active' : '') + (!unlockedColors.includes(c.color) ? ' locked' : '');
+                btn.style.background = c.color;
+                btn.title = c.name;
+                if (unlockedColors.includes(c.color)) {
+                    btn.onclick = () => {
+                        currentColor = c.color;
+                        updateCustomizePanel();
+                    };
+                } else {
+                    btn.textContent = '🔒';
+                }
+                colorOptions.appendChild(btn);
+            });
+
+            const hatOptions = document.getElementById('hatOptions');
+            hatOptions.innerHTML = '';
+            allHats.forEach(h => {
+                const btn = document.createElement('button');
+                btn.className = 'hat-btn' + (currentHat === h.emoji ? ' active' : '') + (!unlockedHats.includes(h.emoji) ? ' locked' : '');
+                btn.style.background = '#f8f9fa';
+                btn.title = h.name;
+                if (unlockedHats.includes(h.emoji)) {
+                    btn.textContent = h.emoji || '❌';
+                    btn.onclick = () => {
+                        currentHat = h.emoji;
+                        updateCustomizePanel();
+                    };
+                } else {
+                    btn.textContent = '🔒';
+                }
+                hatOptions.appendChild(btn);
+            });
+        }
+
+        // Update sky based on height
+        function updateSky() {
+            const height = canvas.height - truckY;
+            const sky = document.getElementById('sky');
+
+            if (height > 1000) {
+                sky.className = 'sky rainbow';
+            } else if (height > 500) {
+                sky.className = 'sky sunset';
+            } else {
+                sky.className = 'sky';
+            }
+        }
+
+        // Game loop
+        let lastEngineSound = 0;
+
+        function update() {
+            if (isPlaying) {
+                // Move forward - faster for more exciting jumps!
+                truckVelocityX = Math.min(truckVelocityX + 0.4, 8);
+
+                // Engine sound
+                if (Date.now() - lastEngineSound > 150) {
+                    playSound('engine');
+                    lastEngineSound = Date.now();
+                }
+            } else {
+                // Slow down when not pressing
+                truckVelocityX *= 0.96;
+                if (truckVelocityX < 0.1) truckVelocityX = 0;
+            }
+
+            // Move truck
+            truckX += truckVelocityX + landingBoost;
+            landingBoost *= 0.9;
+
+            // Get terrain info
+            const groundY = getTerrainY(truckX);
+            const targetAngle = getTerrainAngle(truckX);
+
+            // Check if we're in the air
+            const wasInAir = isInAir;
+            isInAir = truckY < groundY - 30;
+
+            if (isInAir) {
+                // IN THE AIR!
+                airTime++;
+
+                // Gravity (slightly reduced for floatier jumps)
+                truckVelocityY += 0.4;
+
+                // Spin in the air based on launch angle!
+                if (truckVelocityX > 4) {
+                    truckSpin += targetAngle * 0.3;
+                }
+
+                // Truck tilts back during jump
+                truckAngle += (truckSpin - truckAngle) * 0.1;
+
+                // Create trail effect while in air
+                if (Date.now() - lastTrailTime > 50 && truckVelocityX > 3) {
+                    createJumpTrail(truckX - cameraX, truckY);
+                    lastTrailTime = Date.now();
+                }
+
+                // Show "BIG AIR!" for long jumps
+                if (airTime > 40 && !bigAirShown) {
+                    showBigAir();
+                    bigAirShown = true;
+                    playSound('boing');
+                }
+
+                // Track max air time
+                if (airTime > maxAirTime) {
+                    maxAirTime = airTime;
+                }
+
+            } else {
+                // ON THE GROUND
+
+                // Just landed?
+                if (wasInAir && airTime > 10) {
+                    // Landing effects!
+                    playSound('boing');
+                    truckBounce = Math.min(airTime * 0.15, 3);
+                    truckHappy = 40;
+
+                    // Bonus speed boost from big landings!
+                    if (airTime > 30) {
+                        landingBoost = 3;
+                        createSparkles(truckX - cameraX, truckY);
+                        showCollectEffect(truckX - cameraX, truckY - 50, 'NICE LANDING!');
+                    }
+                }
+
+                // Reset air state
+                airTime = 0;
+                bigAirShown = false;
+                truckSpin = 0;
+
+                // Snap to ground
+                truckY = groundY - 25;
+
+                // Launch off ramps!
+                if (targetAngle < -0.3 && truckVelocityX > 4) {
+                    // Going up a steep ramp - LAUNCH!
+                    const launchPower = Math.abs(targetAngle) * truckVelocityX * 3;
+                    truckVelocityY = -launchPower;
+                    truckSpin = targetAngle * 0.5;
+                    playSound('launch');
+
+                    // Extra boost for really steep ramps!
+                    if (targetAngle < -0.5) {
+                        truckVelocityY *= 1.3;
+                        playSound('whoosh');
+                    }
+                } else {
+                    truckVelocityY = 0;
+                }
+
+                // Smooth angle on ground
+                truckAngle += (targetAngle - truckAngle) * 0.2;
+
+                // Bouncy effect on hills
+                if (Math.abs(targetAngle) > 0.15 && truckVelocityX > 2) {
+                    truckBounce += 0.3;
+                }
+            }
+
+            truckY += truckVelocityY;
+
+            // Keep truck from going too high off screen
+            truckY = Math.max(50, truckY);
+
+            // Bounce animation decay
+            truckBounce *= 0.9;
+
+            // Happy face decay
+            if (truckHappy > 0) truckHappy--;
+
+            // Camera follows truck (with some vertical follow during big jumps)
+            const targetCameraX = truckX - canvas.width * 0.3;
+            cameraX += (targetCameraX - cameraX) * 0.08;
+            cameraX = Math.max(0, cameraX);
+
+            // Track max height
+            const currentHeight = canvas.height - truckY;
+            if (currentHeight > maxHeight) {
+                maxHeight = currentHeight;
+            }
+
+            // Update height indicator
+            const heightPercent = Math.min(100, (currentHeight / 2000) * 100);
+            document.getElementById('heightFill').style.height = heightPercent + '%';
+
+            // Check collisions
+            checkCollisions();
+
+            // Check unlocks
+            checkUnlocks();
+
+            // Update sky
+            updateSky();
+        }
+
+        function createJumpTrail(x, y) {
+            const trail = document.createElement('div');
+            trail.className = 'jump-trail';
+            trail.style.left = x + 'px';
+            trail.style.top = y + 'px';
+            trail.style.background = `radial-gradient(circle, ${currentColor}88, transparent)`;
+            document.getElementById('gameContainer').appendChild(trail);
+            setTimeout(() => trail.remove(), 800);
+        }
+
+        function showBigAir() {
+            const messages = ['BIG AIR!', 'WOOHOO!', 'AMAZING!', 'SO HIGH!', 'WOW!'];
+            const msg = messages[Math.floor(Math.random() * messages.length)];
+
+            const el = document.createElement('div');
+            el.className = 'big-air';
+            el.textContent = msg + ' 🚀';
+            document.getElementById('gameContainer').appendChild(el);
+            setTimeout(() => el.remove(), 1500);
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            drawMountain();
+            drawAnimals();
+            drawCollectibles();
+            drawTruck();
+        }
+
+        function gameLoop() {
+            update();
+            draw();
+            requestAnimationFrame(gameLoop);
+        }
+
+        // Controls
+        const playButton = document.getElementById('playButton');
+
+        function startDriving() {
+            initAudio();
+            isPlaying = true;
+            playButton.classList.add('pressed');
+            playSound('vroom');
+        }
+
+        function stopDriving() {
+            isPlaying = false;
+            playButton.classList.remove('pressed');
+        }
+
+        // Mouse/touch controls
+        playButton.addEventListener('mousedown', (e) => {
+            e.preventDefault();
+            startDriving();
+        });
+        playButton.addEventListener('mouseup', stopDriving);
+        playButton.addEventListener('mouseleave', stopDriving);
+
+        playButton.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            startDriving();
+        });
+        playButton.addEventListener('touchend', stopDriving);
+        playButton.addEventListener('touchcancel', stopDriving);
+
+        // Keyboard controls
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space' || e.code === 'ArrowRight' || e.code === 'ArrowUp') {
+                e.preventDefault();
+                if (!isPlaying) startDriving();
+            }
+        });
+
+        document.addEventListener('keyup', (e) => {
+            if (e.code === 'Space' || e.code === 'ArrowRight' || e.code === 'ArrowUp') {
+                e.preventDefault();
+                stopDriving();
+            }
+        });
+
+        // Click anywhere to drive (for very young kids)
+        document.addEventListener('mousedown', (e) => {
+            if (e.target.closest('.home-btn, .sound-toggle, .customize-panel')) return;
+            if (!isPlaying) startDriving();
+        });
+
+        document.addEventListener('mouseup', (e) => {
+            if (e.target.closest('.home-btn, .sound-toggle, .customize-panel')) return;
+            stopDriving();
+        });
+
+        // Initialize
+        generateTerrain();
+        updateCustomizePanel();
+        truckY = getTerrainY(truckX) - 25;
+        gameLoop();
+
+        // Hide instruction after a few seconds
+        setTimeout(() => {
+            document.getElementById('instruction').style.opacity = '0';
+            setTimeout(() => {
+                document.getElementById('instruction').style.display = 'none';
+            }, 500);
+        }, 8000);
+    </script>
+</body>
+
+</html>

@@ -294,6 +294,8 @@
         .game-card:nth-child(2) { animation-delay: 0.35s; }
         .game-card:nth-child(3) { animation-delay: 0.5s; }
         .game-card:nth-child(4) { animation-delay: 0.65s; }
+        .game-card:nth-child(5) { animation-delay: 0.8s; }
+        .game-card:nth-child(6) { animation-delay: 0.95s; }
 
         @keyframes cardIn {
             to {
@@ -322,6 +324,8 @@
         .game-card.cars::before { background: linear-gradient(90deg, var(--blue), var(--green)); }
         .game-card.emergency::before { background: linear-gradient(90deg, var(--orange), var(--yellow)); }
         .game-card.water::before { background: linear-gradient(90deg, var(--blue), #00d2d3); }
+        .game-card.mountain::before { background: linear-gradient(90deg, var(--green), #00b894); }
+        .game-card.helpers::before { background: linear-gradient(90deg, #0984e3, #00cec9); }
 
         .game-icon {
             font-size: 4rem;
@@ -345,6 +349,8 @@
         .game-card.cars .game-title { color: var(--blue); }
         .game-card.emergency .game-title { color: var(--orange); }
         .game-card.water .game-title { color: #0abde3; }
+        .game-card.mountain .game-title { color: #00b894; }
+        .game-card.helpers .game-title { color: #0984e3; }
 
         .game-desc {
             color: #666;
@@ -370,6 +376,8 @@
         .game-card.cars .play-btn { background: linear-gradient(135deg, var(--blue), var(--green)); }
         .game-card.emergency .play-btn { background: linear-gradient(135deg, var(--orange), var(--yellow)); }
         .game-card.water .play-btn { background: linear-gradient(135deg, var(--blue), #00d2d3); }
+        .game-card.mountain .play-btn { background: linear-gradient(135deg, var(--green), #00b894); }
+        .game-card.helpers .play-btn { background: linear-gradient(135deg, #0984e3, #00cec9); }
 
         .game-card:hover .play-btn {
             transform: scale(1.05);
@@ -697,6 +705,22 @@
                 <p class="game-desc">Mix hydrogen and oxygen to make water! Learn science through play!</p>
                 <span class="play-btn">Play Now</span>
                 <span class="card-deco">💧</span>
+            </a>
+
+            <a href="mountain-climber.html" class="game-card mountain">
+                <span class="game-icon">🚚</span>
+                <h2 class="game-title">Mountain Climber</h2>
+                <p class="game-desc">Drive a happy monster truck up the mountain! Collect stars and unlock silly hats!</p>
+                <span class="play-btn">Play Now</span>
+                <span class="card-deco">🏔️</span>
+            </a>
+
+            <a href="community-helpers.html" class="game-card helpers">
+                <span class="game-icon">🚑</span>
+                <h2 class="game-title">Community Helpers</h2>
+                <p class="game-desc">Help your neighbors with police, fire, and ambulance! Find lost puppies and care for friends!</p>
+                <span class="play-btn">Play Now</span>
+                <span class="card-deco">🚓</span>
             </a>
         </div>
 
