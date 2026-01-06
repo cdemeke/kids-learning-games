@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg viewBox="0 0 1000 2000" xmlns="http://www.w3.org/2000/svg">
+  <!--
+    Human Silhouette - Front View
+    viewBox: 1000x2000 | Centered at x=500
+    For Omnipod placement tracker overlay system
+
+    Key Landmarks:
+    - Top of head: y=65
+    - Shoulders: y=340
+    - Waist: y=720
+    - Hips: y=820
+    - Crotch: y=1000
+    - Feet: y=1920
+  -->
+
+  <defs>
+    <style>
+      .silhouette {
+        fill: rgba(156, 163, 175, 0.1);
+        stroke: #9CA3AF;
+        stroke-width: 4;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+    </style>
+  </defs>
+
+  <g id="front-body">
+    <!-- Head -->
+    <ellipse class="silhouette" cx="500" cy="150" rx="72" ry="88"/>
+
+    <!-- Body (neck, torso, arms, legs as unified shape) -->
+    <path class="silhouette" d="
+      M 465 235
+      Q 455 280, 450 320
+      Q 400 335, 340 380
+      Q 295 420, 275 480
+      L 255 560
+      Q 235 640, 220 720
+      Q 205 800, 215 860
+      Q 225 905, 265 910
+      Q 300 912, 320 870
+      L 350 770
+      Q 370 700, 385 640
+      L 390 620
+      L 390 720
+      Q 385 820, 382 920
+      L 378 1000
+      L 375 1150
+      Q 370 1350, 365 1550
+      L 358 1720
+      Q 352 1800, 370 1860
+      Q 390 1910, 450 1920
+      L 485 1920
+      Q 500 1915, 500 1890
+      L 500 1050
+
+      L 500 1890
+      Q 500 1915, 515 1920
+      L 550 1920
+      Q 610 1910, 630 1860
+      Q 648 1800, 642 1720
+      L 635 1550
+      Q 630 1350, 625 1150
+      L 622 1000
+      L 618 920
+      Q 615 820, 610 720
+      L 610 620
+      L 615 640
+      Q 630 700, 650 770
+      L 680 870
+      Q 700 912, 735 910
+      Q 775 905, 785 860
+      Q 795 800, 780 720
+      Q 765 640, 745 560
+      L 725 480
+      Q 705 420, 660 380
+      Q 600 335, 550 320
+      Q 545 280, 535 235
+      Z
+    "/>
+  </g>
+</svg>
