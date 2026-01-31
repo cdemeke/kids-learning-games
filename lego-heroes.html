@@ -1,0 +1,1307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Lego Hero Builder!</title>
+    <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@700;800&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { overflow: hidden; height: 100%; }
+
+        :root {
+            --lego-red: #d42828;
+            --lego-blue: #0057a8;
+            --lego-yellow: #f5cd2f;
+            --lego-green: #00852b;
+            --lego-orange: #fe8a18;
+            --lego-white: #f4f4f4;
+            --lego-black: #1b1b1b;
+            --lego-purple: #8b4789;
+            --lego-cyan: #00bcd4;
+            --lego-pink: #ff69b4;
+            --lego-lime: #7ec845;
+            --lego-brown: #8B4513;
+            --lego-gray: #9e9e9e;
+        }
+
+        body {
+            font-family: 'Nunito', sans-serif;
+            background: linear-gradient(180deg, #ffe259 0%, #ffa751 100%);
+            user-select: none; -webkit-user-select: none;
+        }
+
+        /* ===== HOME SCREEN ===== */
+        #home-screen {
+            position: fixed; inset: 0;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            background: linear-gradient(180deg, #ffe259 0%, #ffa751 50%, #ff6b35 100%);
+            z-index: 1000; transition: opacity 0.6s, transform 0.6s;
+            overflow: hidden;
+        }
+        #home-screen.hidden { opacity: 0; transform: scale(1.1); pointer-events: none; }
+
+        /* Falling bricks background */
+        .falling-bricks { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+        .falling-brick {
+            position: absolute; border-radius: 4px; opacity: 0.15;
+            animation: brickFall linear infinite;
+        }
+        .falling-brick::after {
+            content: ''; position: absolute; top: -4px; left: 50%; transform: translateX(-50%);
+            width: 40%; height: 6px; border-radius: 50%; background: rgba(255,255,255,0.5);
+        }
+        @keyframes brickFall {
+            0% { transform: translateY(-60px) rotate(0deg); }
+            100% { transform: translateY(110vh) rotate(360deg); }
+        }
+
+        .home-title {
+            font-family: 'Baloo 2', cursive;
+            font-size: clamp(2.5rem, 8vw, 5rem);
+            color: var(--lego-red); text-shadow: 4px 4px 0 rgba(0,0,0,0.15);
+            margin-bottom: 10px; animation: bounce 2s infinite;
+            position: relative; z-index: 2;
+        }
+        .home-subtitle {
+            font-size: clamp(1rem, 3vw, 1.4rem); color: #fff;
+            font-weight: 700; text-shadow: 2px 2px 0 rgba(0,0,0,0.1);
+            margin-bottom: 40px; position: relative; z-index: 2;
+        }
+        @keyframes bounce { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
+
+        .hero-select {
+            display: flex; gap: 30px; flex-wrap: wrap; justify-content: center;
+            margin-bottom: 40px; padding: 0 20px; position: relative; z-index: 2;
+        }
+        .hero-card {
+            background: white; border-radius: 20px; padding: 20px 25px;
+            text-align: center; cursor: pointer;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.2), inset 0 -4px 0 rgba(0,0,0,0.1);
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            border: 4px solid transparent; width: 180px;
+        }
+        .hero-card:hover { transform: translateY(-8px) scale(1.05); }
+        .hero-card.selected { border-color: var(--lego-red); transform: translateY(-8px) scale(1.05);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.2), 0 0 0 3px var(--lego-red), 0 0 30px rgba(212,40,40,0.3); }
+        .hero-card canvas { display: block; margin: 0 auto 10px; }
+        .hero-name { font-family: 'Baloo 2', cursive; font-size: 1.1rem; font-weight: 700; }
+        .hero-power { font-size: 0.8rem; color: #888; margin-top: 4px; }
+
+        .start-btn {
+            background: var(--lego-red); color: white; border: none;
+            padding: 18px 60px; border-radius: 50px;
+            font-family: 'Baloo 2', cursive; font-size: 1.5rem; cursor: pointer;
+            box-shadow: 0 6px 0 #9e1a1a, 0 10px 25px rgba(0,0,0,0.3);
+            transition: all 0.2s; position: relative; z-index: 2;
+        }
+        .start-btn:hover { transform: translateY(-3px); box-shadow: 0 9px 0 #9e1a1a, 0 15px 30px rgba(0,0,0,0.3); }
+        .start-btn:active { transform: translateY(3px); box-shadow: 0 2px 0 #9e1a1a, 0 5px 15px rgba(0,0,0,0.3); }
+
+        .home-btn {
+            position: fixed; top: 15px; left: 15px;
+            background: white; border: none; border-radius: 50%;
+            width: 48px; height: 48px; font-size: 1.5rem;
+            cursor: pointer; z-index: 100;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            display: flex; align-items: center; justify-content: center;
+            transition: transform 0.2s; text-decoration: none;
+        }
+        .home-btn:hover { transform: scale(1.1); }
+
+        /* ===== GAME SCREEN ===== */
+        #game-screen { display: none; height: 100vh; flex-direction: column; }
+        #game-screen.active { display: flex; }
+
+        /* Top bar */
+        .top-bar {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 8px 15px; background: var(--lego-red);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            min-height: 56px; gap: 10px; flex-shrink: 0;
+        }
+        .score-display {
+            background: rgba(255,255,255,0.2); border-radius: 12px;
+            padding: 6px 16px; display: flex; align-items: center; gap: 8px;
+            color: white; font-weight: 800; font-size: 1.1rem;
+            transition: transform 0.2s;
+        }
+        .score-display.pop { animation: scorePop 0.3s; }
+        @keyframes scorePop { 50% { transform: scale(1.25); } }
+        .score-icon { font-size: 1.3rem; }
+        .level-display {
+            background: var(--lego-yellow); color: var(--lego-black);
+            border-radius: 12px; padding: 6px 16px; font-weight: 800; font-size: 0.95rem;
+        }
+        .hero-power-btn {
+            background: rgba(255,255,255,0.25); border: 2px solid white;
+            border-radius: 12px; padding: 6px 14px; color: white;
+            font-weight: 800; font-size: 0.9rem; cursor: pointer;
+            transition: all 0.2s; display: flex; align-items: center; gap: 6px;
+        }
+        .hero-power-btn:hover:not(:disabled) { background: rgba(255,255,255,0.4); transform: scale(1.05); }
+        .hero-power-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .hero-power-btn.glow { animation: powerGlow 1.5s infinite; }
+        @keyframes powerGlow {
+            0%,100% { box-shadow: 0 0 5px rgba(255,255,255,0.3); }
+            50% { box-shadow: 0 0 20px rgba(255,255,255,0.7), 0 0 40px rgba(255,255,255,0.3); }
+        }
+        .power-charges { font-size: 0.8rem; opacity: 0.8; }
+
+        /* Main area */
+        .main-area { flex: 1; display: flex; overflow: hidden; min-height: 0; }
+
+        /* Palette */
+        .palette {
+            width: 72px; background: #e8e8e8;
+            display: flex; flex-direction: column; align-items: center;
+            padding: 8px 4px; gap: 4px; overflow-y: auto; flex-shrink: 0;
+            border-right: 3px solid #ccc;
+        }
+        .palette-label {
+            font-weight: 800; font-size: 0.65rem; color: #666;
+            text-transform: uppercase; letter-spacing: 1px;
+            margin-bottom: 4px; text-align: center;
+        }
+        .brick-option {
+            width: 52px; height: 52px; border-radius: 10px;
+            cursor: pointer; position: relative;
+            transition: all 0.2s; border: 3px solid transparent;
+            display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+        }
+        .brick-option:hover { transform: scale(1.1); }
+        .brick-option.selected { border-color: var(--lego-black); transform: scale(1.1);
+            box-shadow: 0 0 0 2px white, 0 0 0 4px var(--lego-black); }
+        .brick-option .stud {
+            width: 18px; height: 18px; border-radius: 50%;
+            background: rgba(255,255,255,0.4); border: 2px solid rgba(255,255,255,0.3);
+            box-shadow: inset 0 -2px 0 rgba(0,0,0,0.15), 0 1px 2px rgba(0,0,0,0.1);
+        }
+
+        .tool-divider { width: 40px; height: 2px; background: #ccc; border-radius: 2px; margin: 4px 0; }
+        .tool-btn {
+            width: 52px; height: 52px; border-radius: 10px; cursor: pointer;
+            border: 3px solid transparent;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.5rem; background: white; transition: all 0.2s; flex-shrink: 0;
+        }
+        .tool-btn:hover { transform: scale(1.1); background: #f0f0f0; }
+        .tool-btn.selected { border-color: var(--lego-black); box-shadow: 0 0 0 2px white, 0 0 0 4px var(--lego-black); }
+
+        /* Grid */
+        .grid-container {
+            flex: 1; display: flex; align-items: center; justify-content: center;
+            background: radial-gradient(circle at 50% 50%, rgba(255,255,255,0.3) 0%, transparent 70%),
+                linear-gradient(180deg, #d4edda 0%, #c3e6cb 50%, #a8d5a2 100%);
+            padding: 10px; overflow: auto; position: relative;
+        }
+        .grid-container.shake { animation: shake 0.4s; }
+        @keyframes shake {
+            0%,100% { transform: translate(0); }
+            20% { transform: translate(-8px, 4px); }
+            40% { transform: translate(6px, -6px); }
+            60% { transform: translate(-4px, 2px); }
+            80% { transform: translate(4px, -2px); }
+        }
+
+        /* Combo fire border */
+        .grid-container.on-fire::before {
+            content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 40;
+            border: 4px solid transparent; border-radius: 0;
+            animation: fireGlow 0.5s infinite alternate;
+        }
+        @keyframes fireGlow {
+            0% { box-shadow: inset 0 0 30px rgba(255,100,0,0.4), inset 0 0 60px rgba(255,50,0,0.2); }
+            100% { box-shadow: inset 0 0 40px rgba(255,150,0,0.5), inset 0 0 80px rgba(255,80,0,0.3); }
+        }
+
+        .grid-wrapper { position: relative; display: inline-block; }
+
+        .building-grid {
+            display: grid; gap: 1px; background: rgba(0,0,0,0.08);
+            border-radius: 8px; border: 3px solid rgba(0,0,0,0.15);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.15), inset 0 0 0 1px rgba(255,255,255,0.3);
+        }
+        .grid-cell {
+            width: 36px; height: 36px; background: rgba(255,255,255,0.5);
+            cursor: pointer; position: relative; transition: background 0.1s;
+        }
+        .grid-cell:hover { background: rgba(255,255,255,0.8); }
+        .grid-cell.filled .cell-stud {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            width: 16px; height: 16px; border-radius: 50%;
+            background: rgba(255,255,255,0.35); border: 1.5px solid rgba(255,255,255,0.25);
+            box-shadow: inset 0 -2px 0 rgba(0,0,0,0.15), 0 1px 2px rgba(0,0,0,0.1);
+        }
+        /* Brick drop-in animation */
+        .grid-cell.brick-drop { animation: brickDrop 0.25s cubic-bezier(0.34, 1.56, 0.64, 1); }
+        @keyframes brickDrop {
+            0% { transform: scale(0.3) translateY(-20px); opacity: 0.3; }
+            100% { transform: scale(1) translateY(0); opacity: 1; }
+        }
+
+        /* ===== HERO COMPANION (bottom-right corner of grid) ===== */
+        .hero-companion {
+            position: absolute; bottom: 15px; right: 15px;
+            z-index: 30; transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            cursor: pointer; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));
+        }
+        .hero-companion canvas { display: block; }
+        .hero-companion.idle { animation: heroIdle 3s ease-in-out infinite; }
+        .hero-companion.excited { animation: heroExcited 0.4s ease-in-out 3; }
+        .hero-companion.celebrate { animation: heroCelebrate 0.6s cubic-bezier(0.34, 1.56, 0.64, 1); }
+        .hero-companion.power-up { animation: heroPowerUp 0.8s cubic-bezier(0.34, 1.56, 0.64, 1); }
+        .hero-companion.wave { animation: heroWave 0.8s ease-in-out 2; }
+        .hero-companion.entrance { animation: heroEntrance 1s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
+
+        @keyframes heroIdle {
+            0%,100% { transform: translateY(0); }
+            50% { transform: translateY(-6px); }
+        }
+        @keyframes heroExcited {
+            0%,100% { transform: scale(1) rotate(0deg); }
+            25% { transform: scale(1.15) rotate(-5deg); }
+            75% { transform: scale(1.15) rotate(5deg); }
+        }
+        @keyframes heroCelebrate {
+            0% { transform: scale(1) translateY(0); }
+            30% { transform: scale(1.3) translateY(-25px); }
+            50% { transform: scale(1.1) translateY(-15px) rotate(10deg); }
+            100% { transform: scale(1) translateY(0) rotate(0deg); }
+        }
+        @keyframes heroPowerUp {
+            0% { transform: scale(1); filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3)); }
+            30% { transform: scale(1.5); filter: drop-shadow(0 0 20px rgba(255,255,0,0.8)) drop-shadow(0 0 40px rgba(255,200,0,0.4)); }
+            60% { transform: scale(1.2); filter: drop-shadow(0 0 30px rgba(255,255,0,0.6)); }
+            100% { transform: scale(1); filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3)); }
+        }
+        @keyframes heroWave {
+            0%,100% { transform: rotate(0deg); }
+            25% { transform: rotate(-15deg); }
+            75% { transform: rotate(15deg); }
+        }
+        @keyframes heroEntrance {
+            0% { transform: translateX(200px) translateY(200px) scale(0) rotate(360deg); opacity: 0; }
+            100% { transform: translateX(0) translateY(0) scale(1) rotate(0deg); opacity: 1; }
+        }
+
+        /* Speech bubble */
+        .speech-bubble {
+            position: absolute; bottom: 100%; right: 0; margin-bottom: 10px;
+            background: white; border-radius: 14px; padding: 8px 14px;
+            font-weight: 800; font-size: 0.85rem; color: #333;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            white-space: nowrap; pointer-events: none;
+            opacity: 0; transform: scale(0.5) translateY(10px);
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .speech-bubble.show { opacity: 1; transform: scale(1) translateY(0); }
+        .speech-bubble::after {
+            content: ''; position: absolute; bottom: -8px; right: 20px;
+            width: 0; height: 0;
+            border-left: 8px solid transparent; border-right: 8px solid transparent;
+            border-top: 10px solid white;
+        }
+
+        /* Hero aura ring */
+        .hero-aura {
+            position: absolute; top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            border-radius: 50%; pointer-events: none;
+            opacity: 0; border: 3px solid rgba(255,255,0,0.6);
+        }
+        .hero-aura.pulse {
+            animation: auraPulse 0.8s forwards;
+        }
+        @keyframes auraPulse {
+            0% { width: 30px; height: 30px; opacity: 0.8; }
+            100% { width: 120px; height: 120px; opacity: 0; }
+        }
+
+        /* ===== POWER EFFECTS ===== */
+        /* Shield throw */
+        .shield-projectile {
+            position: absolute; z-index: 60; pointer-events: none;
+            animation: shieldThrow 0.6s linear forwards;
+        }
+        @keyframes shieldThrow {
+            0% { transform: translateX(0) rotate(0deg); opacity: 1; }
+            100% { transform: translateX(calc(100vw - 200px)) rotate(1080deg); opacity: 0.5; }
+        }
+
+        /* Repulsor beam */
+        .repulsor-beam {
+            position: absolute; z-index: 60; pointer-events: none;
+            height: 6px; border-radius: 3px;
+            background: linear-gradient(90deg, rgba(0,212,255,0.9), rgba(255,255,255,0.9), rgba(0,212,255,0.5));
+            box-shadow: 0 0 15px rgba(0,212,255,0.6), 0 0 30px rgba(0,212,255,0.3);
+            animation: beamFlash 0.4s forwards;
+        }
+        @keyframes beamFlash {
+            0% { opacity: 0; transform: scaleX(0); }
+            30% { opacity: 1; transform: scaleX(1); }
+            100% { opacity: 0; transform: scaleX(1); }
+        }
+
+        /* Hulk ground crack */
+        .ground-crack {
+            position: absolute; z-index: 60; pointer-events: none;
+            font-size: 3rem; animation: crackSlam 0.5s forwards;
+        }
+        @keyframes crackSlam {
+            0% { transform: scale(0) rotate(0deg); opacity: 1; }
+            50% { transform: scale(2) rotate(15deg); opacity: 1; }
+            100% { transform: scale(2.5) rotate(20deg); opacity: 0; }
+        }
+
+        /* ===== RIGHT PANEL ===== */
+        .right-panel {
+            width: 200px; background: #f5f5f5;
+            display: flex; flex-direction: column;
+            border-left: 3px solid #ccc; flex-shrink: 0; overflow-y: auto;
+        }
+        .panel-section { padding: 12px; border-bottom: 2px solid #e0e0e0; }
+        .panel-title { font-family: 'Baloo 2', cursive; font-size: 0.95rem; font-weight: 700; color: #555; margin-bottom: 8px; }
+
+        .hero-display { text-align: center; }
+        .hero-display canvas { margin: 0 auto; display: block; }
+        .hero-display-name { font-family: 'Baloo 2', cursive; font-size: 1rem; margin-top: 6px; color: #333; }
+
+        .challenge-box { background: white; border-radius: 10px; padding: 10px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+        .challenge-title { font-weight: 800; font-size: 0.85rem; color: var(--lego-red); margin-bottom: 6px; }
+        .challenge-desc { font-size: 0.8rem; color: #666; margin-bottom: 8px; line-height: 1.3; }
+        .challenge-progress { background: #e0e0e0; border-radius: 10px; height: 12px; overflow: hidden; margin-bottom: 4px; }
+        .challenge-fill {
+            height: 100%; background: linear-gradient(90deg, var(--lego-green), var(--lego-lime));
+            border-radius: 10px; transition: width 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .challenge-text { font-size: 0.75rem; color: #999; }
+        .challenge-box.complete { animation: challengeComplete 0.5s; }
+        @keyframes challengeComplete {
+            0% { background: white; } 50% { background: #d4edda; transform: scale(1.05); } 100% { background: white; }
+        }
+
+        .stat-row { display: flex; justify-content: space-between; padding: 4px 0; font-size: 0.85rem; }
+        .stat-label { color: #888; } .stat-value { font-weight: 800; color: #444; }
+
+        .achievement { display: flex; align-items: center; gap: 8px; padding: 6px 0; font-size: 0.8rem; }
+        .achievement-icon {
+            width: 28px; height: 28px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center; font-size: 0.9rem;
+        }
+        .achievement-icon.locked { background: #ddd; }
+        .achievement-icon.unlocked { background: var(--lego-yellow); animation: achieveUnlock 0.5s; }
+        @keyframes achieveUnlock { 0% { transform: scale(0) rotate(-180deg); } 100% { transform: scale(1) rotate(0deg); } }
+        .achievement-text { color: #666; }
+        .achievement-text.unlocked { color: #333; font-weight: 700; }
+
+        /* ===== ACHIEVEMENT TOAST ===== */
+        .achievement-toast {
+            position: fixed; top: 80px; right: -350px; z-index: 500;
+            background: white; border-radius: 16px; padding: 15px 20px;
+            display: flex; align-items: center; gap: 12px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.25);
+            border-left: 5px solid var(--lego-yellow);
+            transition: right 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+            max-width: 300px;
+        }
+        .achievement-toast.show { right: 20px; }
+        .toast-icon { font-size: 2rem; }
+        .toast-content {}
+        .toast-label { font-size: 0.7rem; color: #999; text-transform: uppercase; font-weight: 800; letter-spacing: 1px; }
+        .toast-name { font-family: 'Baloo 2', cursive; font-size: 1.1rem; color: #333; }
+
+        /* ===== COMBO POPUP ===== */
+        .combo-popup {
+            position: fixed; top: 50%; left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            background: white; border-radius: 20px;
+            padding: 30px 40px; text-align: center;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            z-index: 200; transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .combo-popup.show { transform: translate(-50%, -50%) scale(1); }
+        .combo-text { font-family: 'Baloo 2', cursive; font-size: 2rem; color: var(--lego-red); }
+        .combo-points { font-size: 1.2rem; color: var(--lego-green); font-weight: 800; margin-top: 5px; }
+
+        /* Float points */
+        .float-points {
+            position: absolute; pointer-events: none;
+            font-family: 'Baloo 2', cursive; font-weight: 800; font-size: 1.2rem;
+            color: var(--lego-green); text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            animation: floatUp 1s forwards; z-index: 50;
+        }
+        @keyframes floatUp { 0% { opacity: 1; transform: translateY(0) scale(1); } 100% { opacity: 0; transform: translateY(-50px) scale(1.3); } }
+
+        /* Particles */
+        .particle {
+            position: absolute; pointer-events: none;
+            width: 8px; height: 8px; border-radius: 2px; z-index: 50;
+        }
+        @keyframes particleFly {
+            0% { opacity: 1; transform: translate(0,0) rotate(0deg) scale(1); }
+            100% { opacity: 0; transform: translate(var(--px), var(--py)) rotate(720deg) scale(0); }
+        }
+
+        /* Star burst for big events */
+        .star-burst {
+            position: absolute; pointer-events: none; z-index: 55;
+            font-size: 1.5rem; animation: starBurst 0.8s forwards;
+        }
+        @keyframes starBurst {
+            0% { opacity: 1; transform: translate(0,0) scale(0.5); }
+            50% { opacity: 1; transform: translate(var(--sx), var(--sy)) scale(1.2); }
+            100% { opacity: 0; transform: translate(var(--ex), var(--ey)) scale(0); }
+        }
+
+        /* ===== LEVEL UP OVERLAY ===== */
+        .level-overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.6);
+            display: flex; align-items: center; justify-content: center;
+            z-index: 300; opacity: 0; pointer-events: none; transition: opacity 0.3s;
+        }
+        .level-overlay.show { opacity: 1; pointer-events: all; }
+        .level-card {
+            background: white; border-radius: 24px; padding: 40px;
+            text-align: center; transform: scale(0.8);
+            transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3); max-width: 400px; width: 90%;
+            position: relative; overflow: hidden;
+        }
+        .level-overlay.show .level-card { transform: scale(1); }
+        .level-card h2 { font-family: 'Baloo 2', cursive; font-size: 2.5rem; color: var(--lego-red); margin-bottom: 10px; }
+        .level-card p { color: #666; font-size: 1.1rem; margin-bottom: 5px; }
+        .level-card .reward { color: var(--lego-green); font-weight: 800; font-size: 1.2rem; margin: 15px 0; }
+        .level-card canvas { display: block; margin: 0 auto 15px; }
+        .level-card button {
+            background: var(--lego-green); color: white; border: none;
+            padding: 14px 40px; border-radius: 50px; font-family: 'Baloo 2', cursive;
+            font-size: 1.2rem; cursor: pointer; box-shadow: 0 4px 0 #006622;
+            transition: all 0.2s; margin-top: 10px;
+        }
+        .level-card button:hover { transform: translateY(-2px); }
+        .level-card button:active { transform: translateY(2px); box-shadow: 0 1px 0 #006622; }
+
+        /* Confetti in level up card */
+        .confetti-piece {
+            position: absolute; width: 8px; height: 14px; border-radius: 2px;
+            animation: confettiFall 2s ease-out forwards; pointer-events: none;
+        }
+        @keyframes confettiFall {
+            0% { transform: translateY(-20px) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(400px) rotate(720deg); opacity: 0; }
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 768px) {
+            .right-panel { display: none; }
+            .palette { width: 60px; }
+            .brick-option, .tool-btn { width: 44px; height: 44px; }
+            .brick-option .stud { width: 14px; height: 14px; }
+            .grid-cell { width: 30px; height: 30px; }
+            .top-bar { padding: 6px 10px; min-height: 48px; }
+            .score-display { font-size: 0.95rem; padding: 4px 10px; }
+            .level-display { font-size: 0.85rem; padding: 4px 10px; }
+            .hero-power-btn { font-size: 0.8rem; padding: 4px 10px; }
+            .hero-companion canvas { width: 70px !important; height: 70px !important; }
+        }
+        @media (max-width: 500px) {
+            .palette { width: 50px; padding: 4px 2px; }
+            .brick-option, .tool-btn { width: 38px; height: 38px; }
+            .grid-cell { width: 26px; height: 26px; }
+            .hero-select { gap: 15px; }
+            .hero-card { width: 140px; padding: 15px; }
+            .hero-companion canvas { width: 55px !important; height: 55px !important; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- HOME SCREEN -->
+<div id="home-screen">
+    <div class="falling-bricks" id="falling-bricks"></div>
+    <div class="home-title">LEGO Hero Builder!</div>
+    <div class="home-subtitle">Choose your superhero and start building!</div>
+    <div class="hero-select" id="hero-select"></div>
+    <button class="start-btn" id="start-btn" onclick="startGame()">BUILD!</button>
+</div>
+
+<!-- GAME SCREEN -->
+<div id="game-screen">
+    <a href="index.html" class="home-btn" title="Back to Games">🏠</a>
+    <div class="top-bar">
+        <div class="score-display" id="score-box">
+            <span class="score-icon">⭐</span>
+            <span id="score">0</span>
+        </div>
+        <div class="level-display" id="level-display">Level 1</div>
+        <button class="hero-power-btn glow" id="hero-power-btn" onclick="usePower()">
+            <span id="power-name">Power</span>
+            <span class="power-charges" id="power-charges">(3)</span>
+        </button>
+        <div class="score-display">
+            <span class="score-icon">🧱</span>
+            <span id="brick-count">0</span>
+        </div>
+    </div>
+    <div class="main-area">
+        <div class="palette" id="palette"></div>
+        <div class="grid-container" id="grid-container">
+            <div class="grid-wrapper">
+                <div class="building-grid" id="building-grid"></div>
+            </div>
+            <!-- Animated hero companion -->
+            <div class="hero-companion" id="hero-companion" onclick="heroClicked()">
+                <canvas id="companion-canvas"></canvas>
+                <div class="speech-bubble" id="speech-bubble">Let's build!</div>
+            </div>
+        </div>
+        <div class="right-panel">
+            <div class="panel-section hero-display" id="hero-panel"></div>
+            <div class="panel-section">
+                <div class="panel-title">Current Challenge</div>
+                <div class="challenge-box" id="challenge-box">
+                    <div class="challenge-title" id="challenge-title">Welcome!</div>
+                    <div class="challenge-desc" id="challenge-desc">Place your first brick!</div>
+                    <div class="challenge-progress"><div class="challenge-fill" id="challenge-fill" style="width:0%"></div></div>
+                    <div class="challenge-text" id="challenge-text">0 / 1</div>
+                </div>
+            </div>
+            <div class="panel-section">
+                <div class="panel-title">Stats</div>
+                <div class="stat-row"><span class="stat-label">Bricks</span><span class="stat-value" id="stat-bricks">0</span></div>
+                <div class="stat-row"><span class="stat-label">Combos</span><span class="stat-value" id="stat-combos">0</span></div>
+                <div class="stat-row"><span class="stat-label">Best Combo</span><span class="stat-value" id="stat-best-combo">0x</span></div>
+                <div class="stat-row"><span class="stat-label">Powers Used</span><span class="stat-value" id="stat-powers">0</span></div>
+            </div>
+            <div class="panel-section">
+                <div class="panel-title">Achievements</div>
+                <div id="achievements"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- COMBO POPUP -->
+<div class="combo-popup" id="combo-popup">
+    <div class="combo-text" id="combo-popup-text">COMBO!</div>
+    <div class="combo-points" id="combo-popup-points">+100</div>
+</div>
+
+<!-- LEVEL UP OVERLAY -->
+<div class="level-overlay" id="level-overlay">
+    <div class="level-card" id="level-card">
+        <h2 id="level-up-title">Level Up!</h2>
+        <canvas id="level-hero-canvas"></canvas>
+        <p id="level-up-desc">You reached Level 2!</p>
+        <div class="reward" id="level-up-reward">+1 Power Charge!</div>
+        <button onclick="closeLevelUp()">Keep Building!</button>
+    </div>
+</div>
+
+<!-- ACHIEVEMENT TOAST -->
+<div class="achievement-toast" id="achievement-toast">
+    <div class="toast-icon" id="toast-icon">🧱</div>
+    <div class="toast-content">
+        <div class="toast-label">Achievement Unlocked!</div>
+        <div class="toast-name" id="toast-name">First Brick</div>
+    </div>
+</div>
+
+<script>
+// ===== HERO DRAWING =====
+function drawLegoHero(canvas, hero, size) {
+    const ctx = canvas.getContext('2d');
+    canvas.width = size; canvas.height = size;
+    ctx.clearRect(0, 0, size, size);
+    const s = size / 120;
+
+    if (hero === 'captain') {
+        ctx.fillStyle = '#1a3a6b';
+        ctx.fillRect(38*s,88*s,18*s,28*s); ctx.fillRect(64*s,88*s,18*s,28*s);
+        ctx.fillStyle = '#cc2222';
+        ctx.fillRect(38*s,88*s,18*s,4*s); ctx.fillRect(64*s,88*s,18*s,4*s);
+        ctx.fillRect(35*s,112*s,22*s,8*s); ctx.fillRect(63*s,112*s,22*s,8*s);
+        ctx.fillStyle = '#2558a8'; ctx.fillRect(34*s,50*s,52*s,40*s);
+        ctx.fillStyle = '#cc2222'; ctx.fillRect(34*s,50*s,52*s,8*s); ctx.fillRect(34*s,66*s,52*s,6*s);
+        ctx.fillStyle = 'white'; ctx.beginPath();
+        const cx=60*s,cy=62*s; for(let i=0;i<10;i++){const r=i%2===0?8*s:4*s;const a=(Math.PI/2*3)+(i*Math.PI/5);const px=cx+Math.cos(a)*r,py=cy+Math.sin(a)*r;i===0?ctx.moveTo(px,py):ctx.lineTo(px,py);}
+        ctx.closePath(); ctx.fill();
+        ctx.fillStyle = '#2558a8'; ctx.fillRect(22*s,52*s,14*s,30*s); ctx.fillRect(84*s,52*s,14*s,30*s);
+        ctx.fillStyle = '#f5cd2f'; ctx.fillRect(22*s,78*s,14*s,10*s); ctx.fillRect(84*s,78*s,14*s,10*s);
+        ctx.fillStyle = '#f5cd2f'; ctx.fillRect(38*s,18*s,44*s,34*s);
+        ctx.beginPath(); ctx.arc(60*s,18*s,22*s,Math.PI,0); ctx.fill();
+        ctx.fillStyle = '#1a3a6b'; ctx.beginPath(); ctx.arc(60*s,22*s,24*s,Math.PI,0); ctx.fill();
+        ctx.fillRect(36*s,22*s,48*s,10*s);
+        ctx.fillStyle = 'white';
+        ctx.beginPath(); ctx.moveTo(80*s,18*s); ctx.lineTo(88*s,8*s); ctx.lineTo(82*s,22*s); ctx.fill();
+        ctx.beginPath(); ctx.moveTo(40*s,18*s); ctx.lineTo(32*s,8*s); ctx.lineTo(38*s,22*s); ctx.fill();
+        ctx.font=`bold ${14*s}px sans-serif`; ctx.textAlign='center'; ctx.fillText('A',60*s,28*s);
+        ctx.fillStyle = '#f5cd2f'; ctx.fillRect(42*s,30*s,36*s,18*s);
+        ctx.fillStyle = 'white'; ctx.fillRect(46*s,34*s,10*s,8*s); ctx.fillRect(64*s,34*s,10*s,8*s);
+        ctx.fillStyle = '#1b1b1b'; ctx.fillRect(50*s,36*s,5*s,5*s); ctx.fillRect(68*s,36*s,5*s,5*s);
+        ctx.strokeStyle='#1b1b1b'; ctx.lineWidth=2*s; ctx.beginPath(); ctx.arc(60*s,42*s,8*s,0.1,Math.PI-0.1); ctx.stroke();
+        ctx.fillStyle='#cc2222'; ctx.beginPath(); ctx.arc(16*s,70*s,14*s,0,Math.PI*2); ctx.fill();
+        ctx.fillStyle='white'; ctx.beginPath(); ctx.arc(16*s,70*s,10*s,0,Math.PI*2); ctx.fill();
+        ctx.fillStyle='#cc2222'; ctx.beginPath(); ctx.arc(16*s,70*s,7*s,0,Math.PI*2); ctx.fill();
+        ctx.fillStyle='#2558a8'; ctx.beginPath(); ctx.arc(16*s,70*s,4*s,0,Math.PI*2); ctx.fill();
+        ctx.fillStyle='white'; ctx.beginPath();
+        for(let i=0;i<10;i++){const r=i%2===0?3.5*s:1.5*s;const a=(Math.PI/2*3)+(i*Math.PI/5);const px=16*s+Math.cos(a)*r,py=70*s+Math.sin(a)*r;i===0?ctx.moveTo(px,py):ctx.lineTo(px,py);}
+        ctx.closePath(); ctx.fill();
+    }
+    else if (hero === 'ironman') {
+        ctx.fillStyle='#c41a1a'; ctx.fillRect(38*s,88*s,18*s,28*s); ctx.fillRect(64*s,88*s,18*s,28*s);
+        ctx.fillStyle='#d4a843'; ctx.fillRect(38*s,96*s,18*s,6*s); ctx.fillRect(64*s,96*s,18*s,6*s);
+        ctx.fillStyle='#c41a1a'; ctx.fillRect(35*s,112*s,22*s,8*s); ctx.fillRect(63*s,112*s,22*s,8*s);
+        ctx.fillStyle='#d4a843'; ctx.fillRect(37*s,116*s,18*s,4*s); ctx.fillRect(65*s,116*s,18*s,4*s);
+        ctx.fillStyle='#c41a1a'; ctx.fillRect(34*s,50*s,52*s,40*s);
+        ctx.fillStyle='#d4a843'; ctx.fillRect(40*s,54*s,40*s,10*s); ctx.fillRect(46*s,64*s,28*s,6*s);
+        ctx.fillStyle='#00d4ff'; ctx.beginPath(); ctx.arc(60*s,65*s,6*s,0,Math.PI*2); ctx.fill();
+        ctx.fillStyle='white'; ctx.beginPath(); ctx.arc(60*s,65*s,3*s,0,Math.PI*2); ctx.fill();
+        ctx.shadowBlur=10*s; ctx.shadowColor='#00d4ff'; ctx.fillStyle='rgba(0,212,255,0.3)';
+        ctx.beginPath(); ctx.arc(60*s,65*s,10*s,0,Math.PI*2); ctx.fill(); ctx.shadowBlur=0;
+        ctx.fillStyle='#c41a1a'; ctx.fillRect(22*s,52*s,14*s,26*s); ctx.fillRect(84*s,52*s,14*s,26*s);
+        ctx.fillStyle='#d4a843'; ctx.fillRect(22*s,60*s,14*s,6*s); ctx.fillRect(84*s,60*s,14*s,6*s);
+        ctx.fillRect(22*s,78*s,14*s,10*s); ctx.fillRect(84*s,78*s,14*s,10*s);
+        ctx.fillStyle='rgba(0,212,255,0.5)';
+        ctx.beginPath(); ctx.arc(29*s,83*s,4*s,0,Math.PI*2); ctx.fill();
+        ctx.beginPath(); ctx.arc(91*s,83*s,4*s,0,Math.PI*2); ctx.fill();
+        ctx.fillStyle='#c41a1a'; ctx.fillRect(38*s,18*s,44*s,34*s);
+        ctx.beginPath(); ctx.arc(60*s,18*s,22*s,Math.PI,0); ctx.fill();
+        ctx.fillStyle='#d4a843'; ctx.fillRect(42*s,28*s,36*s,22*s);
+        ctx.fillStyle='#c41a1a'; ctx.fillRect(42*s,28*s,36*s,4*s); ctx.fillRect(56*s,32*s,8*s,18*s);
+        ctx.fillStyle='white';
+        ctx.beginPath(); ctx.moveTo(46*s,36*s); ctx.lineTo(54*s,34*s); ctx.lineTo(54*s,40*s); ctx.lineTo(46*s,40*s); ctx.closePath(); ctx.fill();
+        ctx.beginPath(); ctx.moveTo(74*s,36*s); ctx.lineTo(66*s,34*s); ctx.lineTo(66*s,40*s); ctx.lineTo(74*s,40*s); ctx.closePath(); ctx.fill();
+        ctx.shadowBlur=8*s; ctx.shadowColor='#00d4ff'; ctx.fillStyle='#00d4ff';
+        ctx.fillRect(47*s,35*s,7*s,5*s); ctx.fillRect(66*s,35*s,7*s,5*s); ctx.shadowBlur=0;
+    }
+    else if (hero === 'hulk') {
+        const hx=-4;
+        ctx.fillStyle='#3a2d5c'; ctx.fillRect((34+hx)*s,84*s,22*s,32*s); ctx.fillRect((66+hx)*s,84*s,22*s,32*s);
+        for(let i=0;i<3;i++){ctx.beginPath();ctx.arc((38+hx+i*8)*s,84*s,3*s,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.arc((70+hx+i*8)*s,84*s,3*s,0,Math.PI*2);ctx.fill();}
+        ctx.fillStyle='#3d8b3d'; ctx.fillRect((30+hx)*s,112*s,28*s,8*s); ctx.fillRect((64+hx)*s,112*s,28*s,8*s);
+        ctx.fillRect((28+hx)*s,44*s,66*s,42*s);
+        ctx.fillStyle='#358035';
+        ctx.beginPath();ctx.arc((50+hx)*s,58*s,12*s,0,Math.PI*2);ctx.fill();
+        ctx.beginPath();ctx.arc((72+hx)*s,58*s,12*s,0,Math.PI*2);ctx.fill();
+        ctx.fillRect((50+hx)*s,72*s,10*s,6*s);ctx.fillRect((62+hx)*s,72*s,10*s,6*s);
+        ctx.fillRect((50+hx)*s,80*s,10*s,5*s);ctx.fillRect((62+hx)*s,80*s,10*s,5*s);
+        ctx.fillStyle='#3d8b3d'; ctx.fillRect((14+hx)*s,46*s,18*s,34*s); ctx.fillRect((90+hx)*s,46*s,18*s,34*s);
+        ctx.beginPath();ctx.arc((23+hx)*s,54*s,12*s,0,Math.PI*2);ctx.fill();
+        ctx.beginPath();ctx.arc((99+hx)*s,54*s,12*s,0,Math.PI*2);ctx.fill();
+        ctx.fillRect((12+hx)*s,76*s,20*s,16*s); ctx.fillRect((90+hx)*s,76*s,20*s,16*s);
+        ctx.strokeStyle='#2d6b2d'; ctx.lineWidth=1.5*s; ctx.beginPath();
+        ctx.moveTo((16+hx)*s,80*s);ctx.lineTo((28+hx)*s,80*s);ctx.moveTo((16+hx)*s,84*s);ctx.lineTo((28+hx)*s,84*s);ctx.moveTo((16+hx)*s,88*s);ctx.lineTo((28+hx)*s,88*s);
+        ctx.moveTo((94+hx)*s,80*s);ctx.lineTo((106+hx)*s,80*s);ctx.moveTo((94+hx)*s,84*s);ctx.lineTo((106+hx)*s,84*s);ctx.moveTo((94+hx)*s,88*s);ctx.lineTo((106+hx)*s,88*s);
+        ctx.stroke();
+        ctx.fillStyle='#3d8b3d'; ctx.fillRect((36+hx)*s,10*s,50*s,38*s);
+        ctx.beginPath();ctx.arc((61+hx)*s,12*s,25*s,Math.PI,0);ctx.fill();
+        ctx.fillStyle='#1b1b1b'; ctx.beginPath();ctx.arc((61+hx)*s,8*s,22*s,Math.PI,0);ctx.fill();
+        ctx.fillRect((39+hx)*s,6*s,44*s,10*s);
+        ctx.fillStyle='#2d6b2d';
+        ctx.beginPath();ctx.moveTo((42+hx)*s,26*s);ctx.lineTo((54+hx)*s,22*s);ctx.lineTo((54+hx)*s,28*s);ctx.lineTo((42+hx)*s,30*s);ctx.fill();
+        ctx.beginPath();ctx.moveTo((80+hx)*s,26*s);ctx.lineTo((68+hx)*s,22*s);ctx.lineTo((68+hx)*s,28*s);ctx.lineTo((80+hx)*s,30*s);ctx.fill();
+        ctx.fillStyle='white'; ctx.fillRect((44+hx)*s,28*s,12*s,8*s); ctx.fillRect((66+hx)*s,28*s,12*s,8*s);
+        ctx.fillStyle='#1b1b1b'; ctx.fillRect((50+hx)*s,30*s,5*s,5*s); ctx.fillRect((72+hx)*s,30*s,5*s,5*s);
+        ctx.fillStyle='#2d6b2d'; ctx.fillRect((48+hx)*s,40*s,26*s,6*s);
+        ctx.fillStyle='white'; for(let i=0;i<5;i++) ctx.fillRect((50+hx+i*5)*s,40*s,3*s,4*s);
+    }
+}
+
+// ===== GAME STATE =====
+const GRID_COLS = 16, GRID_ROWS = 14;
+let grid=[], selectedColor='#d42828', selectedTool='brick', selectedHero='captain';
+let score=0, brickCount=0, level=1, comboCount=0, comboTimer=null;
+let bestCombo=0, totalCombos=0, powersUsed=0, powerCharges=3;
+let isMouseDown=false, lastPlacedCell=null;
+let unlockedAchievements=new Set(), currentChallenge=0, usedColors=new Set();
+let heroMood='idle', speechTimer=null, fireTimer=null;
+
+const COLORS = [
+    {name:'Red',hex:'#d42828'},{name:'Blue',hex:'#0057a8'},{name:'Yellow',hex:'#f5cd2f'},
+    {name:'Green',hex:'#00852b'},{name:'Orange',hex:'#fe8a18'},{name:'Purple',hex:'#8b4789'},
+    {name:'Cyan',hex:'#00bcd4'},{name:'Pink',hex:'#ff69b4'},{name:'Lime',hex:'#7ec845'},
+    {name:'White',hex:'#f4f4f4'},{name:'Black',hex:'#1b1b1b'},{name:'Brown',hex:'#8B4513'},
+    {name:'Gray',hex:'#9e9e9e'},
+];
+
+const HEROES = {
+    captain:{name:'Captain America',power:'Shield Slam',powerDesc:'Clears a row & gives bonus points!',color:'#1a3a6b'},
+    ironman:{name:'Iron Man',power:'Repulsor Blast',powerDesc:'Fills a column with gold bricks!',color:'#c41a1a'},
+    hulk:{name:'Hulk',power:'Hulk Smash',powerDesc:'Smashes bricks for massive points!',color:'#3d8b3d'}
+};
+
+const HERO_QUOTES = {
+    captain: {
+        place: ["Great brick!", "Building strong!", "Avengers build!"],
+        combo: ["COMBO! I can do this all day!", "That's teamwork!"],
+        power: ["Shield throw!", "For justice!", "Stars & stripes!"],
+        click: ["I'm with you!", "Let's build together!", "Ready to serve!"],
+        idle: ["Try placing some bricks!", "I believe in you!", "Build something amazing!"],
+        levelup: ["Outstanding soldier!", "Promoted!"],
+    },
+    ironman: {
+        place: ["Nice work!", "Engineering!", "Smart choice!"],
+        combo: ["GENIUS combo!", "I am inevitable... at combos!"],
+        power: ["REPULSOR BLAST!", "Full power!", "Unibeam!"],
+        click: ["I am Iron Man!", "Genius at work!", "Suit up!"],
+        idle: ["Let's innovate!", "Build something epic!", "Friday, deploy bricks!"],
+        levelup: ["Next level genius!", "Upgraded!"],
+    },
+    hulk: {
+        place: ["HULK BUILD!", "Smash... brick... in place!", "GOOD BRICK!"],
+        combo: ["HULK COMBO SMASH!", "STRONGEST COMBO!"],
+        power: ["HULK SMASH!!!", "PUNY BRICKS!", "RAAAH!"],
+        click: ["HULK STRONGEST!", "Hulk like building!", "HULK HELP!"],
+        idle: ["Hulk bored... build stuff!", "Hulk want more bricks!", "SMASH... carefully!"],
+        levelup: ["HULK LEVEL UP!", "STRONGEST BUILDER!"],
+    }
+};
+
+const CHALLENGES = [
+    {title:'First Brick!',desc:'Place your first brick',target:1,type:'bricks'},
+    {title:'Getting Started',desc:'Place 10 bricks',target:10,type:'bricks'},
+    {title:'Builder!',desc:'Place 25 bricks',target:25,type:'bricks'},
+    {title:'Color Mix',desc:'Use 3 different colors',type:'colors',target:3},
+    {title:'Master Builder',desc:'Place 50 bricks',target:50,type:'bricks'},
+    {title:'Rainbow',desc:'Use 5 different colors',type:'colors',target:5},
+    {title:'Architect',desc:'Place 100 bricks',target:100,type:'bricks'},
+    {title:'Super Combo',desc:'Get a 5x combo',target:5,type:'combo'},
+    {title:'Power User',desc:'Use 3 hero powers',target:3,type:'powers'},
+    {title:'Legendary',desc:'Place 200 bricks',target:200,type:'bricks'},
+    {title:'Full Palette',desc:'Use all 13 colors',type:'colors',target:13},
+    {title:'Grand Master',desc:'Reach 5000 points',type:'score',target:5000},
+];
+
+const ACHIEVEMENTS = [
+    {id:'first',name:'First Brick',icon:'🧱',condition:()=>brickCount>=1},
+    {id:'ten',name:'10 Bricks',icon:'🏗️',condition:()=>brickCount>=10},
+    {id:'fifty',name:'50 Bricks',icon:'🏠',condition:()=>brickCount>=50},
+    {id:'hundred',name:'100 Bricks',icon:'🏰',condition:()=>brickCount>=100},
+    {id:'combo5',name:'5x Combo',icon:'🔥',condition:()=>bestCombo>=5},
+    {id:'combo10',name:'10x Combo',icon:'💥',condition:()=>bestCombo>=10},
+    {id:'power',name:'Power Up!',icon:'⚡',condition:()=>powersUsed>=1},
+    {id:'score1k',name:'1000 Points',icon:'⭐',condition:()=>score>=1000},
+    {id:'score5k',name:'5000 Points',icon:'🌟',condition:()=>score>=5000},
+];
+
+// ===== AUDIO =====
+let audioCtx;
+function getAudioCtx(){if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)();if(audioCtx.state==='suspended')audioCtx.resume();return audioCtx;}
+
+function playPlaceSound(){const c=getAudioCtx(),o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(c.destination);o.frequency.setValueAtTime(400+Math.random()*200,c.currentTime);o.frequency.exponentialRampToValueAtTime(800,c.currentTime+0.08);g.gain.setValueAtTime(0.12,c.currentTime);g.gain.exponentialRampToValueAtTime(0.001,c.currentTime+0.1);o.start();o.stop(c.currentTime+0.1);}
+function playComboSound(combo){const c=getAudioCtx(),o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(c.destination);o.type='triangle';o.frequency.setValueAtTime(300+combo*100,c.currentTime);o.frequency.exponentialRampToValueAtTime(600+combo*150,c.currentTime+0.2);g.gain.setValueAtTime(0.15,c.currentTime);g.gain.exponentialRampToValueAtTime(0.001,c.currentTime+0.25);o.start();o.stop(c.currentTime+0.25);}
+function playEraseSound(){const c=getAudioCtx(),o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(c.destination);o.frequency.setValueAtTime(600,c.currentTime);o.frequency.exponentialRampToValueAtTime(200,c.currentTime+0.12);g.gain.setValueAtTime(0.1,c.currentTime);g.gain.exponentialRampToValueAtTime(0.001,c.currentTime+0.12);o.start();o.stop(c.currentTime+0.15);}
+function playPowerSound(){const c=getAudioCtx();for(let i=0;i<5;i++){const o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(c.destination);o.type='square';o.frequency.setValueAtTime(200+i*200,c.currentTime+i*0.06);g.gain.setValueAtTime(0.08,c.currentTime+i*0.06);g.gain.exponentialRampToValueAtTime(0.001,c.currentTime+i*0.06+0.15);o.start(c.currentTime+i*0.06);o.stop(c.currentTime+i*0.06+0.15);}}
+function playLevelUpSound(){const c=getAudioCtx();[523,659,784,1047].forEach((f,i)=>{const o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(c.destination);o.type='triangle';o.frequency.setValueAtTime(f,c.currentTime+i*0.12);g.gain.setValueAtTime(0.12,c.currentTime+i*0.12);g.gain.exponentialRampToValueAtTime(0.001,c.currentTime+i*0.12+0.3);o.start(c.currentTime+i*0.12);o.stop(c.currentTime+i*0.12+0.3);});}
+function playAchievementSound(){const c=getAudioCtx(),o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(c.destination);o.type='sine';o.frequency.setValueAtTime(880,c.currentTime);o.frequency.exponentialRampToValueAtTime(1760,c.currentTime+0.2);g.gain.setValueAtTime(0.12,c.currentTime);g.gain.exponentialRampToValueAtTime(0.001,c.currentTime+0.4);o.start();o.stop(c.currentTime+0.4);}
+
+// ===== FALLING BRICKS (home screen) =====
+function initFallingBricks() {
+    const container = document.getElementById('falling-bricks');
+    const colors = ['#d42828','#0057a8','#f5cd2f','#00852b','#fe8a18','#8b4789','#00bcd4'];
+    for (let i = 0; i < 25; i++) {
+        const brick = document.createElement('div');
+        brick.className = 'falling-brick';
+        const w = 20 + Math.random() * 30;
+        brick.style.width = w + 'px';
+        brick.style.height = (w * 0.6) + 'px';
+        brick.style.left = Math.random() * 100 + '%';
+        brick.style.background = colors[Math.floor(Math.random() * colors.length)];
+        brick.style.animationDuration = (4 + Math.random() * 8) + 's';
+        brick.style.animationDelay = (Math.random() * 6) + 's';
+        container.appendChild(brick);
+    }
+}
+
+// ===== HERO COMPANION =====
+function setHeroAnimation(anim, duration) {
+    const comp = document.getElementById('hero-companion');
+    comp.className = 'hero-companion ' + anim;
+    if (duration) setTimeout(() => { comp.className = 'hero-companion idle'; }, duration);
+}
+
+function showSpeechBubble(text, duration) {
+    const bubble = document.getElementById('speech-bubble');
+    bubble.textContent = text;
+    bubble.classList.add('show');
+    clearTimeout(speechTimer);
+    speechTimer = setTimeout(() => bubble.classList.remove('show'), duration || 2000);
+}
+
+function heroSay(category) {
+    const quotes = HERO_QUOTES[selectedHero][category];
+    if (quotes) showSpeechBubble(quotes[Math.floor(Math.random() * quotes.length)], 2500);
+}
+
+function heroClicked() {
+    setHeroAnimation('wave', 1600);
+    heroSay('click');
+    spawnHeroAura();
+}
+
+function spawnHeroAura() {
+    const comp = document.getElementById('hero-companion');
+    const aura = document.createElement('div');
+    aura.className = 'hero-aura pulse';
+    comp.appendChild(aura);
+    setTimeout(() => aura.remove(), 800);
+}
+
+// ===== INIT HOME =====
+function initHome() {
+    initFallingBricks();
+    const heroSelect = document.getElementById('hero-select');
+    heroSelect.innerHTML = '';
+    ['captain','ironman','hulk'].forEach(key => {
+        const hero = HEROES[key];
+        const card = document.createElement('div');
+        card.className = 'hero-card' + (key===selectedHero?' selected':'');
+        card.onclick = () => { selectedHero = key; document.querySelectorAll('.hero-card').forEach(c => c.classList.remove('selected')); card.classList.add('selected'); };
+        const canvas = document.createElement('canvas');
+        drawLegoHero(canvas, key, 120);
+        card.appendChild(canvas);
+        const name = document.createElement('div');
+        name.className = 'hero-name'; name.style.color = hero.color; name.textContent = hero.name;
+        card.appendChild(name);
+        const power = document.createElement('div');
+        power.className = 'hero-power'; power.textContent = hero.power;
+        card.appendChild(power);
+        heroSelect.appendChild(card);
+    });
+}
+
+// ===== START GAME =====
+function startGame() {
+    document.getElementById('home-screen').classList.add('hidden');
+    setTimeout(() => {
+        document.getElementById('home-screen').style.display = 'none';
+        document.getElementById('game-screen').classList.add('active');
+        initGame();
+    }, 600);
+}
+
+function initGame() {
+    grid = Array.from({length:GRID_ROWS}, ()=>Array(GRID_COLS).fill(null));
+    score=0;brickCount=0;level=1;comboCount=0;bestCombo=0;totalCombos=0;powersUsed=0;powerCharges=3;
+    usedColors=new Set();unlockedAchievements=new Set();currentChallenge=0;selectedTool='brick';selectedColor=COLORS[0].hex;
+
+    updateUI(); buildPalette(); buildGrid(); updateHeroPanel(); updateChallenge(); updateAchievements(); updatePowerBtn();
+
+    // Draw companion hero
+    drawLegoHero(document.getElementById('companion-canvas'), selectedHero, 90);
+    // Hero entrance animation
+    setHeroAnimation('entrance', 1000);
+    setTimeout(() => {
+        setHeroAnimation('idle');
+        heroSay('idle');
+    }, 1200);
+
+    // Idle speech every 15s
+    setInterval(() => {
+        if (heroMood === 'idle') heroSay('idle');
+    }, 15000);
+}
+
+// ===== BUILD PALETTE =====
+function buildPalette() {
+    const palette = document.getElementById('palette');
+    palette.innerHTML = '<div class="palette-label">Bricks</div>';
+    COLORS.forEach(c => {
+        const opt = document.createElement('div');
+        opt.className = 'brick-option'+(c.hex===selectedColor&&selectedTool==='brick'?' selected':'');
+        opt.style.background = c.hex; opt.title = c.name;
+        const stud = document.createElement('div'); stud.className = 'stud';
+        opt.appendChild(stud);
+        opt.onclick = () => selectColor(c.hex, opt);
+        palette.appendChild(opt);
+    });
+    const divider = document.createElement('div'); divider.className = 'tool-divider'; palette.appendChild(divider);
+    const eraser = document.createElement('div');
+    eraser.className = 'tool-btn'+(selectedTool==='eraser'?' selected':'');
+    eraser.innerHTML='🗑️'; eraser.title='Eraser';
+    eraser.onclick = () => selectEraser(eraser); palette.appendChild(eraser);
+    const clear = document.createElement('div'); clear.className='tool-btn';
+    clear.innerHTML='🔄'; clear.title='Clear All';
+    clear.onclick = clearGrid; palette.appendChild(clear);
+}
+
+function selectColor(hex, el) { selectedColor=hex; selectedTool='brick'; document.querySelectorAll('.brick-option,.tool-btn').forEach(e=>e.classList.remove('selected')); el.classList.add('selected'); }
+function selectEraser(el) { selectedTool='eraser'; document.querySelectorAll('.brick-option,.tool-btn').forEach(e=>e.classList.remove('selected')); el.classList.add('selected'); }
+
+// ===== BUILD GRID =====
+function buildGrid() {
+    const g = document.getElementById('building-grid');
+    g.innerHTML = ''; g.style.gridTemplateColumns = `repeat(${GRID_COLS}, 1fr)`;
+    for (let r=0; r<GRID_ROWS; r++) {
+        for (let c=0; c<GRID_COLS; c++) {
+            const cell = document.createElement('div');
+            cell.className = 'grid-cell'; cell.dataset.row=r; cell.dataset.col=c;
+            cell.addEventListener('mousedown', e=>{e.preventDefault();isMouseDown=true;handleCell(r,c,cell);});
+            cell.addEventListener('mouseenter', ()=>{if(isMouseDown)handleCell(r,c,cell);});
+            cell.addEventListener('touchstart', e=>{e.preventDefault();handleCell(r,c,cell);},{passive:false});
+            cell.addEventListener('touchmove', e=>{
+                e.preventDefault();const touch=e.touches[0];const el=document.elementFromPoint(touch.clientX,touch.clientY);
+                if(el&&el.classList.contains('grid-cell')){handleCell(parseInt(el.dataset.row),parseInt(el.dataset.col),el);}
+            },{passive:false});
+            g.appendChild(cell);
+        }
+    }
+}
+document.addEventListener('mouseup', ()=>{isMouseDown=false;lastPlacedCell=null;});
+
+let brickPlaceCount = 0; // tracks rapid placements for hero reactions
+
+function handleCell(r, c, cellEl) {
+    const cellKey = `${r}-${c}`;
+    if (cellKey === lastPlacedCell) return;
+    lastPlacedCell = cellKey;
+
+    if (selectedTool === 'eraser') {
+        if (grid[r][c]) { grid[r][c]=null; renderCell(r,c,cellEl); playEraseSound(); }
+    } else {
+        if (grid[r][c] === selectedColor) return;
+        const wasEmpty = !grid[r][c];
+        grid[r][c] = selectedColor;
+        renderCell(r, c, cellEl);
+        // Drop animation
+        cellEl.classList.remove('brick-drop');
+        void cellEl.offsetWidth;
+        cellEl.classList.add('brick-drop');
+        playPlaceSound();
+
+        if (wasEmpty) {
+            brickCount++; usedColors.add(selectedColor);
+            brickPlaceCount++;
+
+            let pts = 10;
+            comboCount++;
+            clearTimeout(comboTimer);
+            comboTimer = setTimeout(() => {
+                if (comboCount >= 3) {
+                    totalCombos++; if(comboCount>bestCombo) bestCombo=comboCount;
+                    showCombo(comboCount);
+                }
+                comboCount = 0;
+                // Remove fire effect
+                document.getElementById('grid-container').classList.remove('on-fire');
+            }, 800);
+
+            if (comboCount >= 3) {
+                pts += comboCount * 5;
+                playComboSound(comboCount);
+                // Fire border on big combos
+                if (comboCount >= 5) {
+                    document.getElementById('grid-container').classList.add('on-fire');
+                }
+            }
+
+            addScore(pts);
+            spawnFloatPoints(cellEl, `+${pts}`);
+            spawnParticles(cellEl, selectedColor);
+
+            // Hero reactions
+            if (brickPlaceCount % 10 === 0) {
+                setHeroAnimation('excited', 1200);
+                heroSay('place');
+            }
+            if (comboCount === 3) {
+                setHeroAnimation('celebrate', 600);
+                heroSay('combo');
+            }
+        } else {
+            addScore(5);
+            spawnFloatPoints(cellEl, '+5');
+        }
+        checkLevelUp(); updateChallenge(); checkAchievements(); updateUI();
+    }
+}
+
+function renderCell(r, c, cellEl) {
+    if (!cellEl) { const g=document.getElementById('building-grid'); cellEl=g.children[r*GRID_COLS+c]; }
+    if (grid[r][c]) {
+        cellEl.style.background = grid[r][c]; cellEl.classList.add('filled');
+        cellEl.innerHTML = '<div class="cell-stud"></div>';
+    } else {
+        cellEl.style.background = 'rgba(255,255,255,0.5)'; cellEl.classList.remove('filled');
+        cellEl.innerHTML = '';
+    }
+}
+
+function clearGrid() {
+    for(let r=0;r<GRID_ROWS;r++) for(let c=0;c<GRID_COLS;c++) grid[r][c]=null;
+    document.querySelectorAll('.grid-cell').forEach(cell=>{cell.style.background='rgba(255,255,255,0.5)';cell.classList.remove('filled');cell.innerHTML='';});
+}
+
+// ===== SCORING =====
+function addScore(pts) {
+    score += pts;
+    document.getElementById('score').textContent = score;
+    // Pop animation on score
+    const box = document.getElementById('score-box');
+    box.classList.remove('pop'); void box.offsetWidth; box.classList.add('pop');
+}
+
+function updateUI() {
+    document.getElementById('score').textContent=score;
+    document.getElementById('brick-count').textContent=brickCount;
+    document.getElementById('level-display').textContent=`Level ${level}`;
+    document.getElementById('stat-bricks').textContent=brickCount;
+    document.getElementById('stat-combos').textContent=totalCombos;
+    document.getElementById('stat-best-combo').textContent=bestCombo+'x';
+    document.getElementById('stat-powers').textContent=powersUsed;
+}
+
+// ===== EFFECTS =====
+function spawnFloatPoints(cellEl, text) {
+    const rect=cellEl.getBoundingClientRect(), container=document.getElementById('grid-container'), cr=container.getBoundingClientRect();
+    const fp=document.createElement('div'); fp.className='float-points'; fp.textContent=text;
+    fp.style.left=(rect.left-cr.left+rect.width/2)+'px'; fp.style.top=(rect.top-cr.top)+'px';
+    container.appendChild(fp); setTimeout(()=>fp.remove(),1000);
+}
+
+function spawnParticles(cellEl, color) {
+    const rect=cellEl.getBoundingClientRect(), container=document.getElementById('grid-container'), cr=container.getBoundingClientRect();
+    for(let i=0;i<6;i++){
+        const p=document.createElement('div'); p.className='particle'; p.style.background=color;
+        p.style.left=(rect.left-cr.left+rect.width/2)+'px'; p.style.top=(rect.top-cr.top+rect.height/2)+'px';
+        const angle=Math.random()*Math.PI*2, dist=30+Math.random()*40;
+        p.style.setProperty('--px',Math.cos(angle)*dist+'px'); p.style.setProperty('--py',Math.sin(angle)*dist+'px');
+        p.style.animation='particleFly 0.6s forwards'; container.appendChild(p);
+        setTimeout(()=>p.remove(),600);
+    }
+}
+
+function spawnStarBurst(container, x, y, count) {
+    const stars = ['⭐','✨','💫','🌟'];
+    for(let i=0;i<count;i++){
+        const s=document.createElement('div'); s.className='star-burst'; s.textContent=stars[Math.floor(Math.random()*stars.length)];
+        s.style.left=x+'px'; s.style.top=y+'px';
+        const a=Math.random()*Math.PI*2, d1=40+Math.random()*60, d2=80+Math.random()*80;
+        s.style.setProperty('--sx',Math.cos(a)*d1+'px'); s.style.setProperty('--sy',Math.sin(a)*d1+'px');
+        s.style.setProperty('--ex',Math.cos(a)*d2+'px'); s.style.setProperty('--ey',Math.sin(a)*d2+'px');
+        s.style.animationDelay=(Math.random()*0.2)+'s';
+        container.appendChild(s); setTimeout(()=>s.remove(),1000);
+    }
+}
+
+// ===== COMBOS =====
+function showCombo(count) {
+    const popup=document.getElementById('combo-popup');
+    document.getElementById('combo-popup-text').textContent=count+'x COMBO!';
+    document.getElementById('combo-popup-points').textContent='+'+(count*25)+' bonus!';
+    addScore(count*25);
+    popup.classList.add('show'); playComboSound(count);
+    setHeroAnimation('celebrate', 600); heroSay('combo');
+    setTimeout(()=>popup.classList.remove('show'),1200);
+}
+
+// ===== LEVEL UP =====
+function checkLevelUp() {
+    const t=[0,100,300,600,1000,1600,2500,3500,5000,7000,10000];
+    let nl=1; for(let i=1;i<t.length;i++) if(score>=t[i]) nl=i+1;
+    if(nl>level){level=nl;powerCharges++;updatePowerBtn();showLevelUp();}
+}
+
+function showLevelUp() {
+    playLevelUpSound();
+    setHeroAnimation('celebrate', 800);
+    heroSay('levelup');
+    const overlay=document.getElementById('level-overlay');
+    document.getElementById('level-up-title').textContent='Level '+level+'!';
+    document.getElementById('level-up-desc').textContent='Amazing building! Keep going!';
+    document.getElementById('level-up-reward').textContent='+1 Power Charge!';
+    // Draw hero in level card
+    drawLegoHero(document.getElementById('level-hero-canvas'), selectedHero, 80);
+    // Confetti
+    const card=document.getElementById('level-card');
+    const confettiColors=['#d42828','#0057a8','#f5cd2f','#00852b','#fe8a18','#8b4789','#ff69b4'];
+    for(let i=0;i<20;i++){
+        const c=document.createElement('div');c.className='confetti-piece';
+        c.style.left=Math.random()*100+'%'; c.style.top='-10px';
+        c.style.background=confettiColors[Math.floor(Math.random()*confettiColors.length)];
+        c.style.animationDelay=(Math.random()*0.5)+'s';
+        c.style.animationDuration=(1.5+Math.random())+'s';
+        card.appendChild(c); setTimeout(()=>c.remove(),3000);
+    }
+    overlay.classList.add('show');
+}
+
+function closeLevelUp(){document.getElementById('level-overlay').classList.remove('show');}
+
+// ===== CHALLENGES =====
+function updateChallenge() {
+    if(currentChallenge>=CHALLENGES.length){
+        document.getElementById('challenge-title').textContent='All Complete!';
+        document.getElementById('challenge-desc').textContent='You finished every challenge!';
+        document.getElementById('challenge-fill').style.width='100%';
+        document.getElementById('challenge-text').textContent='DONE'; return;
+    }
+    const ch=CHALLENGES[currentChallenge];
+    let progress=0;
+    if(ch.type==='bricks')progress=brickCount;else if(ch.type==='colors')progress=usedColors.size;
+    else if(ch.type==='combo')progress=bestCombo;else if(ch.type==='powers')progress=powersUsed;
+    else if(ch.type==='score')progress=score;
+    const pct=Math.min(100,(progress/ch.target)*100);
+    document.getElementById('challenge-title').textContent=ch.title;
+    document.getElementById('challenge-desc').textContent=ch.desc;
+    document.getElementById('challenge-fill').style.width=pct+'%';
+    document.getElementById('challenge-text').textContent=Math.min(progress,ch.target)+' / '+ch.target;
+    if(progress>=ch.target){
+        addScore(50+currentChallenge*25);
+        document.getElementById('challenge-box').classList.remove('complete');
+        void document.getElementById('challenge-box').offsetWidth;
+        document.getElementById('challenge-box').classList.add('complete');
+        currentChallenge++;
+        updateChallenge();
+    }
+}
+
+// ===== ACHIEVEMENTS =====
+let toastQueue = [];
+let toastShowing = false;
+
+function checkAchievements() {
+    ACHIEVEMENTS.forEach(a=>{
+        if(!unlockedAchievements.has(a.id)&&a.condition()){
+            unlockedAchievements.add(a.id);
+            playAchievementSound();
+            updateAchievements();
+            showAchievementToast(a);
+        }
+    });
+}
+
+function showAchievementToast(a) {
+    toastQueue.push(a);
+    if (!toastShowing) processToastQueue();
+}
+
+function processToastQueue() {
+    if (toastQueue.length === 0) { toastShowing = false; return; }
+    toastShowing = true;
+    const a = toastQueue.shift();
+    const toast = document.getElementById('achievement-toast');
+    document.getElementById('toast-icon').textContent = a.icon;
+    document.getElementById('toast-name').textContent = a.name;
+    toast.classList.add('show');
+    setTimeout(() => { toast.classList.remove('show'); setTimeout(processToastQueue, 400); }, 3000);
+}
+
+function updateAchievements() {
+    const container=document.getElementById('achievements');container.innerHTML='';
+    ACHIEVEMENTS.forEach(a=>{
+        const unlocked=unlockedAchievements.has(a.id);
+        const div=document.createElement('div');div.className='achievement';
+        div.innerHTML=`<div class="achievement-icon ${unlocked?'unlocked':'locked'}">${unlocked?a.icon:'🔒'}</div><span class="achievement-text ${unlocked?'unlocked':''}">${a.name}</span>`;
+        container.appendChild(div);
+    });
+}
+
+// ===== HERO PANEL =====
+function updateHeroPanel() {
+    const panel=document.getElementById('hero-panel'),hero=HEROES[selectedHero];
+    panel.innerHTML='';
+    const canvas=document.createElement('canvas');drawLegoHero(canvas,selectedHero,100);panel.appendChild(canvas);
+    const name=document.createElement('div');name.className='hero-display-name';name.style.color=hero.color;name.textContent=hero.name;panel.appendChild(name);
+}
+
+// ===== HERO POWERS =====
+function updatePowerBtn() {
+    const btn=document.getElementById('hero-power-btn'),hero=HEROES[selectedHero];
+    document.getElementById('power-name').textContent=hero.power;
+    document.getElementById('power-charges').textContent=`(${powerCharges})`;
+    btn.disabled=powerCharges<=0;
+    if(powerCharges>0) btn.classList.add('glow'); else btn.classList.remove('glow');
+}
+
+function usePower() {
+    if(powerCharges<=0) return;
+    powerCharges--;powersUsed++;
+    updatePowerBtn(); playPowerSound();
+    setHeroAnimation('power-up', 800);
+    heroSay('power');
+    spawnHeroAura();
+
+    const container = document.getElementById('grid-container');
+    const containerRect = container.getBoundingClientRect();
+
+    if(selectedHero==='captain'){
+        // Shield throw animation
+        const shield = document.createElement('canvas');
+        shield.className = 'shield-projectile';
+        shield.width=40;shield.height=40;
+        const sctx=shield.getContext('2d');
+        sctx.fillStyle='#cc2222';sctx.beginPath();sctx.arc(20,20,18,0,Math.PI*2);sctx.fill();
+        sctx.fillStyle='white';sctx.beginPath();sctx.arc(20,20,13,0,Math.PI*2);sctx.fill();
+        sctx.fillStyle='#cc2222';sctx.beginPath();sctx.arc(20,20,9,0,Math.PI*2);sctx.fill();
+        sctx.fillStyle='#2558a8';sctx.beginPath();sctx.arc(20,20,5,0,Math.PI*2);sctx.fill();
+        shield.style.bottom='60px';shield.style.right='60px';
+        container.appendChild(shield);
+        setTimeout(()=>shield.remove(),600);
+
+        const row=Math.floor(Math.random()*GRID_ROWS);
+        let pts=0;
+        setTimeout(()=>{
+            for(let c=0;c<GRID_COLS;c++){
+                if(grid[row][c]){pts+=15;spawnParticlesAtCell(row,c,'#1a3a6b');}
+                grid[row][c]='#1a3a6b';renderCell(row,c);
+            }
+            // Screen shake
+            container.classList.add('shake');
+            setTimeout(()=>container.classList.remove('shake'),400);
+            setTimeout(()=>{for(let c=0;c<GRID_COLS;c++){grid[row][c]=null;renderCell(row,c);}},400);
+            addScore(pts+50);
+        },300);
+    }
+    else if(selectedHero==='ironman'){
+        // Repulsor beam animation
+        const comp=document.getElementById('hero-companion');
+        const compRect=comp.getBoundingClientRect();
+        const beam=document.createElement('div');beam.className='repulsor-beam';
+        beam.style.bottom=(containerRect.bottom-compRect.top-compRect.height/2)+'px';
+        beam.style.right='80px';beam.style.width='300px';beam.style.transformOrigin='right center';
+        container.appendChild(beam); setTimeout(()=>beam.remove(),500);
+
+        const col=Math.floor(Math.random()*GRID_COLS);
+        let pts=0;
+        setTimeout(()=>{
+            for(let r=0;r<GRID_ROWS;r++){
+                if(!grid[r][col]){grid[r][col]='#d4a843';brickCount++;pts+=10;usedColors.add('#d4a843');}
+                spawnParticlesAtCell(r,col,'#d4a843');renderCell(r,col);
+            }
+            addScore(pts+50);
+        },200);
+    }
+    else if(selectedHero==='hulk'){
+        // Ground crack animation
+        const crack=document.createElement('div');crack.className='ground-crack';
+        crack.textContent='💥'; crack.style.bottom='40px';crack.style.right='40px';
+        container.appendChild(crack); setTimeout(()=>crack.remove(),500);
+
+        // Screen shake (bigger for Hulk!)
+        container.classList.add('shake');
+        setTimeout(()=>container.classList.remove('shake'),400);
+
+        let pts=0;
+        for(let i=0;i<20;i++){
+            const r=Math.floor(Math.random()*GRID_ROWS),c=Math.floor(Math.random()*GRID_COLS);
+            if(grid[r][c]) pts+=20;
+            grid[r][c]='#3d8b3d';renderCell(r,c);spawnParticlesAtCell(r,c,'#3d8b3d');
+        }
+        setTimeout(()=>{
+            for(let r=0;r<GRID_ROWS;r++) for(let c=0;c<GRID_COLS;c++) if(grid[r][c]==='#3d8b3d'){grid[r][c]=null;renderCell(r,c);}
+        },500);
+        addScore(pts+100);
+    }
+    updateUI(); updateChallenge(); checkAchievements();
+}
+
+function spawnParticlesAtCell(r,c,color){const g=document.getElementById('building-grid');const cellEl=g.children[r*GRID_COLS+c];if(cellEl)spawnParticles(cellEl,color);}
+
+// ===== INIT =====
+initHome();
+</script>
+</body>
+</html>

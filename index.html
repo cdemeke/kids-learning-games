@@ -298,6 +298,8 @@
         .game-card:nth-child(6) { animation-delay: 0.95s; }
         .game-card:nth-child(7) { animation-delay: 1.1s; }
         .game-card:nth-child(8) { animation-delay: 1.25s; }
+        .game-card:nth-child(9) { animation-delay: 1.4s; }
+        .game-card:nth-child(10) { animation-delay: 1.55s; }
 
         @keyframes cardIn {
             to {
@@ -330,6 +332,8 @@
         .game-card.helpers::before { background: linear-gradient(90deg, #0984e3, #00cec9); }
         .game-card.farm::before { background: linear-gradient(90deg, #8BC34A, #FF9800); }
         .game-card.animals::before { background: linear-gradient(90deg, #667eea, #764ba2); }
+        .game-card.runner::before { background: linear-gradient(90deg, #FF6B6B, #4ECDC4); }
+        .game-card.lego::before { background: linear-gradient(90deg, #d42828, #f5cd2f); }
 
         .game-icon {
             font-size: 4rem;
@@ -357,6 +361,8 @@
         .game-card.helpers .game-title { color: #0984e3; }
         .game-card.farm .game-title { color: #689F38; }
         .game-card.animals .game-title { color: #667eea; }
+        .game-card.runner .game-title { color: #FF6B6B; }
+        .game-card.lego .game-title { color: #d42828; }
 
         .game-desc {
             color: #666;
@@ -386,6 +392,8 @@
         .game-card.helpers .play-btn { background: linear-gradient(135deg, #0984e3, #00cec9); }
         .game-card.farm .play-btn { background: linear-gradient(135deg, #8BC34A, #FF9800); }
         .game-card.animals .play-btn { background: linear-gradient(135deg, #667eea, #764ba2); }
+        .game-card.runner .play-btn { background: linear-gradient(135deg, #FF6B6B, #4ECDC4); }
+        .game-card.lego .play-btn { background: linear-gradient(135deg, #d42828, #f5cd2f); }
 
         .game-card:hover .play-btn {
             transform: scale(1.05);
@@ -744,6 +752,22 @@
                 <p class="game-desc">Where do animals live? Click the right continent, learn fun facts, and unlock achievements!</p>
                 <span class="play-btn">Play Now</span>
                 <span class="card-deco">🦁</span>
+            </a>
+
+            <a href="track-runner.html" class="game-card runner">
+                <span class="game-icon">🏃</span>
+                <h2 class="game-title">Track Runner</h2>
+                <p class="game-desc">Run along the train tracks! Dodge obstacles, collect stars, and see how far you can go!</p>
+                <span class="play-btn">Play Now</span>
+                <span class="card-deco">🚂</span>
+            </a>
+
+            <a href="lego-heroes.html" class="game-card lego">
+                <span class="game-icon">🧩</span>
+                <h2 class="game-title">Lego Hero Builder</h2>
+                <p class="game-desc">Build with Lego bricks and team up with Captain America, Iron Man, and Hulk! Earn points and unlock powers!</p>
+                <span class="play-btn">Play Now</span>
+                <span class="card-deco">🦸</span>
             </a>
         </div>
 
