@@ -844,11 +844,10 @@
             ctx.closePath();
         }
 
-        function drawStar(x, y, r, wob, ch) {
-            const rot = Math.sin(wob * 0.6) * 0.18;
+        function drawStar(x, y, r, wob) {
             ctx.save();
             ctx.translate(x, y + Math.sin(wob) * 3 * S);
-            ctx.rotate(rot);
+            ctx.rotate(Math.sin(wob * 0.6) * 0.18);
             ctx.shadowColor = 'rgba(255,190,40,.65)';
             ctx.shadowBlur = 14;
             const g = ctx.createLinearGradient(0, -r, 0, r);
@@ -865,10 +864,6 @@
             ctx.beginPath();
             ctx.ellipse(-r * 0.22, -r * 0.3, r * 0.14, r * 0.24, -0.4, 0, 7);
             ctx.fill();
-            if (ch) {
-                ctx.rotate(-rot);           // the letter stays the right way up
-                drawLetterText(ch, 0, r * 0.04, r * 1.15, '#7a4a00', 'rgba(255,255,255,.95)');
-            }
             ctx.restore();
         }
 
@@ -1164,7 +1159,6 @@
         function labelled() {
             const out = [];
             for (const p of platforms) if (p.key) out.push(p);
-            for (const s of stars) if (s.key) out.push(s);
             for (const b of balloons) if (b.key) out.push(b);
             return out;
         }
@@ -1264,18 +1258,19 @@
 
             platforms.push(p);
 
-            // goodies — a touch bigger in letter mode so the letter stays legible
+            // goodies
             if (!p.spring && Math.random() < 0.38) {
+                // stars stay plain — the letter goes on the platform under them
                 stars.push({
-                    x: p.x + p.w / 2, y: y - rand(34, 52) * S, r: (letterMode() ? 16 : 13) * S,
-                    wob: rand(0, 7), got: false, plat: type === 'move' ? p : null, ox: p.w / 2,
-                    key: letterMode() ? takeLetter() : null
+                    x: p.x + p.w / 2, y: y - rand(34, 52) * S, r: 13 * S,
+                    wob: rand(0, 7), got: false, plat: type === 'move' ? p : null, ox: p.w / 2
                 });
             } else if (heightM > 90 && Math.random() < 0.05) {
+                const gy = y - rand(52, 74) * S;
                 balloons.push({
-                    x: p.x + p.w / 2, y: y - rand(52, 74) * S, r: (letterMode() ? 19 : 17) * S,
+                    x: p.x + p.w / 2, y: gy, r: (letterMode() ? 19 : 17) * S,
                     wob: rand(0, 7), got: false, color: pick(['#ff6b9d', '#ffd93d', '#7ee06a', '#6fc9f5', '#c58bff']),
-                    key: letterMode() ? takeLetter() : null
+                    key: letterMode() ? takeLetter(gy) : null
                 });
             }
             return p;
@@ -1353,6 +1348,8 @@
         }
 
         // ----------------------------------------------------- letter targets
+        // Platforms and balloons carry the letters; stars are just treats you
+        // scoop up on the way past.
         function targetX(l) { return l.type === 'plat' ? l.obj.x + l.obj.w / 2 : l.obj.x; }
         function targetY(l) { return l.obj.y; }
         function targetR(l) { return l.type === 'plat' ? Math.max(l.obj.w, l.obj.h) * 0.55 : l.obj.r * 1.5; }
@@ -1370,10 +1367,12 @@
                 if (obj.key !== ch) return;
                 const sy = obj.y - camY;
                 if (sy < -70 || sy > H + 70) return;
-                const d = Math.abs(obj.y - player.y);
+                // nearest wins, but the climb goes up — so things above the
+                // hopper count as a little closer than things below it
+                const dy = obj.y - player.y;
+                const d = dy < 0 ? -dy : dy * 1.6;
                 if (d < bd) { bd = d; best = { obj, type }; }
             };
-            for (const s of stars) if (!s.got) consider(s, 'star');
             for (const b of balloons) if (!b.got) consider(b, 'balloon');
             for (const p of platforms) if (!p.dead && p.type !== 'ground') consider(p, 'plat');
             return best;
@@ -1400,14 +1399,12 @@
         // Hand letters to everything already in the sky (used when the mode is
         // switched on mid-climb) or take them all back again.
         function relabelWorld(on) {
-            const all = [...platforms.filter(p => p.type !== 'ground'), ...stars, ...balloons];
+            const all = [...platforms.filter(p => p.type !== 'ground'), ...balloons];
             if (on) {
-                for (const o of all) if (!o.key) o.key = takeLetter();
-                for (const s of stars) s.r = 16 * S;
+                for (const o of all) if (!o.key) o.key = takeLetter(o.y);
                 for (const b of balloons) b.r = 19 * S;
             } else {
                 for (const o of all) { freeLetter(o.key); o.key = null; }
-                for (const s of stars) s.r = 13 * S;
                 for (const b of balloons) b.r = 17 * S;
                 lock = null;
             }
@@ -1548,16 +1545,11 @@
                     s.got = true; starCount++;
                     SFX.star();
                     burst(playX + s.x, s.y, '#ffd93d', 14, 5);
-                    floatText(playX + s.x, s.y, s.key ? s.key + '  +1' : '+1', '#ffb422');
-                    if (lock && lock.obj === s) clearLock(false);
+                    floatText(playX + s.x, s.y, '+1', '#ffb422');
                     updateHUD();
                 }
             }
-            stars = stars.filter(s => {
-                const keep = !s.got && s.y < camY + H + 200 * S;
-                if (!keep) { freeLetter(s.key); s.gone = true; }
-                return keep;
-            });
+            stars = stars.filter(s => !s.got && s.y < camY + H + 200 * S);
 
             for (const b of balloons) {
                 b.wob += 0.045 * d;
@@ -1744,7 +1736,7 @@
             for (const s of stars) {
                 const sy = s.y - camY;
                 if (sy < -60 || sy > H + 60) continue;
-                drawStar(playX + s.x, sy, s.r, s.wob, s.key);
+                drawStar(playX + s.x, sy, s.r, s.wob);
             }
             for (const b of balloons) {
                 const sy = b.y - camY;
@@ -1965,7 +1957,6 @@
                 const sy = o.y - camY;
                 if (sy > -70 && sy < H + 70) live.add(o.key);
             };
-            for (const s of stars) add(s);
             for (const b of balloons) add(b);
             for (const p of platforms) if (!p.dead) add(p);
             const sig = [...live].sort().join('');
@@ -1984,7 +1975,7 @@
             document.getElementById('keySetWrap').classList.toggle('hidden', !letterMode());
             document.getElementById('modeToggle').classList.toggle('on', letterMode());
             document.getElementById('howText').innerHTML = letterMode()
-                ? 'Press the <b>letter</b> you see 🔤<br>Your hopper flies to that spot! ⬆️<br>Letters are on <b>platforms</b>, <b>stars</b> ⭐ and <b>balloons</b> 🎈'
+                ? 'Press the <b>letter</b> you see 🔤<br>Your hopper flies to that spot! ⬆️<br>Letters are on <b>platforms</b> and <b>balloons</b> 🎈'
                 : '<b>Hold and slide</b> your finger to move 🫱<br>You bounce all by yourself! ⬆️<br>Grab <b>stars</b> ⭐ and <b>balloons</b> 🎈';
             syncKeyPad();
         }
