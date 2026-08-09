@@ -300,6 +300,12 @@
         .game-card:nth-child(8) { animation-delay: 1.25s; }
         .game-card:nth-child(9) { animation-delay: 1.4s; }
         .game-card:nth-child(10) { animation-delay: 1.55s; }
+        .game-card:nth-child(11) { animation-delay: 1.7s; }
+        .game-card:nth-child(12) { animation-delay: 1.85s; }
+        .game-card:nth-child(13) { animation-delay: 2s; }
+        .game-card:nth-child(14) { animation-delay: 2.15s; }
+        .game-card:nth-child(15) { animation-delay: 2.3s; }
+        .game-card:nth-child(16) { animation-delay: 2.45s; }
 
         @keyframes cardIn {
             to {
@@ -334,6 +340,12 @@
         .game-card.animals::before { background: linear-gradient(90deg, #667eea, #764ba2); }
         .game-card.runner::before { background: linear-gradient(90deg, #FF6B6B, #4ECDC4); }
         .game-card.lego::before { background: linear-gradient(90deg, #d42828, #f5cd2f); }
+        .game-card.shapes::before { background: linear-gradient(90deg, #6C5CE7, #74ebd5); }
+        .game-card.fishing::before { background: linear-gradient(90deg, #0288D1, #4FC3F7); }
+        .game-card.letters::before { background: linear-gradient(90deg, #7E57C2, #EC407A); }
+        .game-card.patterns::before { background: linear-gradient(90deg, #2E8B57, #A8E6CF); }
+        .game-card.match::before { background: linear-gradient(90deg, #FF6A88, #FFB88C); }
+        .game-card.hopper::before { background: linear-gradient(90deg, #63c74d, #8fd8f2); }
 
         .game-icon {
             font-size: 4rem;
@@ -363,6 +375,12 @@
         .game-card.animals .game-title { color: #667eea; }
         .game-card.runner .game-title { color: #FF6B6B; }
         .game-card.lego .game-title { color: #d42828; }
+        .game-card.shapes .game-title { color: #6C5CE7; }
+        .game-card.fishing .game-title { color: #0288D1; }
+        .game-card.letters .game-title { color: #7E57C2; }
+        .game-card.patterns .game-title { color: #2E8B57; }
+        .game-card.match .game-title { color: #FF6A88; }
+        .game-card.hopper .game-title { color: #45a832; }
 
         .game-desc {
             color: #666;
@@ -394,6 +412,12 @@
         .game-card.animals .play-btn { background: linear-gradient(135deg, #667eea, #764ba2); }
         .game-card.runner .play-btn { background: linear-gradient(135deg, #FF6B6B, #4ECDC4); }
         .game-card.lego .play-btn { background: linear-gradient(135deg, #d42828, #f5cd2f); }
+        .game-card.shapes .play-btn { background: linear-gradient(135deg, #6C5CE7, #74ebd5); }
+        .game-card.fishing .play-btn { background: linear-gradient(135deg, #0288D1, #4FC3F7); }
+        .game-card.letters .play-btn { background: linear-gradient(135deg, #7E57C2, #EC407A); }
+        .game-card.patterns .play-btn { background: linear-gradient(135deg, #2E8B57, #A8E6CF); }
+        .game-card.match .play-btn { background: linear-gradient(135deg, #FF6A88, #FFB88C); }
+        .game-card.hopper .play-btn { background: linear-gradient(135deg, #63c74d, #4aa8d8); }
 
         .game-card:hover .play-btn {
             transform: scale(1.05);
@@ -768,6 +792,54 @@
                 <p class="game-desc">Build with Lego bricks and team up with Captain America, Iron Man, and Hulk! Earn points and unlock powers!</p>
                 <span class="play-btn">Play Now</span>
                 <span class="card-deco">🦸</span>
+            </a>
+
+            <a href="shape-party.html" class="game-card shapes">
+                <span class="game-icon">🔷</span>
+                <h2 class="game-title">Shape Party</h2>
+                <p class="game-desc">Find circles, stars, hearts and more! Tap the right shape to join the party!</p>
+                <span class="play-btn">Play Now</span>
+                <span class="card-deco">⭐</span>
+            </a>
+
+            <a href="number-fishing.html" class="game-card fishing">
+                <span class="game-icon">🎣</span>
+                <h2 class="game-title">Number Fishing</h2>
+                <p class="game-desc">Count the fish in the pond and pick the right number! Tap each fish to count out loud!</p>
+                <span class="play-btn">Play Now</span>
+                <span class="card-deco">🐠</span>
+            </a>
+
+            <a href="letter-rocket.html" class="game-card letters">
+                <span class="game-icon">🚀</span>
+                <h2 class="game-title">Letter Rocket</h2>
+                <p class="game-desc">Find the right letter to launch your rocket to the moon! Learn your ABCs in space!</p>
+                <span class="play-btn">Play Now</span>
+                <span class="card-deco">🌕</span>
+            </a>
+
+            <a href="pattern-train.html" class="game-card patterns">
+                <span class="game-icon">🚂</span>
+                <h2 class="game-title">Pattern Train</h2>
+                <p class="game-desc">What comes next? Finish the pattern to make the train go! Choo choo!</p>
+                <span class="play-btn">Play Now</span>
+                <span class="card-deco">🌈</span>
+            </a>
+
+            <a href="animal-match.html" class="game-card match">
+                <span class="game-icon">🐾</span>
+                <h2 class="game-title">Animal Match</h2>
+                <p class="game-desc">Flip the cards and find the matching animal pairs! Train your memory with cute critters!</p>
+                <span class="play-btn">Play Now</span>
+                <span class="card-deco">🐼</span>
+            </a>
+
+            <a href="sky-hopper.html" class="game-card hopper">
+                <span class="game-icon">☁️</span>
+                <h2 class="game-title">Sky Hopper</h2>
+                <p class="game-desc">Bounce up and up on grassy platforms! Grab stars, ride balloons, and climb past the clouds!</p>
+                <span class="play-btn">Play Now</span>
+                <span class="card-deco">⭐</span>
             </a>
         </div>
 

@@ -1,0 +1,2128 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Sky Hopper - Climb the Sky!</title>
+    <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@700;800&family=Nunito:wght@700;800;900&display=swap"
+        rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html, body {
+            overflow: hidden;
+            height: 100%;
+            overscroll-behavior: none;
+        }
+
+        body {
+            font-family: 'Nunito', sans-serif;
+            touch-action: none;
+            background: #8fd8f2;
+        }
+
+        .game-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        #gameCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            display: block;
+        }
+
+        /* ---------- HUD ---------- */
+        .home-btn {
+            position: fixed;
+            top: max(12px, env(safe-area-inset-top));
+            left: max(12px, env(safe-area-inset-left));
+            z-index: 900;
+            background: linear-gradient(180deg, #ffffff, #eaf7ff);
+            border: 3px solid #ffffff;
+            color: #2b7a3d;
+            padding: 9px 16px;
+            border-radius: 25px;
+            font-size: 0.9rem;
+            font-weight: 900;
+            text-decoration: none;
+            box-shadow: 0 5px 0 rgba(0, 0, 0, 0.15), 0 8px 18px rgba(0, 0, 0, 0.18);
+            display: flex;
+            align-items: center;
+            gap: 7px;
+        }
+
+        .home-btn:active { transform: translateY(3px); box-shadow: 0 2px 0 rgba(0,0,0,0.15); }
+
+        .sound-toggle {
+            position: fixed;
+            top: max(12px, env(safe-area-inset-top));
+            right: max(12px, env(safe-area-inset-right));
+            z-index: 900;
+            width: 46px;
+            height: 46px;
+            border-radius: 50%;
+            border: 3px solid #fff;
+            background: linear-gradient(180deg, #ffffff, #eaf7ff);
+            font-size: 1.2rem;
+            cursor: pointer;
+            box-shadow: 0 5px 0 rgba(0, 0, 0, 0.15), 0 8px 18px rgba(0, 0, 0, 0.18);
+        }
+
+        .sound-toggle:active { transform: translateY(3px); box-shadow: 0 2px 0 rgba(0,0,0,0.15); }
+
+        /* the ⌨️ button lives just left of the speaker */
+        .mode-toggle {
+            right: calc(max(12px, env(safe-area-inset-right)) + 54px);
+            font-size: 1.15rem;
+            opacity: .55;
+        }
+
+        .mode-toggle.on { opacity: 1; background: linear-gradient(180deg, #ffe9a8, #ffd24d); border-color: #fff; }
+
+        .game-hud {
+            position: fixed;
+            top: max(12px, env(safe-area-inset-top));
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+            z-index: 800;
+            pointer-events: none;
+        }
+
+        .hud-item {
+            background: linear-gradient(180deg, rgba(255,255,255,0.97), rgba(232,247,255,0.92));
+            padding: 7px 15px;
+            border-radius: 22px;
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            border: 3px solid #fff;
+            color: #3a5a40;
+            font-weight: 900;
+            font-size: 1.05rem;
+            box-shadow: 0 4px 0 rgba(0,0,0,0.12), 0 6px 14px rgba(0,0,0,0.15);
+            white-space: nowrap;
+        }
+
+        .hud-item.hearts { padding: 7px 12px; gap: 3px; }
+        .heart { font-size: 1.15rem; transition: transform .3s, opacity .3s; }
+        .heart.lost { opacity: .25; transform: scale(.7); }
+
+        /* ---------- Overlays ---------- */
+        .overlay {
+            position: absolute;
+            inset: 0;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            text-align: center;
+            background: linear-gradient(180deg, rgba(135, 216, 245, .55), rgba(90, 175, 220, .75));
+            backdrop-filter: blur(3px);
+        }
+
+        .overlay.hidden { display: none; }
+
+        .panel {
+            background: linear-gradient(180deg, #ffffff, #f0faff);
+            border: 6px solid #fff;
+            border-radius: 34px;
+            padding: 26px 28px 28px;
+            box-shadow: 0 12px 0 rgba(0, 0, 0, .12), 0 22px 45px rgba(0, 0, 0, .28);
+            max-width: 430px;
+            width: 100%;
+            max-height: 92vh;
+            overflow-y: auto;
+        }
+
+        .game-title {
+            font-family: 'Baloo 2', cursive;
+            font-size: clamp(2.1rem, 9vw, 3.1rem);
+            font-weight: 800;
+            line-height: 1;
+            color: #fff;
+            -webkit-text-stroke: 0px;
+            text-shadow: 3px 3px 0 #4aa832, 6px 6px 0 rgba(0, 0, 0, .18);
+            letter-spacing: 1px;
+        }
+
+        .game-sub {
+            font-weight: 900;
+            color: #6b8f5a;
+            letter-spacing: 2px;
+            font-size: .85rem;
+            margin-top: 4px;
+            margin-bottom: 14px;
+        }
+
+        .char-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            justify-items: center;
+            gap: 7px;
+            margin: 6px 0 16px;
+        }
+
+        .char-btn {
+            width: 100%;
+            max-width: 70px;
+            height: 74px;
+            border-radius: 18px;
+            border: 4px solid #d8ecff;
+            background: #f4fbff;
+            cursor: pointer;
+            padding: 2px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 1px;
+            transition: transform .2s, border-color .2s;
+        }
+
+        .char-btn canvas { width: 46px; height: 46px; }
+        .char-btn span { font-size: .62rem; font-weight: 900; color: #6b8f5a; }
+        .char-btn.selected { border-color: #63c74d; background: #eaffe0; transform: translateY(-4px) scale(1.06); }
+
+        .big-btn {
+            font-family: 'Baloo 2', cursive;
+            font-size: 1.7rem;
+            font-weight: 800;
+            color: #fff;
+            border: none;
+            border-radius: 50px;
+            padding: 14px 52px;
+            cursor: pointer;
+            background: linear-gradient(180deg, #7ee06a, #45a832);
+            box-shadow: 0 7px 0 #2f7d22, 0 12px 22px rgba(0, 0, 0, .25);
+            letter-spacing: 1px;
+            transition: transform .1s;
+        }
+
+        .big-btn:active { transform: translateY(5px); box-shadow: 0 2px 0 #2f7d22; }
+
+        .big-btn.blue { background: linear-gradient(180deg, #6fc9f5, #2b9ada); box-shadow: 0 7px 0 #1f74a8, 0 12px 22px rgba(0,0,0,.25); }
+        .big-btn.blue:active { box-shadow: 0 2px 0 #1f74a8; }
+
+        .btn-row { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-top: 6px; }
+        .btn-row .big-btn { font-size: 1.3rem; padding: 12px 30px; }
+
+        /* ---------- Settings (control mode) ---------- */
+        .setting { margin: 10px 0 0; }
+
+        .setting-label {
+            font-size: .68rem;
+            font-weight: 900;
+            letter-spacing: 2px;
+            color: #85a2b5;
+            margin-bottom: 5px;
+        }
+
+        .seg {
+            display: flex;
+            gap: 6px;
+            background: #eef8ff;
+            border-radius: 16px;
+            padding: 5px;
+        }
+
+        .seg button {
+            flex: 1;
+            border: none;
+            background: transparent;
+            border-radius: 12px;
+            padding: 9px 6px;
+            font-family: 'Nunito', sans-serif;
+            font-weight: 900;
+            font-size: .82rem;
+            color: #6b8f5a;
+            cursor: pointer;
+            transition: background .15s, color .15s, transform .15s;
+            white-space: nowrap;
+        }
+
+        .seg button.on {
+            background: linear-gradient(180deg, #7ee06a, #45a832);
+            color: #fff;
+            box-shadow: 0 3px 0 #2f7d22;
+            transform: translateY(-1px);
+        }
+
+        .seg.small button { font-size: .78rem; padding: 7px 4px; }
+
+        .chk {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 8px;
+            font-weight: 900;
+            font-size: .8rem;
+            color: #6b8f5a;
+            cursor: pointer;
+        }
+
+        .chk input { width: 18px; height: 18px; accent-color: #45a832; }
+
+        #keySetWrap.hidden { display: none; }
+
+        /* ---------- On-screen key pad ---------- */
+        .key-pad {
+            position: fixed;
+            left: 0;
+            right: 0;
+            bottom: max(6px, env(safe-area-inset-bottom));
+            z-index: 700;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+            padding: 0 6px;
+        }
+
+        .key-pad.hidden { display: none; }
+
+        .key-row { display: flex; gap: 5px; justify-content: center; }
+
+        .key-cap {
+            width: 38px;
+            height: 40px;
+            border-radius: 11px;
+            border: 3px solid rgba(255, 255, 255, .9);
+            background: rgba(255, 255, 255, .55);
+            color: #4a6b58;
+            font-family: 'Baloo 2', cursive;
+            font-size: 1.25rem;
+            font-weight: 800;
+            line-height: 1;
+            cursor: pointer;
+            box-shadow: 0 3px 0 rgba(0, 0, 0, .14);
+            transition: transform .08s, background .15s, color .15s;
+        }
+
+        .key-cap.live {
+            background: linear-gradient(180deg, #fff7cf, #ffd93d);
+            color: #7a4a00;
+            box-shadow: 0 3px 0 #d99b12, 0 0 12px rgba(255, 210, 60, .8);
+        }
+
+        .key-cap:active, .key-cap.hit { transform: translateY(3px) scale(.94); box-shadow: 0 0 0 rgba(0, 0, 0, .14); }
+
+        @media (max-width: 480px) {
+            .key-cap { width: 31px; height: 34px; font-size: 1.05rem; border-width: 2px; border-radius: 9px; }
+            .key-row { gap: 4px; }
+        }
+
+        @media (max-height: 460px) {
+            .key-cap { width: 30px; height: 28px; font-size: .95rem; border-width: 2px; }
+            .key-pad { gap: 3px; }
+        }
+
+        .how {
+            margin-top: 16px;
+            background: #eef8ff;
+            border-radius: 18px;
+            padding: 12px 14px;
+            color: #4a6b58;
+            font-weight: 800;
+            font-size: .88rem;
+            line-height: 1.6;
+        }
+
+        .how b { color: #2b7a3d; }
+
+        .result-title {
+            font-family: 'Baloo 2', cursive;
+            font-size: 2.1rem;
+            color: #ff9f43;
+            text-shadow: 2px 2px 0 rgba(0,0,0,.1);
+        }
+
+        .best-badge {
+            display: inline-block;
+            background: linear-gradient(180deg, #ffd93d, #ffab2e);
+            color: #7a4a00;
+            font-weight: 900;
+            padding: 6px 18px;
+            border-radius: 30px;
+            margin: 8px 0;
+            font-size: .95rem;
+            box-shadow: 0 4px 0 rgba(0,0,0,.12);
+        }
+
+        .stats {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            margin: 14px 0 18px;
+        }
+
+        .stat {
+            background: #eef8ff;
+            border-radius: 18px;
+            padding: 12px 18px;
+            min-width: 100px;
+        }
+
+        .stat .label { font-size: .72rem; font-weight: 900; color: #85a2b5; letter-spacing: 1px; }
+        .stat .value { font-size: 1.7rem; font-weight: 900; color: #2b7a3d; font-family: 'Baloo 2', cursive; }
+
+        /* ---------- Floating messages ---------- */
+        .toast {
+            position: fixed;
+            top: 34%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(.5);
+            z-index: 850;
+            font-family: 'Baloo 2', cursive;
+            font-size: clamp(1.8rem, 8vw, 2.8rem);
+            color: #fff;
+            text-shadow: 3px 3px 0 #f7a325, 6px 6px 0 rgba(0, 0, 0, .18);
+            opacity: 0;
+            pointer-events: none;
+            text-align: center;
+            white-space: nowrap;
+        }
+
+        .toast.show { animation: pop 1.8s cubic-bezier(.34, 1.56, .64, 1) forwards; }
+
+        @keyframes pop {
+            0% { opacity: 0; transform: translate(-50%, -50%) scale(.4); }
+            18% { opacity: 1; transform: translate(-50%, -50%) scale(1.12); }
+            30% { transform: translate(-50%, -50%) scale(1); }
+            75% { opacity: 1; transform: translate(-50%, -60%) scale(1); }
+            100% { opacity: 0; transform: translate(-50%, -110%) scale(.9); }
+        }
+
+        .toast .sub {
+            display: block;
+            font-size: .42em;
+            font-family: 'Nunito', sans-serif;
+            font-weight: 900;
+            letter-spacing: 2px;
+            text-shadow: 2px 2px 0 rgba(0,0,0,.15);
+        }
+
+        /* On phones the top row is crowded, so drop the HUD under the buttons */
+        @media (max-width: 620px) {
+            .game-hud {
+                top: calc(max(12px, env(safe-area-inset-top)) + 54px);
+                gap: 7px;
+            }
+            .hud-item { font-size: .95rem; padding: 6px 12px; border-width: 2px; }
+            .hud-item svg { width: 17px; height: 17px; }
+            .heart { font-size: 1rem; }
+        }
+
+        @media (max-height: 640px) {
+            .panel { padding: 18px 20px 20px; border-radius: 26px; }
+            .char-btn { max-width: 58px; height: 66px; }
+            .char-btn canvas { width: 40px; height: 40px; }
+            .how { font-size: .8rem; margin-top: 10px; padding: 10px; }
+            .game-sub { margin-bottom: 8px; }
+        }
+
+        /* phone held sideways — everything has to fit without scrolling */
+        @media (max-height: 460px) {
+            .panel { padding: 12px 16px 14px; border-radius: 22px; max-width: 520px; }
+            .game-title { font-size: 1.9rem; }
+            .game-sub { font-size: .68rem; margin: 2px 0 6px; letter-spacing: 1px; }
+            .char-row { margin: 2px 0 8px; gap: 6px; }
+            .char-btn { max-width: 50px; height: 54px; border-width: 3px; border-radius: 14px; }
+            .char-btn canvas { width: 32px; height: 32px; }
+            .char-btn span { font-size: .55rem; }
+            .big-btn { font-size: 1.25rem; padding: 9px 40px; }
+            .btn-row .big-btn { font-size: 1rem; padding: 8px 22px; }
+            .how { font-size: .72rem; line-height: 1.35; margin-top: 8px; padding: 8px 10px; border-radius: 12px; }
+            .result-title { font-size: 1.5rem; }
+            .stats { margin: 8px 0 10px; gap: 8px; }
+            .stat { padding: 7px 14px; min-width: 84px; }
+            .stat .value { font-size: 1.3rem; }
+            .best-badge { margin: 4px 0; padding: 4px 14px; font-size: .82rem; }
+            .game-hud { top: 8px; }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="game-container">
+        <canvas id="gameCanvas"></canvas>
+
+        <a href="index.html" class="home-btn">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" />
+            </svg>
+            Home
+        </a>
+
+        <button class="sound-toggle" id="soundToggle" aria-label="Sound on or off">🔊</button>
+        <button class="sound-toggle mode-toggle" id="modeToggle" aria-label="Letter keys mode on or off">⌨️</button>
+
+        <div class="game-hud" id="hud" style="display:none">
+            <div class="hud-item">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="#63c74d">
+                    <path d="M12 3l7 8h-4v10H9V11H5z" />
+                </svg>
+                <span id="heightVal">0</span>m
+            </div>
+            <div class="hud-item">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="#ffc93c">
+                    <polygon points="12,2 15.1,8.3 22,9.3 17,14.1 18.2,21 12,17.8 5.8,21 7,14.1 2,9.3 8.9,8.3" />
+                </svg>
+                <span id="starVal">0</span>
+            </div>
+            <div class="hud-item hearts" id="hearts"></div>
+        </div>
+
+        <div class="toast" id="toast"></div>
+
+        <div class="key-pad hidden" id="keyPad"></div>
+
+        <!-- Start screen -->
+        <div class="overlay" id="startScreen">
+            <div class="panel">
+                <div class="game-title">Sky Hopper</div>
+                <div class="game-sub">HOP UP, UP AND UP!</div>
+                <div class="char-row" id="charRow"></div>
+
+                <div class="setting">
+                    <div class="setting-label">HOW TO STEER</div>
+                    <div class="seg" id="modeSeg">
+                        <button data-mode="touch">🫱 Slide</button>
+                        <button data-mode="letters">⌨️ Letter Keys</button>
+                    </div>
+                </div>
+
+                <div class="setting hidden" id="keySetWrap">
+                    <div class="setting-label">WHICH KEYS</div>
+                    <div class="seg small" id="keySeg">
+                        <button data-keys="home">Home row</button>
+                        <button data-keys="alpha">A – Z</button>
+                        <button data-keys="num">0 – 9</button>
+                    </div>
+                    <label class="chk"><input type="checkbox" id="oskChk"> Show keys on screen</label>
+                </div>
+
+                <button class="big-btn" id="playBtn" style="margin-top:14px">PLAY</button>
+                <div class="how" id="howText"></div>
+            </div>
+        </div>
+
+        <!-- Game over -->
+        <div class="overlay hidden" id="overScreen">
+            <div class="panel">
+                <div class="result-title" id="overTitle">Great climbing!</div>
+                <div id="bestBadgeWrap"></div>
+                <div class="stats">
+                    <div class="stat">
+                        <div class="label">HEIGHT</div>
+                        <div class="value"><span id="finalHeight">0</span>m</div>
+                    </div>
+                    <div class="stat">
+                        <div class="label">STARS</div>
+                        <div class="value" id="finalStars">0</div>
+                    </div>
+                </div>
+                <div class="btn-row">
+                    <button class="big-btn" id="againBtn">PLAY AGAIN</button>
+                    <button class="big-btn blue" id="menuBtn">MENU</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // =====================================================================
+        //  Sky Hopper — an endless vertical climber for little kids.
+        //  Everything is drawn with canvas vectors (no image files).
+        // =====================================================================
+
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        let W = 0, H = 0;          // logical (CSS) pixel size
+        let playW = 0, playX = 0;  // the column the game happens in
+        let S = 1;                 // scale factor for everything
+
+        function resize() {
+            const dpr = Math.min(window.devicePixelRatio || 1, 2);
+            W = window.innerWidth;
+            H = window.innerHeight;
+            canvas.width = Math.round(W * dpr);
+            canvas.height = Math.round(H * dpr);
+            canvas.style.width = W + 'px';
+            canvas.style.height = H + 'px';
+            ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+            playW = Math.min(W, 520);
+            playX = (W - playW) / 2;
+            // scale to the *smaller* of width and height so a short landscape
+            // screen still shows several platforms at once
+            S = Math.max(0.75, Math.min(1.3, Math.min(playW / 420, H / 680)));
+        }
+        resize();
+        window.addEventListener('resize', () => { resize(); if (state === 'menu') drawMenuBackdrop(); });
+
+        // ---------------------------------------------------------------- art
+        const C = {
+            grass: '#63c74d',
+            grassDark: '#3f9142',
+            grassDot: '#3e8948',
+            grassEdge: '#4fae3c',
+            dirt: '#9a6438',
+            dirtLight: '#ab7546',
+            dirtDark: '#7d4e28',
+            dirtSpot: '#66401f'
+        };
+
+        // how far the grass humps rise above the dirt line
+        function peakH() { return 4.6 * S; }
+
+        // Round-ish platform silhouette: full width at the top, slightly tapered
+        // at the bottom with fat rounded corners (the Kenney-style grass block).
+        function platformPath(x, y, w, h) {
+            const r = Math.min(11 * S, h * 0.42, w * 0.22);
+            const inset = Math.min(5 * S, w * 0.06);
+            ctx.beginPath();
+            ctx.moveTo(x + r, y);
+            ctx.lineTo(x + w - r, y);
+            ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+            ctx.lineTo(x + w - inset, y + h - r);
+            ctx.quadraticCurveTo(x + w - inset, y + h, x + w - inset - r, y + h);
+            ctx.lineTo(x + inset + r, y + h);
+            ctx.quadraticCurveTo(x + inset, y + h, x + inset, y + h - r);
+            ctx.lineTo(x, y + r);
+            ctx.quadraticCurveTo(x, y, x + r, y);
+            ctx.closePath();
+        }
+
+        // The bumpy grass cap that sits on top of the dirt.
+        function grassPath(x, y, w, gh) {
+            const bump = Math.max(3, Math.round(w / (24 * S)));   // number of humps
+            const step = w / bump;
+            const peak = peakH();   // how tall each hump rises above the baseline
+            const base = y + peak;
+            const r = Math.min(9 * S, w * 0.2);
+
+            ctx.beginPath();
+            ctx.moveTo(x, y + gh);
+            ctx.lineTo(x, base + r * 0.5);
+            ctx.quadraticCurveTo(x, base, x + r * 0.7, base);
+            for (let i = 0; i < bump; i++) {
+                const x0 = x + i * step + (i === 0 ? r * 0.7 : 0);
+                const x1 = x + (i + 1) * step;
+                ctx.quadraticCurveTo((x0 + x1) / 2, base - peak * 2.1, Math.min(x1, x + w - r * 0.7), base);
+            }
+            ctx.quadraticCurveTo(x + w, base, x + w, base + r * 0.5);
+            ctx.lineTo(x + w, y + gh);
+            // wavy underside of the grass
+            const waves = 3;
+            const wstep = w / waves;
+            for (let i = waves; i > 0; i--) {
+                const x1 = x + (i - 1) * wstep;
+                const xm = x + (i - 0.5) * wstep;
+                ctx.quadraticCurveTo(xm, y + gh + (i % 2 ? 4.5 * S : -3 * S), x1, y + gh);
+            }
+            ctx.closePath();
+        }
+
+        function drawPlatform(p, sy) {
+            const x = playX + p.x, y = sy, w = p.w, h = p.h;
+
+            if (p.type === 'cloud') { drawCloudPlatform(p, sy); return; }
+
+            const pk = peakH();
+            const dy = y + pk;          // dirt starts below the grass humps
+            const dh = h - pk;
+
+            ctx.save();
+            // soft drop shadow
+            ctx.globalAlpha = 0.13;
+            ctx.fillStyle = '#123';
+            platformPath(x + 2 * S, dy + 5 * S, w, dh);
+            ctx.fill();
+            ctx.globalAlpha = 1;
+
+            // dirt body
+            platformPath(x, dy, w, dh);
+            ctx.save();
+            ctx.clip();
+            const g = ctx.createLinearGradient(0, y, 0, y + h);
+            g.addColorStop(0, C.dirtLight);
+            g.addColorStop(0.55, C.dirt);
+            g.addColorStop(1, C.dirtDark);
+            ctx.fillStyle = g;
+            ctx.fillRect(x - 4, y - 4, w + 8, h + 8);
+
+            // dirt speckles
+            ctx.fillStyle = C.dirtSpot;
+            ctx.globalAlpha = 0.55;
+            for (const d of p.spots) {
+                ctx.beginPath();
+                ctx.ellipse(x + d.x * w, y + h * (0.45 + d.y * 0.5), d.r * S, d.r * 0.78 * S, d.a, 0, 7);
+                ctx.fill();
+            }
+            ctx.globalAlpha = 1;
+            ctx.restore();
+
+            // grass cap
+            const gh = pk + dh * 0.44;
+            grassPath(x, y, w, gh);
+            ctx.save();
+            ctx.clip();
+            const gg = ctx.createLinearGradient(0, y - 2, 0, y + gh);
+            gg.addColorStop(0, '#74d95c');
+            gg.addColorStop(0.6, C.grass);
+            gg.addColorStop(1, C.grassEdge);
+            ctx.fillStyle = gg;
+            ctx.fillRect(x - 6, y - 10, w + 12, gh + 16);
+
+            // little dark blades / dots on the grass
+            ctx.fillStyle = C.grassDot;
+            ctx.globalAlpha = 0.85;
+            for (const d of p.blades) {
+                ctx.beginPath();
+                ctx.ellipse(x + d.x * w, y + gh * (0.35 + d.y * 0.55), d.r * S, d.r * 0.72 * S, 0, 0, 7);
+                ctx.fill();
+            }
+            ctx.restore();
+            ctx.globalAlpha = 1;
+            ctx.restore();
+
+            if (p.spring) drawSpring(x + w / 2, y, p);
+            if (p.key) drawLetterBadge(p.key, x + w / 2, y + h * 0.46, Math.min(13 * S, w * 0.3), p.spring ? '#e2483a' : '#3f9142');
+        }
+
+        // Bouncy clouds have to read as *platforms*, not scenery, so they get a
+        // bright rim and sparkles that the background clouds never have.
+        function drawCloudPlatform(p, sy) {
+            const x = playX + p.x, y = sy, w = p.w, h = p.h;
+            const cy = y + h * 0.62;
+            ctx.save();
+            ctx.globalAlpha = p.alpha;
+
+            ctx.fillStyle = '#8ad9ff';
+            puffs(x - 2 * S, cy + 3 * S, w + 4 * S, h * 0.92);
+            ctx.fillStyle = '#dff4ff';
+            puffs(x, cy + 1.5 * S, w, h * 0.9);
+            ctx.fillStyle = '#ffffff';
+            puffs(x, cy, w, h * 0.86);
+
+            ctx.fillStyle = '#ffffff';
+            for (let i = 0; i < 4; i++) {
+                const sxp = x + w * (0.16 + i * 0.23);
+                const syp = y + h * (i % 2 ? 0.15 : 0.42);
+                const r = 3.4 * S;
+                ctx.beginPath();
+                for (let k = 0; k < 8; k++) {
+                    const a = k * Math.PI / 4;
+                    const rr = k % 2 === 0 ? r : r * 0.32;
+                    const px = sxp + Math.cos(a) * rr, py = syp + Math.sin(a) * rr;
+                    k ? ctx.lineTo(px, py) : ctx.moveTo(px, py);
+                }
+                ctx.closePath();
+                ctx.fillStyle = i % 2 ? '#8ad9ff' : '#ffe680';
+                ctx.fill();
+            }
+            if (p.key) drawLetterBadge(p.key, x + w / 2, cy - h * 0.05, Math.min(13 * S, w * 0.3), '#2b9ada');
+            ctx.restore();
+        }
+
+        // A fluffy cartoon cloud: circles of varying size laid along the width
+        // with a flat-ish base, drawn as a single path.
+        function puffs(x, cy, w, h) {
+            const n = Math.max(3, Math.round(w / (h * 1.1)));
+            ctx.beginPath();
+            for (let i = 0; i < n; i++) {
+                const t = n === 1 ? 0.5 : i / (n - 1);
+                const r = h * (0.58 + 0.42 * Math.sin(Math.PI * (0.2 + 0.6 * t)));
+                const px = x + r + t * (w - 2 * r);
+                const py = cy - r * 0.2;
+                ctx.moveTo(px + r, py);
+                ctx.arc(px, py, r, 0, 7);
+            }
+            ctx.rect(x + h * 0.4, cy - h * 0.3, Math.max(1, w - h * 0.8), h * 0.55);
+            ctx.fill();
+        }
+
+        function drawSpring(cx, topY, p) {
+            const sq = p.springSquish || 0;
+            const hgt = (18 - sq * 10) * S;
+            const rw = (15 + sq * 5) * S;
+            ctx.save();
+            ctx.translate(cx, topY + 2 * S);
+            // stem
+            ctx.fillStyle = '#fff0d9';
+            ctx.beginPath();
+            ctx.roundRect(-5 * S, -hgt * 0.45, 10 * S, hgt * 0.55, 4 * S);
+            ctx.fill();
+            // cap
+            const g = ctx.createLinearGradient(0, -hgt, 0, -hgt * 0.2);
+            g.addColorStop(0, '#ff7b6b');
+            g.addColorStop(1, '#e2483a');
+            ctx.fillStyle = g;
+            ctx.beginPath();
+            ctx.ellipse(0, -hgt * 0.42, rw, hgt * 0.66, 0, Math.PI, 0);
+            ctx.fill();
+            // spots
+            ctx.fillStyle = '#fff';
+            for (const s of [[-0.45, -0.55, 0.19], [0.35, -0.62, 0.22], [0.02, -0.86, 0.15]]) {
+                ctx.beginPath();
+                ctx.ellipse(s[0] * rw, -hgt * 0.42 + s[1] * hgt * 0.55, rw * s[2], rw * s[2] * 0.8, 0, 0, 7);
+                ctx.fill();
+            }
+            ctx.restore();
+        }
+
+        // ----------------------------------------------------- letter labels
+        // Big, high-contrast and always upright — a four-year-old has to be able
+        // to match it to a key without squinting.
+        function letterFont(size) {
+            return `800 ${size}px 'Baloo 2', Nunito, sans-serif`;
+        }
+
+        function drawLetterText(ch, x, y, size, fill, halo) {
+            ctx.save();
+            ctx.font = letterFont(size);
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            if (halo) {
+                ctx.lineJoin = 'round';
+                ctx.lineWidth = size * 0.28;
+                ctx.strokeStyle = halo;
+                ctx.strokeText(ch, x, y);
+            }
+            ctx.fillStyle = fill;
+            ctx.fillText(ch, x, y);
+            ctx.restore();
+        }
+
+        // A round key-cap badge, used on platforms and springy mushrooms.
+        function drawLetterBadge(ch, x, y, r, tone) {
+            ctx.save();
+            ctx.shadowColor = 'rgba(0,0,0,.28)';
+            ctx.shadowBlur = 6;
+            ctx.shadowOffsetY = 2.5 * S;
+            ctx.beginPath();
+            ctx.arc(x, y, r, 0, 7);
+            const g = ctx.createLinearGradient(0, y - r, 0, y + r);
+            g.addColorStop(0, '#ffffff');
+            g.addColorStop(1, '#eaf7ff');
+            ctx.fillStyle = g;
+            ctx.fill();
+            ctx.shadowBlur = 0;
+            ctx.shadowOffsetY = 0;
+            ctx.lineWidth = 2.6 * S;
+            ctx.strokeStyle = tone || '#3f9142';
+            ctx.stroke();
+            ctx.restore();
+            drawLetterText(ch, x, y + r * 0.05, r * 1.35, tone || '#2b7a3d');
+        }
+
+        function starPath(cx, cy, r) {
+            ctx.beginPath();
+            for (let i = 0; i < 10; i++) {
+                const rr = i % 2 === 0 ? r : r * 0.46;
+                const a = -Math.PI / 2 + i * Math.PI / 5;
+                const px = cx + Math.cos(a) * rr, py = cy + Math.sin(a) * rr;
+                i ? ctx.lineTo(px, py) : ctx.moveTo(px, py);
+            }
+            ctx.closePath();
+        }
+
+        function drawStar(x, y, r, wob) {
+            ctx.save();
+            ctx.translate(x, y + Math.sin(wob) * 3 * S);
+            ctx.rotate(Math.sin(wob * 0.6) * 0.18);
+            ctx.shadowColor = 'rgba(255,190,40,.65)';
+            ctx.shadowBlur = 14;
+            const g = ctx.createLinearGradient(0, -r, 0, r);
+            g.addColorStop(0, '#ffe680');
+            g.addColorStop(1, '#ffb422');
+            ctx.fillStyle = g;
+            starPath(0, 0, r);
+            ctx.fill();
+            ctx.shadowBlur = 0;
+            ctx.strokeStyle = '#e79212';
+            ctx.lineWidth = 2 * S;
+            ctx.stroke();
+            ctx.fillStyle = 'rgba(255,255,255,.75)';
+            ctx.beginPath();
+            ctx.ellipse(-r * 0.22, -r * 0.3, r * 0.14, r * 0.24, -0.4, 0, 7);
+            ctx.fill();
+            ctx.restore();
+        }
+
+        function drawBalloon(x, y, r, color, wob, ch) {
+            const rot = Math.sin(wob) * 0.12;
+            ctx.save();
+            ctx.translate(x, y);
+            ctx.rotate(rot);
+            ctx.strokeStyle = 'rgba(255,255,255,.85)';
+            ctx.lineWidth = 1.8 * S;
+            ctx.beginPath();
+            ctx.moveTo(0, r * 1.15);
+            ctx.quadraticCurveTo(r * 0.4, r * 2, 0, r * 2.7);
+            ctx.stroke();
+            const g = ctx.createRadialGradient(-r * 0.3, -r * 0.4, r * 0.1, 0, 0, r * 1.3);
+            g.addColorStop(0, '#ffffff');
+            g.addColorStop(0.35, color);
+            g.addColorStop(1, color);
+            ctx.fillStyle = g;
+            ctx.beginPath();
+            ctx.ellipse(0, 0, r * 0.86, r * 1.05, 0, 0, 7);
+            ctx.fill();
+            ctx.fillStyle = color;
+            ctx.beginPath();
+            ctx.moveTo(-r * 0.16, r * 1.0);
+            ctx.lineTo(r * 0.16, r * 1.0);
+            ctx.lineTo(0, r * 1.25);
+            ctx.closePath();
+            ctx.fill();
+            if (ch) {
+                ctx.rotate(-rot);
+                drawLetterText(ch, 0, 0, r * 1.05, '#ffffff', 'rgba(60,40,80,.45)');
+            }
+            ctx.restore();
+        }
+
+        // ------------------------------------------------------------ heroes
+        const HEROES = [
+            { name: 'Pip', body: '#ff9f43', body2: '#f4802a', belly: '#ffe6c7', ear: 'point', tail: true, accent: '#fff' },
+            { name: 'Hopper', body: '#ffa5cf', body2: '#f57cb4', belly: '#ffe3f1', ear: 'long', tail: false, accent: '#fff' },
+            { name: 'Bloop', body: '#6ede63', body2: '#48b944', belly: '#dfffd4', ear: 'frog', tail: false, accent: '#fff' },
+            { name: 'Miko', body: '#8fb6ff', body2: '#6b92e8', belly: '#e4eeff', ear: 'cat', tail: true, accent: '#fff' }
+        ];
+
+        function drawHero(g, cx, cy, r, hero, opt) {
+            opt = opt || {};
+            const sx = opt.sx || 1, sy = opt.sy || 1;
+            const look = opt.look || 0;      // -1 .. 1
+            const blink = opt.blink || 0;
+
+            g.save();
+            g.translate(cx, cy);
+            g.scale(sx, sy);
+
+            // tail
+            if (hero.tail) {
+                g.fillStyle = hero.body2;
+                g.beginPath();
+                g.ellipse(-r * 0.95, r * 0.35, r * 0.42, r * 0.26, -0.5, 0, 7);
+                g.fill();
+                g.fillStyle = hero.accent;
+                g.beginPath();
+                g.ellipse(-r * 1.25, r * 0.15, r * 0.2, r * 0.16, -0.5, 0, 7);
+                g.fill();
+            }
+
+            // ears
+            g.fillStyle = hero.body;
+            if (hero.ear === 'point' || hero.ear === 'cat') {
+                for (const s of [-1, 1]) {
+                    g.beginPath();
+                    g.moveTo(s * r * 0.32, -r * 0.72);
+                    g.lineTo(s * r * 0.86, -r * 1.42);
+                    g.lineTo(s * r * 0.9, -r * 0.5);
+                    g.closePath();
+                    g.fill();
+                    g.fillStyle = '#ffc2c9';
+                    g.beginPath();
+                    g.moveTo(s * r * 0.45, -r * 0.75);
+                    g.lineTo(s * r * 0.78, -r * 1.17);
+                    g.lineTo(s * r * 0.79, -r * 0.62);
+                    g.closePath();
+                    g.fill();
+                    g.fillStyle = hero.body;
+                }
+            } else if (hero.ear === 'long') {
+                for (const s of [-1, 1]) {
+                    g.save();
+                    g.rotate(s * 0.16);
+                    g.beginPath();
+                    g.ellipse(s * r * 0.4, -r * 1.15, r * 0.24, r * 0.62, 0, 0, 7);
+                    g.fill();
+                    g.fillStyle = '#ffc2d9';
+                    g.beginPath();
+                    g.ellipse(s * r * 0.4, -r * 1.13, r * 0.12, r * 0.44, 0, 0, 7);
+                    g.fill();
+                    g.fillStyle = hero.body;
+                    g.restore();
+                }
+            }
+
+            // body
+            const bg = g.createLinearGradient(0, -r, 0, r);
+            bg.addColorStop(0, hero.body);
+            bg.addColorStop(1, hero.body2);
+            g.fillStyle = bg;
+            g.beginPath();
+            g.ellipse(0, 0, r * 0.95, r, 0, 0, 7);
+            g.fill();
+
+            // frog eyes sit on top of the head
+            if (hero.ear === 'frog') {
+                for (const s of [-1, 1]) {
+                    g.fillStyle = hero.body;
+                    g.beginPath();
+                    g.ellipse(s * r * 0.45, -r * 0.85, r * 0.32, r * 0.3, 0, 0, 7);
+                    g.fill();
+                }
+            }
+
+            // belly
+            g.fillStyle = hero.belly;
+            g.beginPath();
+            g.ellipse(0, r * 0.28, r * 0.55, r * 0.55, 0, 0, 7);
+            g.fill();
+
+            // feet
+            g.fillStyle = hero.body2;
+            for (const s of [-1, 1]) {
+                g.beginPath();
+                g.ellipse(s * r * 0.42, r * 0.93, r * 0.28, r * 0.17, 0, 0, 7);
+                g.fill();
+            }
+
+            // eyes
+            const eyeY = hero.ear === 'frog' ? -r * 0.85 : -r * 0.18;
+            const eyeX = hero.ear === 'frog' ? r * 0.45 : r * 0.33;
+            const eyeR = hero.ear === 'frog' ? r * 0.2 : r * 0.22;
+            for (const s of [-1, 1]) {
+                g.fillStyle = '#fff';
+                g.beginPath();
+                g.ellipse(s * eyeX, eyeY, eyeR, eyeR * (1 - blink * 0.92), 0, 0, 7);
+                g.fill();
+                if (blink < 0.6) {
+                    g.fillStyle = '#38343f';
+                    g.beginPath();
+                    g.ellipse(s * eyeX + look * eyeR * 0.42, eyeY + eyeR * 0.08, eyeR * 0.5, eyeR * 0.56 * (1 - blink), 0, 0, 7);
+                    g.fill();
+                    g.fillStyle = '#fff';
+                    g.beginPath();
+                    g.ellipse(s * eyeX + look * eyeR * 0.42 - eyeR * 0.16, eyeY - eyeR * 0.18, eyeR * 0.17, eyeR * 0.17, 0, 0, 7);
+                    g.fill();
+                }
+            }
+
+            // cheeks
+            g.fillStyle = 'rgba(255,120,150,.4)';
+            for (const s of [-1, 1]) {
+                g.beginPath();
+                g.ellipse(s * r * 0.62, r * 0.12, r * 0.17, r * 0.12, 0, 0, 7);
+                g.fill();
+            }
+
+            // smile
+            g.strokeStyle = '#5a4a48';
+            g.lineWidth = r * 0.1;
+            g.lineCap = 'round';
+            g.beginPath();
+            g.arc(0, r * 0.05, r * 0.24, 0.25 * Math.PI, 0.75 * Math.PI);
+            g.stroke();
+
+            g.restore();
+        }
+
+        // ------------------------------------------------------------ zones
+        // `dir` picks which way round the colour wheel we travel to reach the
+        // next zone: +1 goes up through pink/purple, -1 goes down through
+        // red. Straight RGB blending between blue and orange goes grey, so the
+        // whole sky is blended in HSL instead.
+        const ZONES = [
+            { at: 0, top: '#8fd8f2', bot: '#dcf6ff', name: 'Sunny Meadow', dir: 0 },
+            { at: 200, top: '#3fb0ea', bot: '#bfeaff', name: 'Cloud Country', dir: 1 },
+            { at: 380, top: '#ff8fc8', bot: '#ffdcef', name: 'Candy Sky', dir: 0 },
+            { at: 560, top: '#ff9a5c', bot: '#ffe0a8', name: 'Sunset Sky', dir: -1 },
+            { at: 820, top: '#25306b', bot: '#7b5fbe', name: 'Starry Night', dir: 0 },
+            { at: 1200, top: '#120a2e', bot: '#3b1f6b', name: 'Outer Space', dir: 0 }
+        ];
+
+        function hexToHsl(hex) {
+            const n = parseInt(hex.slice(1), 16);
+            const r = ((n >> 16) & 255) / 255, g = ((n >> 8) & 255) / 255, b = (n & 255) / 255;
+            const mx = Math.max(r, g, b), mn = Math.min(r, g, b), d = mx - mn;
+            let h = 0;
+            if (d) {
+                if (mx === r) h = ((g - b) / d) % 6;
+                else if (mx === g) h = (b - r) / d + 2;
+                else h = (r - g) / d + 4;
+                h *= 60;
+                if (h < 0) h += 360;
+            }
+            const l = (mx + mn) / 2;
+            const s = d ? d / (1 - Math.abs(2 * l - 1)) : 0;
+            return { h, s: s * 100, l: l * 100 };
+        }
+
+        function lerpColor(a, b, t, dir) {
+            const A = hexToHsl(a), B = hexToHsl(b);
+            let dh = B.h - A.h;
+            if (dir === 1) { while (dh < 0) dh += 360; }
+            else if (dir === -1) { while (dh > 0) dh -= 360; }
+            else { if (dh > 180) dh -= 360; if (dh < -180) dh += 360; }
+            const h = ((A.h + dh * t) % 360 + 360) % 360;
+            // keep colours vivid through the middle of a transition
+            const boost = 1 + 0.18 * Math.sin(Math.PI * t);
+            const s = Math.min(100, (A.s + (B.s - A.s) * t) * boost);
+            const l = A.l + (B.l - A.l) * t;
+            return `hsl(${h.toFixed(1)},${s.toFixed(1)}%,${l.toFixed(1)}%)`;
+        }
+
+        function zoneColors(m) {
+            let i = 0;
+            for (let k = 0; k < ZONES.length; k++) if (m >= ZONES[k].at) i = k;
+            const a = ZONES[i], b = ZONES[Math.min(i + 1, ZONES.length - 1)];
+            const span = Math.max(1, b.at - a.at);
+            const t = Math.max(0, Math.min(1, (m - a.at) / span));
+            const e = t * t * (3 - 2 * t);
+            return {
+                top: lerpColor(a.top, b.top, e, a.dir),
+                bot: lerpColor(a.bot, b.bot, e, a.dir),
+                night: Math.max(0, Math.min(1, (m - 640) / 280)),
+                zone: a
+            };
+        }
+
+        // ------------------------------------------------------------ sound
+        let audioCtx = null, soundOn = true;
+
+        function ensureAudio() {
+            if (!audioCtx) {
+                try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { }
+            }
+            if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+        }
+
+        function beep(freq, dur, type, vol, slideTo) {
+            if (!soundOn || !audioCtx) return;
+            const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+            o.type = type || 'sine';
+            o.frequency.setValueAtTime(freq, audioCtx.currentTime);
+            if (slideTo) o.frequency.exponentialRampToValueAtTime(slideTo, audioCtx.currentTime + dur);
+            g.gain.setValueAtTime(vol || 0.12, audioCtx.currentTime);
+            g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + dur);
+            o.connect(g); g.connect(audioCtx.destination);
+            o.start(); o.stop(audioCtx.currentTime + dur + 0.02);
+        }
+
+        const SFX = {
+            hop: () => beep(420, 0.13, 'sine', 0.1, 760),
+            spring: () => beep(300, 0.32, 'triangle', 0.14, 1250),
+            star: () => { beep(880, 0.09, 'sine', 0.1); setTimeout(() => beep(1320, 0.12, 'sine', 0.09), 70); },
+            balloon: () => { beep(520, 0.12, 'sine', 0.1, 900); setTimeout(() => beep(1040, 0.2, 'sine', 0.08), 110); },
+            lock: () => { beep(700, 0.08, 'triangle', 0.09, 1000); setTimeout(() => beep(1100, 0.1, 'sine', 0.07), 60); },
+            miss: () => beep(190, 0.13, 'sine', 0.07, 150),
+            fall: () => beep(500, 0.4, 'sawtooth', 0.09, 120),
+            save: () => { beep(600, 0.12, 'sine', 0.1, 900); setTimeout(() => beep(1200, 0.18, 'sine', 0.09), 120); },
+            cheer: () => [0, 120, 240, 380].forEach((d, i) => setTimeout(() => beep([523, 659, 784, 1047][i], 0.22, 'triangle', 0.1), d)),
+            over: () => [0, 150, 300].forEach((d, i) => setTimeout(() => beep([440, 370, 294][i], 0.28, 'sine', 0.1), d))
+        };
+
+        // --------------------------------------------------------- settings
+        // "Letter Keys" turns every touchable thing in the sky into a labelled
+        // target: press the letter you see and the hopper steers itself there.
+        // It is only ever an option — sliding still works exactly as before.
+        const SET = {
+            mode: localStorage.getItem('skyHopperMode') === 'letters' ? 'letters' : 'touch',
+            keys: ['home', 'alpha', 'num'].includes(localStorage.getItem('skyHopperKeys') || '') ? localStorage.getItem('skyHopperKeys') : 'home',
+            osk: localStorage.getItem('skyHopperOSK') !== null
+                ? localStorage.getItem('skyHopperOSK') === '1'
+                : !window.matchMedia('(pointer: fine)').matches   // tablets get the pad by default
+        };
+
+        function letterMode() { return SET.mode === 'letters'; }
+
+        const KEY_POOLS = {
+            home: 'ASDFGHJKL'.split(''),
+            alpha: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split(''),
+            num: '1234567890'.split('')
+        };
+
+        // Letters are handed out so that no two things on screen share one.
+        const usedLetters = new Map();
+
+        function labelled() {
+            const out = [];
+            for (const p of platforms) if (p.key) out.push(p);
+            for (const b of balloons) if (b.key) out.push(b);
+            return out;
+        }
+
+        // `y` is where the new thing will sit: with a small pool (the home row
+        // is only nine keys) letters have to repeat, so repeat the one that is
+        // furthest away — two of the same letter should never share a screen.
+        function takeLetter(y) {
+            const pool = KEY_POOLS[SET.keys];
+            const free = pool.filter(c => !usedLetters.has(c));
+            let c;
+            if (free.length) {
+                c = pick(free);
+            } else {
+                const objs = labelled();
+                let bestD = -1;
+                for (const ch of pool) {
+                    let d = Infinity;
+                    for (const o of objs) if (o.key === ch) d = Math.min(d, Math.abs(o.y - y));
+                    if (d > bestD) { bestD = d; c = ch; }
+                }
+                c = c || pick(pool);
+            }
+            usedLetters.set(c, (usedLetters.get(c) || 0) + 1);
+            return c;
+        }
+
+        function freeLetter(c) {
+            if (!c) return;
+            const n = (usedLetters.get(c) || 0) - 1;
+            if (n <= 0) usedLetters.delete(c); else usedLetters.set(c, n);
+        }
+
+        // ------------------------------------------------------------- state
+        let state = 'menu';
+        let heroIdx = 0;
+        let lock = null;          // the letter-target the hopper is flying to
+
+        const player = {
+            x: 0, y: 0, vx: 0, vy: 0, r: 0,
+            sx: 1, sy: 1, look: 0, blink: 0, blinkTimer: 2,
+            balloon: 0, balloonColor: '#ff6b9d', bubble: 0
+        };
+
+        let platforms = [], stars = [], balloons = [], particles = [], floaters = [], clouds = [], decor = [];
+        let camY = 0, nextSpawnY = 0, startY = 0;
+        let heightM = 0, bestHeightM = 0, starCount = 0, hearts = 3;
+        let bestScore = +(localStorage.getItem('skyHopperBest') || 0);
+        let lastZoneIdx = 0, milestoneNext = 100;
+        let shakeT = 0;
+
+        const GRAV = 0.60;
+        const HOP = -15.4;
+        const SPRING_V = -25.5;
+        const MOVE_ACC = 1.5;
+        const MOVE_MAX = 7.6;
+
+        function rand(a, b) { return a + Math.random() * (b - a); }
+        function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+
+        function makeDecor(p) {
+            p.spots = [];
+            const n = Math.round(p.w / (26 * S)) + 1;
+            for (let i = 0; i < n; i++) p.spots.push({ x: rand(0.1, 0.9), y: rand(0, 1), r: rand(1.8, 3.6), a: rand(0, 3) });
+            p.blades = [];
+            const m = Math.round(p.w / (22 * S)) + 1;
+            for (let i = 0; i < m; i++) p.blades.push({ x: rand(0.08, 0.92), y: rand(0, 1), r: rand(1.4, 2.6) });
+        }
+
+        function addPlatform(y, forceType) {
+            const diff = Math.max(0, Math.min(1, (heightM - 60) / 700));
+            let w = (128 - 34 * diff + rand(-10, 12)) * S;
+            w = Math.max(76 * S, Math.min(w, playW * 0.55));
+            const h = 30 * S;
+            const x = rand(6 * S, playW - w - 6 * S);
+
+            let type = forceType || 'grass';
+            if (!forceType) {
+                const r = Math.random();
+                if (heightM > 300 && r < 0.16) type = 'cloud';
+                else if (heightM > 120 && r < 0.38) type = 'move';
+            }
+
+            const p = {
+                x, y, w, h, type, alpha: 1, dead: false,
+                spring: false, springSquish: 0,
+                baseX: x, dir: Math.random() < 0.5 ? -1 : 1,
+                speed: (0.7 + diff * 1.1) * S, range: rand(50, 110) * S,
+                phase: rand(0, 7)
+            };
+            if (type === 'move') p.range = Math.min(p.range, (playW - p.w) / 2 - 4);
+            makeDecor(p);
+
+            // a bouncy mushroom now and then (never on clouds)
+            if (type !== 'cloud' && Math.random() < 0.09 && heightM > 40) p.spring = true;
+            if (letterMode()) p.key = takeLetter(y);
+
+            platforms.push(p);
+
+            // goodies
+            if (!p.spring && Math.random() < 0.38) {
+                // stars stay plain — the letter goes on the platform under them
+                stars.push({
+                    x: p.x + p.w / 2, y: y - rand(34, 52) * S, r: 13 * S,
+                    wob: rand(0, 7), got: false, plat: type === 'move' ? p : null, ox: p.w / 2
+                });
+            } else if (heightM > 90 && Math.random() < 0.05) {
+                const gy = y - rand(52, 74) * S;
+                balloons.push({
+                    x: p.x + p.w / 2, y: gy, r: (letterMode() ? 19 : 17) * S,
+                    wob: rand(0, 7), got: false, color: pick(['#ff6b9d', '#ffd93d', '#7ee06a', '#6fc9f5', '#c58bff']),
+                    key: letterMode() ? takeLetter(gy) : null
+                });
+            }
+            return p;
+        }
+
+        function generateUp() {
+            while (nextSpawnY > camY - H * 0.9) {
+                const diff = Math.max(0, Math.min(1, (heightM - 60) / 700));
+                const gap = (74 + 42 * diff + rand(0, 22)) * S;
+                nextSpawnY -= gap;
+                addPlatform(nextSpawnY);
+            }
+        }
+
+        function resetGame() {
+            platforms = []; stars = []; balloons = []; particles = []; floaters = [];
+            usedLetters.clear(); lock = null;
+            heightM = 0; bestHeightM = 0; starCount = 0; hearts = 3;
+            milestoneNext = 100; lastZoneIdx = 0; shakeT = 0;
+
+            player.r = 22 * S;
+            startY = 0;
+            camY = -H * 0.72;
+
+            // the ground you start on
+            const ground = { x: 0, y: 0, w: playW, h: 46 * S, type: 'ground', alpha: 1, spring: false, dead: false, baseX: 0 };
+            makeDecor(ground);
+            platforms.push(ground);
+
+            player.x = playW / 2;
+            player.y = -player.r;
+            player.vx = 0; player.vy = HOP * S;
+            player.balloon = 0; player.bubble = 0;
+            player.sx = 1; player.sy = 1;
+
+            nextSpawnY = -60 * S;
+            generateUp();
+            makeClouds();
+            updateHUD();
+        }
+
+        function makeClouds() {
+            clouds = [];
+            for (let i = 0; i < 14; i++) {
+                clouds.push({
+                    x: rand(-0.1, 1.1) * W, y: rand(-1, 1.2) * H, w: rand(70, 190),
+                    sp: rand(0.06, 0.24), depth: rand(0.15, 0.55), a: rand(0.5, 0.95)
+                });
+            }
+            decor = [];
+            for (let i = 0; i < 60; i++) {
+                decor.push({ x: rand(0, 1), y: rand(0, 1), r: rand(0.7, 2.1), tw: rand(0, 7) });
+            }
+        }
+        makeClouds();
+
+        // ------------------------------------------------------------ effects
+        function burst(x, y, color, n, spd) {
+            for (let i = 0; i < (n || 12); i++) {
+                const a = rand(0, Math.PI * 2), v = rand(1, spd || 5);
+                particles.push({ x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 1, r: rand(2, 5) * S, life: 1, color });
+            }
+        }
+
+        function floatText(x, y, text, color) {
+            floaters.push({ x, y, text, color, life: 1 });
+        }
+
+        function toast(main, sub) {
+            const el = document.getElementById('toast');
+            el.innerHTML = main + (sub ? `<span class="sub">${sub}</span>` : '');
+            el.classList.remove('show');
+            void el.offsetWidth;
+            el.classList.add('show');
+        }
+
+        // ----------------------------------------------------- letter targets
+        // Platforms and balloons carry the letters; stars are just treats you
+        // scoop up on the way past.
+        function targetX(l) { return l.type === 'plat' ? l.obj.x + l.obj.w / 2 : l.obj.x; }
+        function targetY(l) { return l.obj.y; }
+        function targetR(l) { return l.type === 'plat' ? Math.max(l.obj.w, l.obj.h) * 0.55 : l.obj.r * 1.5; }
+
+        function lockAlive(l) {
+            const o = l.obj;
+            if (!o || o.gone || o.got || o.dead) return false;
+            return o.y - camY < H + 120;
+        }
+
+        // Find the nearest thing on screen wearing this letter.
+        function findTarget(ch) {
+            let best = null, bd = Infinity;
+            const consider = (obj, type) => {
+                if (obj.key !== ch) return;
+                const sy = obj.y - camY;
+                if (sy < -70 || sy > H + 70) return;
+                // nearest wins, but the climb goes up — so things above the
+                // hopper count as a little closer than things below it
+                const dy = obj.y - player.y;
+                const d = dy < 0 ? -dy : dy * 1.6;
+                if (d < bd) { bd = d; best = { obj, type }; }
+            };
+            for (const b of balloons) if (!b.got) consider(b, 'balloon');
+            for (const p of platforms) if (!p.dead && p.type !== 'ground') consider(p, 'plat');
+            return best;
+        }
+
+        function pressLetter(ch) {
+            if (state !== 'playing' || !letterMode()) return;
+            const t = findTarget(ch);
+            flashKey(ch, !!t);
+            if (t) {
+                lock = t;
+                SFX.lock();
+                floatText(playX + player.x, player.y - player.r * 1.6, ch, '#2b7a3d');
+            } else {
+                SFX.miss();
+            }
+        }
+
+        function clearLock(won) {
+            if (lock && won) burst(playX + targetX(lock), targetY(lock), '#bff0ff', 8, 3.5);
+            lock = null;
+        }
+
+        // Hand letters to everything already in the sky (used when the mode is
+        // switched on mid-climb) or take them all back again.
+        function relabelWorld(on) {
+            const all = [...platforms.filter(p => p.type !== 'ground'), ...balloons];
+            if (on) {
+                for (const o of all) if (!o.key) o.key = takeLetter(o.y);
+                for (const b of balloons) b.r = 19 * S;
+            } else {
+                for (const o of all) { freeLetter(o.key); o.key = null; }
+                for (const b of balloons) b.r = 17 * S;
+                lock = null;
+            }
+        }
+
+        // ------------------------------------------------------------ input
+        let pointerActive = false, pointerX = 0;
+        let keyL = false, keyR = false;
+
+        canvas.addEventListener('pointerdown', e => {
+            ensureAudio();
+            pointerActive = true; pointerX = e.clientX;
+            lock = null;                       // dragging always wins over a letter
+            canvas.setPointerCapture?.(e.pointerId);
+        });
+        canvas.addEventListener('pointermove', e => { if (pointerActive) pointerX = e.clientX; });
+        const endPointer = () => { pointerActive = false; };
+        canvas.addEventListener('pointerup', endPointer);
+        canvas.addEventListener('pointercancel', endPointer);
+        canvas.addEventListener('pointerleave', endPointer);
+
+        window.addEventListener('keydown', e => {
+            if (e.repeat) return;
+            // In letter mode the whole keyboard steers, so A / D stay off duty.
+            if (letterMode() && state === 'playing') {
+                if (e.key.length === 1) {
+                    const ch = e.key.toUpperCase();
+                    if (/[A-Z0-9]/.test(ch)) { e.preventDefault(); pressLetter(ch); return; }
+                }
+                if (e.key === 'ArrowLeft') keyL = true;
+                if (e.key === 'ArrowRight') keyR = true;
+                return;
+            }
+            if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') keyL = true;
+            if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') keyR = true;
+            if ((e.key === ' ' || e.key === 'Enter') && state !== 'playing') { e.preventDefault(); startGame(); }
+        });
+        window.addEventListener('keyup', e => {
+            if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') keyL = false;
+            if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') keyR = false;
+        });
+
+        // ------------------------------------------------------------ update
+        function update(d) {
+            // --- steering -------------------------------------------------
+            let target = null;
+            if (lock) {
+                if (lockAlive(lock)) target = targetX(lock);
+                else lock = null;
+            }
+            if (pointerActive) target = pointerX - playX;
+            if (keyL || keyR) target = null;
+
+            if (target !== null) {
+                const dx = target - player.x;
+                player.vx += Math.max(-1, Math.min(1, dx / (48 * S))) * MOVE_ACC * S * d;
+                if (Math.abs(dx) < 6 * S) player.vx *= Math.pow(0.6, d);
+            } else if (keyL || keyR) {
+                player.vx += ((keyR ? 1 : 0) - (keyL ? 1 : 0)) * MOVE_ACC * S * d;
+            } else {
+                player.vx *= Math.pow(0.86, d);
+            }
+            const maxV = MOVE_MAX * S;
+            player.vx = Math.max(-maxV, Math.min(maxV, player.vx));
+            player.x += player.vx * d;
+
+            // soft walls
+            const lim = player.r * 0.65;
+            if (player.x < lim) { player.x = lim; player.vx = Math.max(0, player.vx); }
+            if (player.x > playW - lim) { player.x = playW - lim; player.vx = Math.min(0, player.vx); }
+
+            // --- vertical -------------------------------------------------
+            const prevBottom = player.y + player.r;
+            if (player.balloon > 0) {
+                player.balloon -= d / 60;
+                player.vy = -8.6 * S;
+                if (player.balloon <= 0) { player.vy = -4 * S; burst(playX + player.x, player.y - player.r * 2, player.balloonColor, 12, 4); }
+            } else {
+                player.vy += GRAV * S * d;
+            }
+            player.y += player.vy * d;
+            const bottom = player.y + player.r;
+
+            // --- squash & stretch ----------------------------------------
+            const tsy = player.vy < -2 ? 1.14 : (player.vy > 6 ? 0.93 : 1);
+            player.sy += (tsy - player.sy) * 0.14 * d;
+            player.sx += (1 / player.sy - player.sx) * 0.14 * d;
+            player.look = Math.max(-1, Math.min(1, player.vx / (maxV * 0.7)));
+            player.blinkTimer -= d / 60;
+            if (player.blinkTimer <= 0) { player.blink = Math.min(1, player.blink + 0.25 * d); if (player.blink >= 1) { player.blink = 0; player.blinkTimer = rand(2.2, 5); } }
+            if (player.bubble > 0) player.bubble -= d / 60;
+
+            // --- platforms ------------------------------------------------
+            for (const p of platforms) {
+                if (p.type === 'move') {
+                    p.phase += 0.014 * d * (p.speed / S);
+                    p.x = p.baseX + Math.sin(p.phase) * p.range;
+                    p.x = Math.max(4 * S, Math.min(playW - p.w - 4 * S, p.x));
+                }
+                if (p.springSquish > 0) p.springSquish = Math.max(0, p.springSquish - 0.06 * d);
+                if (p.type === 'cloud' && p.dead) { p.alpha -= 0.055 * d; }
+
+                if (player.vy > 0 && player.balloon <= 0 && !(p.type === 'cloud' && p.dead)) {
+                    const top = p.y;
+                    const pad = 8 * S;
+                    if (prevBottom <= top + 2 && bottom >= top &&
+                        player.x + player.r * 0.55 > p.x - pad && player.x - player.r * 0.55 < p.x + p.w + pad) {
+                        // bounce!
+                        player.y = top - player.r;
+                        if (p.spring) {
+                            player.vy = SPRING_V * S;
+                            p.springSquish = 1;
+                            SFX.spring();
+                            burst(playX + p.x + p.w / 2, top, '#ff7b6b', 16, 6);
+                            floatText(playX + player.x, top - 20 * S, 'BOING!', '#e2483a');
+                        } else {
+                            player.vy = HOP * S;
+                            SFX.hop();
+                            burst(playX + player.x, top + 3 * S, p.type === 'cloud' ? '#ffffff' : '#8fd06a', 7, 3);
+                        }
+                        player.sy = 0.72; player.sx = 1.28;
+                        if (p.type === 'cloud') { p.dead = true; }
+                        if (lock && lock.obj === p) clearLock(true);
+                    }
+                }
+            }
+            platforms = platforms.filter(p => {
+                const keep = p.alpha > 0 && p.y < camY + H + 220 * S;
+                if (!keep) { freeLetter(p.key); p.gone = true; }
+                return keep;
+            });
+
+            // --- collectibles ---------------------------------------------
+            for (const s of stars) {
+                s.wob += 0.06 * d;
+                if (s.plat) s.x = s.plat.x + s.ox;
+                if (!s.got && Math.hypot(playX + player.x - (playX + s.x), player.y - s.y) < player.r + s.r) {
+                    s.got = true; starCount++;
+                    SFX.star();
+                    burst(playX + s.x, s.y, '#ffd93d', 14, 5);
+                    floatText(playX + s.x, s.y, '+1', '#ffb422');
+                    updateHUD();
+                }
+            }
+            stars = stars.filter(s => !s.got && s.y < camY + H + 200 * S);
+
+            for (const b of balloons) {
+                b.wob += 0.045 * d;
+                if (!b.got && Math.hypot(player.x - b.x, player.y - b.y) < player.r + b.r) {
+                    b.got = true;
+                    player.balloon = 2.6;
+                    player.balloonColor = b.color;
+                    SFX.balloon();
+                    burst(playX + b.x, b.y, b.color, 14, 5);
+                    toast('WHEEE!', 'BALLOON RIDE');
+                    if (lock && lock.obj === b) clearLock(false);
+                }
+            }
+            balloons = balloons.filter(b => {
+                const keep = !b.got && b.y < camY + H + 200 * S;
+                if (!keep) { freeLetter(b.key); b.gone = true; }
+                return keep;
+            });
+
+            // --- camera ---------------------------------------------------
+            const wanted = player.y - H * 0.46;
+            if (wanted < camY) camY += (wanted - camY) * Math.min(1, 0.16 * d);
+            generateUp();
+
+            // --- score ----------------------------------------------------
+            heightM = Math.max(0, Math.floor((startY - player.y) / (12 * S)));
+            if (heightM > bestHeightM) { bestHeightM = heightM; updateHUD(); }
+
+            if (bestHeightM >= milestoneNext) {
+                toast(milestoneNext + 'm!', pick(['AMAZING', 'SO HIGH', 'WOW WOW', 'KEEP GOING', 'SUPER HOP']));
+                SFX.cheer();
+                milestoneNext += 100;
+            }
+            let zi = 0;
+            for (let k = 0; k < ZONES.length; k++) if (bestHeightM >= ZONES[k].at) zi = k;
+            if (zi !== lastZoneIdx) { lastZoneIdx = zi; toast(ZONES[zi].name, 'NEW PLACE!'); SFX.cheer(); }
+
+            // --- falling --------------------------------------------------
+            if (player.y - player.r > camY + H + 40) loseLife();
+
+            // --- particles ------------------------------------------------
+            for (const pt of particles) {
+                pt.x += pt.vx * d; pt.y += pt.vy * d;
+                pt.vy += 0.22 * d; pt.life -= 0.024 * d;
+            }
+            particles = particles.filter(p => p.life > 0);
+            for (const f of floaters) { f.y -= 0.9 * d * S; f.life -= 0.018 * d; }
+            floaters = floaters.filter(f => f.life > 0);
+            if (shakeT > 0) shakeT -= d / 60;
+        }
+
+        function loseLife() {
+            hearts--;
+            updateHUD();
+            SFX.fall();
+            shakeT = 0.3;
+            if (hearts <= 0) { gameOver(); return; }
+
+            // friendly rescue: pop the hopper back onto a platform on screen
+            let best = null;
+            for (const p of platforms) {
+                if (p.dead) continue;
+                if (p.y > camY + H * 0.25 && p.y < camY + H * 0.92) {
+                    if (!best || Math.abs(p.y - (camY + H * 0.66)) < Math.abs(best.y - (camY + H * 0.66))) best = p;
+                }
+            }
+            if (!best) {
+                best = addPlatform(camY + H * 0.7, 'grass');
+                best.x = Math.max(4 * S, Math.min(playW - best.w - 4 * S, player.x - best.w / 2));
+                best.baseX = best.x;
+            }
+            player.x = best.x + best.w / 2;
+            player.y = best.y - player.r - 4 * S;
+            player.vx = 0;
+            player.vy = HOP * S;
+            player.bubble = 1.4;
+            burst(playX + player.x, player.y, '#8fe0ff', 20, 6);
+            SFX.save();
+            toast('SAVED!', hearts + (hearts === 1 ? ' HEART LEFT' : ' HEARTS LEFT'));
+        }
+
+        // ------------------------------------------------------------- draw
+        function drawBackground() {
+            const zc = zoneColors(bestHeightM);
+            const g = ctx.createLinearGradient(0, 0, 0, H);
+            g.addColorStop(0, zc.top);
+            g.addColorStop(1, zc.bot);
+            ctx.fillStyle = g;
+            ctx.fillRect(0, 0, W, H);
+
+            // stars appear at night
+            if (zc.night > 0.02) {
+                ctx.save();
+                for (const s of decor) {
+                    const y = ((s.y * H * 2 - camY * 0.06) % (H * 1.4) + H * 1.4) % (H * 1.4) - H * 0.2;
+                    ctx.globalAlpha = zc.night * (0.45 + 0.55 * Math.abs(Math.sin(s.tw + tNow * 0.0015)));
+                    ctx.fillStyle = '#fff';
+                    ctx.beginPath();
+                    ctx.arc(s.x * W, y, s.r, 0, 7);
+                    ctx.fill();
+                }
+                ctx.restore();
+            }
+
+            // sun / moon
+            const orbX = W - 70, orbY = 100 + Math.min(140, bestHeightM * 0.1);
+            ctx.save();
+            ctx.globalAlpha = 0.88;
+            ctx.fillStyle = zc.night > 0.5 ? '#fdf6d8' : '#fff6b8';
+            ctx.beginPath();
+            ctx.arc(orbX, orbY, 38, 0, 7);
+            ctx.fill();
+            if (zc.night > 0.4) {
+                ctx.globalAlpha = (zc.night - 0.4) * 0.5;
+                ctx.fillStyle = '#d9d0a8';
+                for (const c of [[-12, -8, 9], [10, 6, 7], [-4, 16, 5], [16, -14, 4]]) {
+                    ctx.beginPath();
+                    ctx.arc(orbX + c[0], orbY + c[1], c[2], 0, 7);
+                    ctx.fill();
+                }
+            }
+            ctx.restore();
+
+            // parallax clouds
+            for (const c of clouds) {
+                const y = ((c.y - camY * c.depth) % (H * 2.2) + H * 2.2) % (H * 2.2) - H * 0.6;
+                c.x += c.sp;
+                if (c.x > W + c.w) c.x = -c.w * 1.5;
+                ctx.save();
+                ctx.globalAlpha = c.a * (0.62 - zc.night * 0.42);
+                ctx.fillStyle = '#ffffff';
+                puffs(c.x, y, c.w, c.w * 0.23);
+                ctx.restore();
+            }
+
+            // distant hills at the very bottom of the world
+            const groundScreenY = 0 - camY;
+            if (groundScreenY < H + 300) {
+                ctx.save();
+                ctx.fillStyle = '#6fbf49';
+                ctx.beginPath();
+                ctx.moveTo(0, groundScreenY + 60);
+                for (let i = 0; i <= 6; i++) ctx.quadraticCurveTo(W * (i + 0.5) / 6, groundScreenY - 80, W * (i + 1) / 6, groundScreenY + 60);
+                ctx.lineTo(W, H + 400); ctx.lineTo(0, H + 400);
+                ctx.closePath();
+                ctx.globalAlpha = 0.55;
+                ctx.fill();
+                ctx.restore();
+            }
+        }
+
+        function drawScene() {
+            const shake = shakeT > 0 ? Math.sin(tNow * 0.05) * 6 * shakeT : 0;
+            ctx.save();
+            ctx.translate(shake, 0);
+
+            // platforms
+            for (const p of platforms) {
+                const sy = p.y - camY;
+                if (sy < -120 || sy > H + 120) continue;
+                if (p.type === 'ground') { drawGround(p, sy); continue; }
+                ctx.save();
+                ctx.globalAlpha = p.alpha;
+                drawPlatform(p, sy);
+                ctx.restore();
+            }
+
+            // the thing the last letter picked out
+            if (lock && lockAlive(lock)) {
+                const lx = playX + targetX(lock), ly = targetY(lock) - camY, lr = targetR(lock);
+                ctx.save();
+                ctx.globalAlpha = 0.55 + 0.45 * Math.abs(Math.sin(tNow * 0.006));
+                ctx.strokeStyle = '#fff36b';
+                ctx.lineWidth = 4 * S;
+                ctx.setLineDash([9 * S, 7 * S]);
+                ctx.lineDashOffset = -tNow * 0.02;
+                ctx.beginPath();
+                ctx.arc(lx, ly, lr + 6 * S + Math.sin(tNow * 0.006) * 2 * S, 0, 7);
+                ctx.stroke();
+                ctx.restore();
+            }
+
+            // collectibles
+            for (const s of stars) {
+                const sy = s.y - camY;
+                if (sy < -60 || sy > H + 60) continue;
+                drawStar(playX + s.x, sy, s.r, s.wob);
+            }
+            for (const b of balloons) {
+                const sy = b.y - camY;
+                if (sy < -80 || sy > H + 80) continue;
+                drawBalloon(playX + b.x, sy, b.r, b.color, b.wob, b.key);
+            }
+
+            // particles
+            for (const pt of particles) {
+                ctx.save();
+                ctx.globalAlpha = Math.max(0, pt.life);
+                ctx.fillStyle = pt.color;
+                ctx.beginPath();
+                ctx.arc(pt.x, pt.y - camY, pt.r * pt.life, 0, 7);
+                ctx.fill();
+                ctx.restore();
+            }
+
+            // player
+            const psy = player.y - camY;
+            if (player.balloon > 0) {
+                drawBalloon(playX + player.x, psy - player.r * 3.1, player.r * 1.25, player.balloonColor, tNow * 0.004);
+            }
+            drawHero(ctx, playX + player.x, psy, player.r, HEROES[heroIdx], {
+                sx: player.sx, sy: player.sy, look: player.look, blink: player.blink
+            });
+            if (player.bubble > 0) {
+                ctx.save();
+                ctx.globalAlpha = Math.min(0.7, player.bubble);
+                ctx.strokeStyle = '#bff0ff';
+                ctx.lineWidth = 4 * S;
+                ctx.beginPath();
+                ctx.arc(playX + player.x, psy, player.r * 1.6, 0, 7);
+                ctx.stroke();
+                ctx.restore();
+            }
+
+            // floating texts
+            for (const f of floaters) {
+                ctx.save();
+                ctx.globalAlpha = Math.max(0, f.life);
+                ctx.font = `900 ${20 * S}px Nunito, sans-serif`;
+                ctx.textAlign = 'center';
+                ctx.lineWidth = 5 * S;
+                ctx.strokeStyle = 'rgba(255,255,255,.9)';
+                ctx.strokeText(f.text, f.x, f.y - camY);
+                ctx.fillStyle = f.color;
+                ctx.fillText(f.text, f.x, f.y - camY);
+                ctx.restore();
+            }
+
+            ctx.restore();
+        }
+
+        function drawGround(p, sy) {
+            const x = playX, w = playW, y = sy;
+            ctx.save();
+            // dirt
+            const g = ctx.createLinearGradient(0, y, 0, y + H);
+            g.addColorStop(0, C.dirtLight);
+            g.addColorStop(0.4, C.dirt);
+            g.addColorStop(1, C.dirtDark);
+            ctx.fillStyle = g;
+            ctx.fillRect(0, y + peakH(), W, H + 200);
+            ctx.fillStyle = C.dirtSpot;
+            ctx.globalAlpha = 0.4;
+            for (const d of p.spots) {
+                for (let k = 0; k < 3; k++) {
+                    ctx.beginPath();
+                    ctx.ellipse(d.x * W + k * 37 % W, y + 30 * S + d.y * 120 * S + k * 40 * S, d.r * S * 1.4, d.r * S, d.a, 0, 7);
+                    ctx.fill();
+                }
+            }
+            ctx.globalAlpha = 1;
+            // grass cap across the whole width
+            grassPath(-4, y, W + 8, 22 * S);
+            ctx.save();
+            ctx.clip();
+            const gg = ctx.createLinearGradient(0, y - 4, 0, y + 24 * S);
+            gg.addColorStop(0, '#74d95c');
+            gg.addColorStop(1, C.grassEdge);
+            ctx.fillStyle = gg;
+            ctx.fillRect(-8, y - 12, W + 16, 40 * S);
+            ctx.fillStyle = C.grassDot;
+            ctx.globalAlpha = 0.8;
+            for (let i = 0; i < 40; i++) {
+                ctx.beginPath();
+                ctx.ellipse((i * 53) % W, y + 8 * S + ((i * 29) % 10) * S, 2 * S, 1.5 * S, 0, 0, 7);
+                ctx.fill();
+            }
+            ctx.restore();
+
+            // flowers and bushes along the meadow
+            const petals = ['#ff6b9d', '#ffd93d', '#ffffff', '#c58bff'];
+            for (let i = 0; i < 14; i++) {
+                const fx = ((i * 137) % Math.max(1, Math.round(W))) + 12;
+                const fy = y + 9 * S;
+                if (i % 3 === 0) {
+                    // bush
+                    ctx.fillStyle = '#57b83f';
+                    puffs(fx - 16 * S, fy - 3 * S, 34 * S, 11 * S);
+                    ctx.fillStyle = '#6ccf50';
+                    puffs(fx - 14 * S, fy - 5 * S, 26 * S, 8 * S);
+                } else {
+                    // flower
+                    ctx.strokeStyle = '#3f9142';
+                    ctx.lineWidth = 2 * S;
+                    ctx.beginPath();
+                    ctx.moveTo(fx, fy);
+                    ctx.lineTo(fx, fy - 13 * S);
+                    ctx.stroke();
+                    const col = petals[i % petals.length];
+                    ctx.fillStyle = col;
+                    for (let k = 0; k < 5; k++) {
+                        const a = k * Math.PI * 2 / 5 - Math.PI / 2;
+                        ctx.beginPath();
+                        ctx.arc(fx + Math.cos(a) * 4 * S, fy - 13 * S + Math.sin(a) * 4 * S, 3.2 * S, 0, 7);
+                        ctx.fill();
+                    }
+                    ctx.fillStyle = '#ffd93d';
+                    ctx.beginPath();
+                    ctx.arc(fx, fy - 13 * S, 2.4 * S, 0, 7);
+                    ctx.fill();
+                }
+            }
+            ctx.restore();
+        }
+
+        // ------------------------------------------------------------- loop
+        let tNow = 0, last = 0;
+
+        function frame(t) {
+            tNow = t;
+            const dt = Math.min(48, t - last || 16.7);
+            last = t;
+            const d = Math.min(2.6, dt / 16.667);
+
+            drawBackground();
+            if (state === 'playing') { update(d); refreshLiveKeys(); }
+            drawScene();
+
+            requestAnimationFrame(frame);
+        }
+
+        // ------------------------------------------------------------- HUD
+        function updateHUD() {
+            document.getElementById('heightVal').textContent = bestHeightM;
+            document.getElementById('starVal').textContent = starCount;
+            const h = document.getElementById('hearts');
+            h.innerHTML = '';
+            for (let i = 0; i < 3; i++) {
+                const s = document.createElement('span');
+                s.className = 'heart' + (i >= hearts ? ' lost' : '');
+                s.textContent = '❤️';
+                h.appendChild(s);
+            }
+        }
+
+        // ------------------------------------------------ on-screen key pad
+        // Tablets have no keyboard, so letter mode brings its own. Keys that
+        // match something in the sky right now light up — that's the "find the
+        // letter" part of the exercise.
+        const KEY_ROWS = {
+            home: [['A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L']],
+            alpha: [['Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P'],
+            ['A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L'],
+            ['Z', 'X', 'C', 'V', 'B', 'N', 'M']],
+            num: [['1', '2', '3', '4', '5', '6', '7', '8', '9', '0']]
+        };
+
+        const keyCaps = new Map();
+        let liveSig = '';
+
+        function buildKeyPad() {
+            const pad = document.getElementById('keyPad');
+            pad.innerHTML = '';
+            keyCaps.clear();
+            liveSig = '';
+            for (const row of KEY_ROWS[SET.keys]) {
+                const r = document.createElement('div');
+                r.className = 'key-row';
+                for (const ch of row) {
+                    const b = document.createElement('button');
+                    b.className = 'key-cap';
+                    b.textContent = ch;
+                    b.addEventListener('pointerdown', e => {
+                        e.preventDefault();
+                        ensureAudio();
+                        pressLetter(ch);
+                    });
+                    keyCaps.set(ch, b);
+                    r.appendChild(b);
+                }
+                pad.appendChild(r);
+            }
+            syncKeyPad();
+        }
+
+        function syncKeyPad() {
+            const show = letterMode() && SET.osk && state === 'playing';
+            document.getElementById('keyPad').classList.toggle('hidden', !show);
+        }
+
+        function flashKey(ch, hit) {
+            const b = keyCaps.get(ch);
+            if (!b) return;
+            b.classList.add('hit');
+            setTimeout(() => b.classList.remove('hit'), 130);
+            if (!hit) { b.style.opacity = '.4'; setTimeout(() => b.style.opacity = '', 180); }
+        }
+
+        // Called every frame, but only touches the DOM when the set changes.
+        function refreshLiveKeys() {
+            if (!keyCaps.size || !letterMode()) return;
+            const live = new Set();
+            const add = o => {
+                if (!o.key) return;
+                const sy = o.y - camY;
+                if (sy > -70 && sy < H + 70) live.add(o.key);
+            };
+            for (const b of balloons) add(b);
+            for (const p of platforms) if (!p.dead) add(p);
+            const sig = [...live].sort().join('');
+            if (sig === liveSig) return;
+            liveSig = sig;
+            keyCaps.forEach((b, ch) => b.classList.toggle('live', live.has(ch)));
+        }
+
+        // --------------------------------------------------- settings panel
+        function syncSettingsUI() {
+            document.querySelectorAll('#modeSeg button').forEach(b =>
+                b.classList.toggle('on', b.dataset.mode === SET.mode));
+            document.querySelectorAll('#keySeg button').forEach(b =>
+                b.classList.toggle('on', b.dataset.keys === SET.keys));
+            document.getElementById('oskChk').checked = SET.osk;
+            document.getElementById('keySetWrap').classList.toggle('hidden', !letterMode());
+            document.getElementById('modeToggle').classList.toggle('on', letterMode());
+            document.getElementById('howText').innerHTML = letterMode()
+                ? 'Press the <b>letter</b> you see 🔤<br>Your hopper flies to that spot! ⬆️<br>Letters are on <b>platforms</b> and <b>balloons</b> 🎈'
+                : '<b>Hold and slide</b> your finger to move 🫱<br>You bounce all by yourself! ⬆️<br>Grab <b>stars</b> ⭐ and <b>balloons</b> 🎈';
+            syncKeyPad();
+        }
+
+        function setMode(mode) {
+            if (SET.mode === mode) return;
+            SET.mode = mode;
+            localStorage.setItem('skyHopperMode', mode);
+            relabelWorld(letterMode());
+            if (letterMode()) buildKeyPad();
+            syncSettingsUI();
+        }
+
+        function setKeySet(keys) {
+            if (SET.keys === keys) return;
+            SET.keys = keys;
+            localStorage.setItem('skyHopperKeys', keys);
+            // hand out fresh labels from the new pool
+            relabelWorld(false);
+            usedLetters.clear();
+            if (letterMode()) { relabelWorld(true); buildKeyPad(); }
+            syncSettingsUI();
+        }
+
+        // ------------------------------------------------- menu / game flow
+        function buildCharPicker() {
+            const row = document.getElementById('charRow');
+            row.innerHTML = '';
+            HEROES.forEach((hero, i) => {
+                const btn = document.createElement('button');
+                btn.className = 'char-btn' + (i === heroIdx ? ' selected' : '');
+                const c = document.createElement('canvas');
+                const dpr = Math.min(window.devicePixelRatio || 1, 2);
+                c.width = 46 * dpr; c.height = 46 * dpr;
+                const g = c.getContext('2d');
+                g.setTransform(dpr, 0, 0, dpr, 0, 0);
+                drawHero(g, 23, 26, 15, hero, {});
+                const label = document.createElement('span');
+                label.textContent = hero.name;
+                btn.appendChild(c); btn.appendChild(label);
+                btn.onclick = () => {
+                    ensureAudio();
+                    heroIdx = i;
+                    SFX.hop();
+                    [...row.children].forEach((b, k) => b.classList.toggle('selected', k === i));
+                };
+                row.appendChild(btn);
+            });
+        }
+
+        function drawMenuBackdrop() {
+            bestHeightM = 0;
+            camY = -H * 0.72;
+        }
+
+        function startGame() {
+            ensureAudio();
+            resetGame();
+            state = 'playing';
+            document.getElementById('startScreen').classList.add('hidden');
+            document.getElementById('overScreen').classList.add('hidden');
+            document.getElementById('hud').style.display = 'flex';
+            syncKeyPad();
+            if (letterMode()) toast('PRESS A LETTER!', 'HOP TO IT');
+            SFX.hop();
+        }
+
+        function gameOver() {
+            state = 'over';
+            SFX.over();
+            const isBest = bestHeightM > bestScore;
+            if (isBest) { bestScore = bestHeightM; localStorage.setItem('skyHopperBest', bestScore); }
+            document.getElementById('overTitle').textContent = pick(['Great climbing!', 'What a hopper!', 'Nice jumping!', 'So high!']);
+            document.getElementById('bestBadgeWrap').innerHTML = isBest
+                ? '<div class="best-badge">🏆 NEW BEST!</div>'
+                : `<div class="best-badge">Best: ${bestScore}m</div>`;
+            document.getElementById('finalHeight').textContent = bestHeightM;
+            document.getElementById('finalStars').textContent = starCount;
+            document.getElementById('overScreen').classList.remove('hidden');
+            document.getElementById('hud').style.display = 'none';
+            syncKeyPad();
+        }
+
+        document.getElementById('playBtn').onclick = startGame;
+        document.getElementById('againBtn').onclick = startGame;
+        document.getElementById('menuBtn').onclick = () => {
+            state = 'menu';
+            drawMenuBackdrop();
+            document.getElementById('overScreen').classList.add('hidden');
+            document.getElementById('startScreen').classList.remove('hidden');
+            syncKeyPad();
+        };
+        document.getElementById('soundToggle').onclick = () => {
+            soundOn = !soundOn;
+            document.getElementById('soundToggle').textContent = soundOn ? '🔊' : '🔇';
+            if (soundOn) { ensureAudio(); SFX.hop(); }
+        };
+
+        // settings: control mode, which keys, on-screen pad
+        document.getElementById('modeSeg').onclick = e => {
+            const b = e.target.closest('button');
+            if (!b) return;
+            ensureAudio(); SFX.hop();
+            setMode(b.dataset.mode);
+        };
+        document.getElementById('keySeg').onclick = e => {
+            const b = e.target.closest('button');
+            if (!b) return;
+            ensureAudio(); SFX.hop();
+            setKeySet(b.dataset.keys);
+        };
+        document.getElementById('oskChk').onchange = e => {
+            SET.osk = e.target.checked;
+            localStorage.setItem('skyHopperOSK', SET.osk ? '1' : '0');
+            syncKeyPad();
+        };
+        // the ⌨️ button flips modes without leaving the climb
+        document.getElementById('modeToggle').onclick = () => {
+            ensureAudio();
+            setMode(letterMode() ? 'touch' : 'letters');
+            SFX.lock();
+            if (state === 'playing') toast(letterMode() ? 'LETTER KEYS ON' : 'SLIDE TO MOVE', '');
+        };
+
+        // menu backdrop: a few decorative platforms behind the panel
+        (function menuScene() {
+            platforms = [];
+            const g = { x: 0, y: 0, w: playW, h: 46 * S, type: 'ground', alpha: 1, spring: false, baseX: 0 };
+            makeDecor(g);
+            platforms.push(g);
+            for (let i = 1; i <= 8; i++) {
+                heightM = 0;
+                const p = addPlatform(-i * 110 * S, 'grass');
+                p.type = 'grass';
+            }
+            camY = -H * 0.72;
+            player.r = 22 * S;
+            player.x = playW / 2;
+            player.y = -H * 0.2;
+        })();
+
+        buildCharPicker();
+        buildKeyPad();
+        syncSettingsUI();
+        updateHUD();
+        requestAnimationFrame(frame);
+    </script>
+</body>
+
+</html>
