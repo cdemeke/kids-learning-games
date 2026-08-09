@@ -1049,7 +1049,10 @@
             { at: 380, top: '#ff8fc8', bot: '#ffdcef', name: 'Candy Sky', dir: 0 },
             { at: 560, top: '#ff9a5c', bot: '#ffe0a8', name: 'Sunset Sky', dir: -1 },
             { at: 820, top: '#25306b', bot: '#7b5fbe', name: 'Starry Night', dir: 0 },
-            { at: 1200, top: '#120a2e', bot: '#3b1f6b', name: 'Outer Space', dir: 0 }
+            { at: 1200, top: '#17164f', bot: '#4d4f9a', name: 'Moon Orbit', dir: 0 },
+            { at: 1600, top: '#11143f', bot: '#343f88', name: 'Planetary Space', dir: 0 },
+            { at: 2200, top: '#090b2e', bot: '#281b68', name: 'Deep Galaxy', dir: 0 },
+            { at: 3000, top: '#050518', bot: '#171044', name: 'High Galaxy', dir: 0 }
         ];
 
         function hexToHsl(hex) {
@@ -1090,10 +1093,20 @@
             const span = Math.max(1, b.at - a.at);
             const t = Math.max(0, Math.min(1, (m - a.at) / span));
             const e = t * t * (3 - 2 * t);
+            const stage = (from, to) => {
+                const q = Math.max(0, Math.min(1, (m - from) / Math.max(1, to - from)));
+                return q * q * (3 - 2 * q);
+            };
             return {
                 top: lerpColor(a.top, b.top, e, a.dir),
                 bot: lerpColor(a.bot, b.bot, e, a.dir),
                 night: Math.max(0, Math.min(1, (m - 640) / 280)),
+                // Each layer has a bounded hand-off window, keeping old
+                // scenery from remaining fully visible in later zones.
+                orb: stage(820, 1200),
+                moon: stage(820, 1120) * (1 - stage(1200, 1750)),
+                planets: stage(1150, 1700) * (1 - stage(1800, 2800)),
+                galaxies: stage(1800, 2450),
                 zone: a
             };
         }
@@ -1632,6 +1645,101 @@
         }
 
         // ------------------------------------------------------------- draw
+        // Cosmic landmarks use fixed seeds and camera-relative parallax so they
+        // move smoothly with the world without being regenerated each frame.
+        const COSMIC_PLANETS = [
+            { x: 0.16, y: 0.28, r: 28, c: '#f08b67', ring: 0, d: 0.035 },
+            { x: 0.78, y: 0.48, r: 17, c: '#6fd0d3', ring: 1, d: 0.06 },
+            { x: 0.42, y: 0.78, r: 11, c: '#f2c85b', ring: 0, d: 0.09 },
+            { x: 0.9, y: 0.16, r: 9, c: '#ed8db4', ring: 0, d: 0.12 }
+        ];
+        const COSMIC_GALAXIES = [
+            { x: 0.18, y: 0.24, r: 30, rot: 0.2, c: '#f5b7e7', d: 0.018 },
+            { x: 0.72, y: 0.68, r: 25, rot: -0.45, c: '#a5c8ff', d: 0.025 },
+            { x: 0.48, y: 0.42, r: 17, rot: 0.8, c: '#ffe6a8', d: 0.04 }
+        ];
+
+        function wrapSky(value, span) {
+            return ((value % span) + span) % span;
+        }
+
+        function drawMoonOrbit(alpha) {
+            const x = W * 0.79;
+            const y = wrapSky(0.18 * H - camY * 0.018, H * 1.35) - H * 0.18;
+            ctx.save();
+            ctx.globalAlpha = alpha * 0.42;
+            ctx.strokeStyle = '#d9e6ff';
+            ctx.lineWidth = 1.5 * S;
+            ctx.beginPath();
+            ctx.ellipse(x, y, 70 * S, 22 * S, -0.18, 0, Math.PI * 2);
+            ctx.stroke();
+            ctx.globalAlpha = alpha;
+            ctx.fillStyle = '#f4f0c9';
+            ctx.beginPath(); ctx.arc(x, y, 31 * S, 0, Math.PI * 2); ctx.fill();
+            ctx.fillStyle = '#d7d2ac';
+            for (const c of [[-10, -7, 7], [11, 5, 5], [-3, 14, 4], [14, -12, 3]]) {
+                ctx.beginPath(); ctx.arc(x + c[0] * S, y + c[1] * S, c[2] * S, 0, Math.PI * 2); ctx.fill();
+            }
+            ctx.restore();
+        }
+
+        function drawPlanets(alpha) {
+            for (const p of COSMIC_PLANETS) {
+                const x = p.x * W;
+                const y = wrapSky(p.y * H - camY * p.d, H * 1.35) - H * 0.16;
+                ctx.save();
+                ctx.globalAlpha = alpha * 0.9;
+                if (p.ring) {
+                    ctx.strokeStyle = '#f5e2b2'; ctx.lineWidth = 3 * S;
+                    ctx.beginPath(); ctx.ellipse(x, y, p.r * 1.65 * S, p.r * 0.48 * S, -0.16, 0, Math.PI * 2); ctx.stroke();
+                }
+                ctx.fillStyle = p.c;
+                ctx.beginPath(); ctx.arc(x, y, p.r * S, 0, Math.PI * 2); ctx.fill();
+                ctx.globalAlpha = alpha * 0.28;
+                ctx.fillStyle = '#fff';
+                ctx.beginPath(); ctx.arc(x - p.r * 0.3 * S, y - p.r * 0.28 * S, p.r * 0.24 * S, 0, Math.PI * 2); ctx.fill();
+                ctx.restore();
+            }
+        }
+
+        function drawNebulae(alpha) {
+            if (alpha <= 0.01) return;
+            ctx.save();
+            ctx.globalAlpha = alpha * 0.18;
+            const band = ctx.createLinearGradient(0, 0, W, H);
+            band.addColorStop(0, '#ef87c9'); band.addColorStop(0.5, '#7a8ee8'); band.addColorStop(1, '#55d1d0');
+            ctx.fillStyle = band;
+            ctx.beginPath();
+            ctx.moveTo(-20, H * 0.22);
+            ctx.bezierCurveTo(W * 0.25, H * 0.04, W * 0.55, H * 0.44, W + 20, H * 0.2);
+            ctx.lineTo(W + 20, H * 0.42);
+            ctx.bezierCurveTo(W * 0.55, H * 0.63, W * 0.25, H * 0.22, -20, H * 0.48);
+            ctx.closePath(); ctx.fill();
+            ctx.restore();
+        }
+
+        function drawGalaxies(alpha) {
+            for (const gal of COSMIC_GALAXIES) {
+                const x = gal.x * W;
+                const y = wrapSky(gal.y * H - camY * gal.d, H * 1.3) - H * 0.15;
+                ctx.save();
+                ctx.translate(x, y); ctx.rotate(gal.rot);
+                ctx.globalAlpha = alpha * 0.58;
+                ctx.strokeStyle = gal.c; ctx.lineWidth = Math.max(1, 4 * S);
+                ctx.beginPath();
+                for (let i = 0; i <= 24; i++) {
+                    const q = i / 24, a = q * Math.PI * 4, r = q * gal.r * S;
+                    const px = Math.cos(a) * r * 1.6, py = Math.sin(a) * r * 0.62;
+                    if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+                }
+                ctx.stroke();
+                ctx.globalAlpha = alpha * 0.9;
+                ctx.fillStyle = '#fff8d6';
+                ctx.beginPath(); ctx.arc(0, 0, gal.r * 0.22 * S, 0, Math.PI * 2); ctx.fill();
+                ctx.restore();
+            }
+        }
+
         function drawBackground() {
             const zc = zoneColors(bestHeightM);
             const g = ctx.createLinearGradient(0, 0, 0, H);
@@ -1654,16 +1762,16 @@
                 ctx.restore();
             }
 
-            // sun / moon
+            // The familiar moon slowly recedes as planets and galaxies arrive.
             const orbX = W - 70, orbY = 100 + Math.min(140, bestHeightM * 0.1);
             ctx.save();
-            ctx.globalAlpha = 0.88;
+            ctx.globalAlpha = 0.88 * (1 - zc.orb);
             ctx.fillStyle = zc.night > 0.5 ? '#fdf6d8' : '#fff6b8';
             ctx.beginPath();
             ctx.arc(orbX, orbY, 38, 0, 7);
             ctx.fill();
             if (zc.night > 0.4) {
-                ctx.globalAlpha = (zc.night - 0.4) * 0.5;
+                ctx.globalAlpha = (zc.night - 0.4) * 0.5 * (1 - zc.orb);
                 ctx.fillStyle = '#d9d0a8';
                 for (const c of [[-12, -8, 9], [10, 6, 7], [-4, 16, 5], [16, -14, 4]]) {
                     ctx.beginPath();
@@ -1672,6 +1780,11 @@
                 }
             }
             ctx.restore();
+
+            drawMoonOrbit(zc.moon);
+            drawPlanets(zc.planets);
+            drawNebulae(zc.galaxies);
+            drawGalaxies(zc.galaxies);
 
             // parallax clouds
             for (const c of clouds) {
