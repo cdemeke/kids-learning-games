@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Shape Party - Find the Shapes!</title>
+    <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@700;800&family=Nunito:wght@600;700&display=swap"
+        rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Nunito', sans-serif;
+            background: linear-gradient(180deg, #74ebd5 0%, #ACB6E5 100%);
+            min-height: 100vh;
+            overflow: hidden;
+            touch-action: manipulation;
+        }
+
+        .game-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            height: 100dvh;
+            max-width: 900px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        /* Floating decorative shapes */
+        .float-deco {
+            position: absolute;
+            opacity: 0.18;
+            animation: floatAround 14s ease-in-out infinite;
+            pointer-events: none;
+            font-size: 3rem;
+            z-index: 0;
+        }
+
+        @keyframes floatAround {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            25% { transform: translate(25px, -30px) rotate(20deg); }
+            50% { transform: translate(-15px, 20px) rotate(-15deg); }
+            75% { transform: translate(30px, 15px) rotate(10deg); }
+        }
+
+        .home-btn {
+            position: fixed;
+            top: 15px;
+            left: 15px;
+            z-index: 1000;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.85));
+            border: 2px solid #6C5CE7;
+            color: #4834d4;
+            padding: 10px 18px;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: 700;
+            text-decoration: none;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .home-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .score-board {
+            position: fixed;
+            top: 15px;
+            right: 15px;
+            z-index: 1000;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.85));
+            border: 2px solid #FDCB6E;
+            border-radius: 50px;
+            padding: 10px 18px;
+            font-size: 1.1rem;
+            font-weight: 800;
+            color: #E17055;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+        }
+
+        .title {
+            font-family: 'Baloo 2', cursive;
+            font-size: clamp(1.6rem, 5vw, 2.6rem);
+            font-weight: 800;
+            color: white;
+            text-shadow: 3px 3px 0 #6C5CE7, 5px 5px 0 rgba(0, 0, 0, 0.12);
+            margin-top: 70px;
+            z-index: 1;
+        }
+
+        .prompt-bubble {
+            background: white;
+            border: 4px solid #6C5CE7;
+            border-radius: 30px;
+            padding: 14px 30px;
+            margin-top: 14px;
+            font-family: 'Baloo 2', cursive;
+            font-size: clamp(1.2rem, 4vw, 1.8rem);
+            font-weight: 700;
+            color: #4834d4;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+            z-index: 1;
+            text-align: center;
+            animation: bubblePop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        @keyframes bubblePop {
+            0% { transform: scale(0.5); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .prompt-bubble .shape-name {
+            color: #E84393;
+            text-transform: uppercase;
+        }
+
+        /* Target hole area */
+        .stage {
+            flex: 1;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 1;
+            gap: 20px;
+            padding: 10px;
+        }
+
+        .target-zone {
+            width: min(180px, 38vw);
+            height: min(180px, 38vw);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .target-hole {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.2));
+            animation: holePulse 2s ease-in-out infinite;
+        }
+
+        @keyframes holePulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.06); }
+        }
+
+        /* Shape choices */
+        .choices {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: min(24px, 4vw);
+            padding: 10px 15px 30px;
+            z-index: 1;
+        }
+
+        .choice {
+            width: min(120px, 24vw);
+            height: min(120px, 24vw);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            background: rgba(255, 255, 255, 0.55);
+            border-radius: 24px;
+            border: 4px solid rgba(255, 255, 255, 0.9);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+            transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+            animation: choiceIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) backwards;
+        }
+
+        .choice:nth-child(1) { animation-delay: 0.05s; }
+        .choice:nth-child(2) { animation-delay: 0.15s; }
+        .choice:nth-child(3) { animation-delay: 0.25s; }
+        .choice:nth-child(4) { animation-delay: 0.35s; }
+
+        @keyframes choiceIn {
+            from { transform: scale(0) rotate(-20deg); opacity: 0; }
+            to { transform: scale(1) rotate(0); opacity: 1; }
+        }
+
+        .choice:hover {
+            transform: scale(1.1) rotate(3deg);
+        }
+
+        .choice:active {
+            transform: scale(0.95);
+        }
+
+        .choice.wrong {
+            animation: wobble 0.5s ease;
+        }
+
+        @keyframes wobble {
+            0%, 100% { transform: translateX(0); }
+            20% { transform: translateX(-12px) rotate(-5deg); }
+            40% { transform: translateX(12px) rotate(5deg); }
+            60% { transform: translateX(-8px) rotate(-3deg); }
+            80% { transform: translateX(8px) rotate(3deg); }
+        }
+
+        .choice.correct-fly {
+            animation: flyToTarget 0.7s ease forwards;
+            pointer-events: none;
+        }
+
+        @keyframes flyToTarget {
+            50% { transform: scale(1.3) rotate(360deg); }
+            100% { transform: scale(0.2) translateY(-40vh); opacity: 0; }
+        }
+
+        /* SVG shapes sizing */
+        .shape-svg {
+            width: 78%;
+            height: 78%;
+            filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.2));
+        }
+
+        /* Star burst celebration */
+        .burst {
+            position: fixed;
+            font-size: 1.8rem;
+            pointer-events: none;
+            z-index: 2000;
+            animation: burstFly 1s ease-out forwards;
+        }
+
+        @keyframes burstFly {
+            to {
+                transform: translate(var(--dx), var(--dy)) rotate(720deg) scale(0.3);
+                opacity: 0;
+            }
+        }
+
+        /* Big win overlay */
+        .win-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(72, 52, 212, 0.85);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            z-index: 3000;
+            gap: 20px;
+        }
+
+        .win-overlay.show {
+            display: flex;
+        }
+
+        .win-card {
+            background: white;
+            border-radius: 30px;
+            padding: 40px 50px;
+            text-align: center;
+            animation: bubblePop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            margin: 0 20px;
+        }
+
+        .win-card .big-emoji {
+            font-size: 5rem;
+            display: block;
+            animation: bounce 1s ease infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-18px); }
+        }
+
+        .win-card h2 {
+            font-family: 'Baloo 2', cursive;
+            font-size: 2.2rem;
+            color: #6C5CE7;
+            margin: 10px 0;
+        }
+
+        .win-card p {
+            color: #666;
+            font-weight: 700;
+            font-size: 1.1rem;
+            margin-bottom: 20px;
+        }
+
+        .play-again-btn {
+            font-family: 'Baloo 2', cursive;
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: white;
+            background: linear-gradient(135deg, #E84393, #FD79A8);
+            border: none;
+            border-radius: 50px;
+            padding: 14px 36px;
+            cursor: pointer;
+            box-shadow: 0 6px 20px rgba(232, 67, 147, 0.4);
+            transition: transform 0.2s ease;
+        }
+
+        .play-again-btn:hover {
+            transform: scale(1.06);
+        }
+
+        /* Progress stars */
+        .progress-stars {
+            display: flex;
+            gap: 6px;
+            margin-top: 10px;
+            z-index: 1;
+        }
+
+        .p-star {
+            font-size: 1.5rem;
+            filter: grayscale(1) opacity(0.4);
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .p-star.earned {
+            filter: none;
+            transform: scale(1.2);
+        }
+
+        @media (max-height: 600px) {
+            .title { margin-top: 60px; font-size: 1.4rem; }
+            .target-zone { width: 110px; height: 110px; }
+            .choice { width: 90px; height: 90px; }
+        }
+    </style>
+</head>
+
+<body>
+    <a href="index.html" class="home-btn">🏠 Home</a>
+    <div class="score-board">⭐ <span id="score">0</span></div>
+
+    <div class="game-container" id="gameContainer">
+        <h1 class="title">🎉 Shape Party! 🎉</h1>
+        <div class="prompt-bubble" id="prompt">Find the <span class="shape-name" id="shapeName">circle</span>!</div>
+        <div class="progress-stars" id="progressStars"></div>
+
+        <div class="stage">
+            <div class="target-zone">
+                <div class="target-hole" id="targetHole"></div>
+            </div>
+            <div class="choices" id="choices"></div>
+        </div>
+    </div>
+
+    <div class="win-overlay" id="winOverlay">
+        <div class="win-card">
+            <span class="big-emoji">🏆</span>
+            <h2>Shape Superstar!</h2>
+            <p>You found all 10 shapes! Amazing job!</p>
+            <button class="play-again-btn" id="playAgainBtn">Play Again! 🎉</button>
+        </div>
+    </div>
+
+    <script>
+        // ---------- Shapes ----------
+        const SHAPES = [
+            { name: 'circle', color: '#E84393', draw: c => `<circle cx="50" cy="50" r="42" fill="${c}"/>` },
+            { name: 'square', color: '#0984E3', draw: c => `<rect x="10" y="10" width="80" height="80" rx="8" fill="${c}"/>` },
+            { name: 'triangle', color: '#00B894', draw: c => `<polygon points="50,8 95,90 5,90" fill="${c}"/>` },
+            { name: 'star', color: '#FDCB6E', draw: c => `<polygon points="50,5 61,38 96,38 68,59 79,92 50,71 21,92 32,59 4,38 39,38" fill="${c}"/>` },
+            { name: 'heart', color: '#D63031', draw: c => `<path d="M50 88 C20 62 5 45 5 28 C5 12 18 5 29 5 C39 5 47 12 50 19 C53 12 61 5 71 5 C82 5 95 12 95 28 C95 45 80 62 50 88Z" fill="${c}"/>` },
+            { name: 'diamond', color: '#6C5CE7', draw: c => `<polygon points="50,5 92,50 50,95 8,50" fill="${c}"/>` },
+            { name: 'oval', color: '#E17055', draw: c => `<ellipse cx="50" cy="50" rx="45" ry="30" fill="${c}"/>` },
+            { name: 'rectangle', color: '#00CEC9', draw: c => `<rect x="5" y="25" width="90" height="50" rx="8" fill="${c}"/>` },
+        ];
+
+        const ROUNDS_TO_WIN = 10;
+        let score = 0;
+        let roundsWon = 0;
+        let currentTarget = null;
+        let locked = false;
+
+        // ---------- Audio ----------
+        let audioCtx = null;
+        function getCtx() {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            return audioCtx;
+        }
+
+        function tone(freq, dur, type = 'sine', vol = 0.15, when = 0) {
+            const ctx = getCtx();
+            const o = ctx.createOscillator();
+            const g = ctx.createGain();
+            o.connect(g); g.connect(ctx.destination);
+            o.type = type;
+            o.frequency.setValueAtTime(freq, ctx.currentTime + when);
+            g.gain.setValueAtTime(vol, ctx.currentTime + when);
+            g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + when + dur);
+            o.start(ctx.currentTime + when);
+            o.stop(ctx.currentTime + when + dur);
+        }
+
+        function playCorrect() {
+            tone(523, 0.15); tone(659, 0.15, 'sine', 0.15, 0.12); tone(784, 0.3, 'sine', 0.15, 0.24);
+        }
+
+        function playWrong() {
+            tone(220, 0.2, 'triangle', 0.1); tone(180, 0.25, 'triangle', 0.1, 0.15);
+        }
+
+        function playWin() {
+            [523, 587, 659, 784, 880, 1047].forEach((f, i) => tone(f, 0.25, 'sine', 0.15, i * 0.13));
+        }
+
+        // ---------- Speech ----------
+        function say(text) {
+            if (!window.speechSynthesis) return;
+            speechSynthesis.cancel();
+            const u = new SpeechSynthesisUtterance(text);
+            u.rate = 0.9;
+            u.pitch = 1.2;
+            speechSynthesis.speak(u);
+        }
+
+        // ---------- Game ----------
+        const promptEl = document.getElementById('shapeName');
+        const targetHole = document.getElementById('targetHole');
+        const choicesEl = document.getElementById('choices');
+        const scoreEl = document.getElementById('score');
+        const progressEl = document.getElementById('progressStars');
+
+        function shuffle(arr) {
+            const a = [...arr];
+            for (let i = a.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [a[i], a[j]] = [a[j], a[i]];
+            }
+            return a;
+        }
+
+        function svgFor(shape, color) {
+            return `<svg class="shape-svg" viewBox="0 0 100 100">${shape.draw(color)}</svg>`;
+        }
+
+        function renderProgress() {
+            progressEl.innerHTML = '';
+            for (let i = 0; i < ROUNDS_TO_WIN; i++) {
+                const s = document.createElement('span');
+                s.className = 'p-star' + (i < roundsWon ? ' earned' : '');
+                s.textContent = '⭐';
+                progressEl.appendChild(s);
+            }
+        }
+
+        function newRound() {
+            locked = false;
+            const pool = shuffle(SHAPES).slice(0, 4);
+            currentTarget = pool[Math.floor(Math.random() * pool.length)];
+
+            promptEl.textContent = currentTarget.name;
+            // Dashed outline "hole" of the target shape
+            targetHole.innerHTML = `<svg class="shape-svg" viewBox="0 0 100 100" style="width:100%;height:100%">
+                ${currentTarget.draw('rgba(255,255,255,0.35)')}
+                <g stroke="#4834d4" stroke-width="3" stroke-dasharray="7 6" fill="none">${currentTarget.draw('none').replace('fill="none"', 'fill="none"')}</g>
+            </svg>`;
+
+            choicesEl.innerHTML = '';
+            shuffle(pool).forEach(shape => {
+                const div = document.createElement('div');
+                div.className = 'choice';
+                div.innerHTML = svgFor(shape, shape.color);
+                div.addEventListener('pointerdown', () => pick(div, shape));
+                choicesEl.appendChild(div);
+            });
+
+            say(`Find the ${currentTarget.name}!`);
+        }
+
+        function burst(x, y, emojis) {
+            for (let i = 0; i < 10; i++) {
+                const b = document.createElement('div');
+                b.className = 'burst';
+                b.textContent = emojis[i % emojis.length];
+                b.style.left = x + 'px';
+                b.style.top = y + 'px';
+                const ang = (Math.PI * 2 * i) / 10;
+                b.style.setProperty('--dx', Math.cos(ang) * (60 + Math.random() * 80) + 'px');
+                b.style.setProperty('--dy', Math.sin(ang) * (60 + Math.random() * 80) + 'px');
+                document.body.appendChild(b);
+                setTimeout(() => b.remove(), 1100);
+            }
+        }
+
+        function pick(el, shape) {
+            if (locked) return;
+            if (shape.name === currentTarget.name) {
+                locked = true;
+                score++;
+                roundsWon++;
+                scoreEl.textContent = score;
+                renderProgress();
+                playCorrect();
+                el.classList.add('correct-fly');
+                const r = el.getBoundingClientRect();
+                burst(r.left + r.width / 2, r.top + r.height / 2, ['⭐', '✨', '🎉']);
+                say(`Yay! That's the ${shape.name}!`);
+
+                setTimeout(() => {
+                    if (roundsWon >= ROUNDS_TO_WIN) {
+                        playWin();
+                        document.getElementById('winOverlay').classList.add('show');
+                        say('Wow! You are a shape superstar!');
+                    } else {
+                        newRound();
+                    }
+                }, 1100);
+            } else {
+                playWrong();
+                el.classList.add('wrong');
+                say(`That's the ${shape.name}. Try again!`);
+                setTimeout(() => el.classList.remove('wrong'), 600);
+            }
+        }
+
+        document.getElementById('playAgainBtn').addEventListener('click', () => {
+            roundsWon = 0;
+            document.getElementById('winOverlay').classList.remove('show');
+            renderProgress();
+            newRound();
+        });
+
+        // Floating decorations
+        const decoEmojis = ['🔵', '🟨', '🔺', '💜', '⭐', '🟢', '❤️', '🟠'];
+        decoEmojis.forEach((e, i) => {
+            const d = document.createElement('div');
+            d.className = 'float-deco';
+            d.textContent = e;
+            d.style.left = (5 + (i * 12) % 90) + '%';
+            d.style.top = (10 + (i * 23) % 80) + '%';
+            d.style.animationDelay = -(i * 1.7) + 's';
+            document.getElementById('gameContainer').appendChild(d);
+        });
+
+        renderProgress();
+        newRound();
+    </script>
+</body>
+
+</html>

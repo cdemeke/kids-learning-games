@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Number Fishing - Count the Fish!</title>
+    <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@700;800&family=Nunito:wght@600;700&display=swap"
+        rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Nunito', sans-serif;
+            background: linear-gradient(180deg, #87CEEB 0%, #4FC3F7 30%, #0288D1 100%);
+            min-height: 100vh;
+            overflow: hidden;
+            touch-action: manipulation;
+        }
+
+        .game-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            height: 100dvh;
+            max-width: 900px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        /* Sun */
+        .sun {
+            position: absolute;
+            top: 20px;
+            right: 40px;
+            width: 70px;
+            height: 70px;
+            background: radial-gradient(circle at 35% 35%, #FFF59D, #FFC107);
+            border-radius: 50%;
+            box-shadow: 0 0 50px rgba(255, 235, 59, 0.7);
+            animation: sunSpin 20s linear infinite;
+            z-index: 0;
+        }
+
+        @keyframes sunSpin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        /* Clouds */
+        .cloud {
+            position: absolute;
+            font-size: 3rem;
+            opacity: 0.9;
+            animation: cloudDrift 30s linear infinite;
+            z-index: 0;
+        }
+
+        @keyframes cloudDrift {
+            from { transform: translateX(-120px); }
+            to { transform: translateX(calc(100vw + 120px)); }
+        }
+
+        .home-btn {
+            position: fixed;
+            top: 15px;
+            left: 15px;
+            z-index: 1000;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.85));
+            border: 2px solid #0288D1;
+            color: #01579B;
+            padding: 10px 18px;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: 700;
+            text-decoration: none;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .home-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .score-board {
+            position: fixed;
+            top: 65px;
+            left: 15px;
+            z-index: 1000;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.85));
+            border: 2px solid #FFC107;
+            border-radius: 50px;
+            padding: 8px 16px;
+            font-size: 1rem;
+            font-weight: 800;
+            color: #E65100;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+        }
+
+        .title {
+            font-family: 'Baloo 2', cursive;
+            font-size: clamp(1.5rem, 5vw, 2.4rem);
+            font-weight: 800;
+            color: white;
+            text-shadow: 3px 3px 0 #01579B, 5px 5px 0 rgba(0, 0, 0, 0.12);
+            margin-top: 16px;
+            z-index: 1;
+        }
+
+        .prompt-bubble {
+            background: white;
+            border: 4px solid #0288D1;
+            border-radius: 30px;
+            padding: 10px 26px;
+            margin-top: 10px;
+            font-family: 'Baloo 2', cursive;
+            font-size: clamp(1.1rem, 3.5vw, 1.6rem);
+            font-weight: 700;
+            color: #01579B;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+            z-index: 5;
+            text-align: center;
+        }
+
+        /* Pond */
+        .pond {
+            position: relative;
+            width: min(92%, 640px);
+            flex: 1;
+            max-height: 46vh;
+            margin-top: 14px;
+            background: linear-gradient(180deg, rgba(2, 119, 189, 0.55), rgba(1, 87, 155, 0.75));
+            border: 6px solid rgba(255, 255, 255, 0.75);
+            border-radius: 40px;
+            overflow: hidden;
+            box-shadow: inset 0 10px 30px rgba(0, 0, 0, 0.2), 0 10px 30px rgba(0, 0, 0, 0.2);
+            z-index: 1;
+        }
+
+        /* Water waves */
+        .wave {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 200%;
+            height: 14px;
+            background: repeating-linear-gradient(90deg,
+                    rgba(255, 255, 255, 0.35) 0 20px,
+                    transparent 20px 40px);
+            border-radius: 50%;
+            animation: waveMove 4s linear infinite;
+        }
+
+        @keyframes waveMove {
+            from { transform: translateX(0); }
+            to { transform: translateX(-40px); }
+        }
+
+        .fish {
+            position: absolute;
+            font-size: clamp(2rem, 7vw, 3rem);
+            animation: swim 5s ease-in-out infinite alternate;
+            filter: drop-shadow(0 3px 4px rgba(0, 0, 0, 0.3));
+        }
+
+        @keyframes swim {
+            0% { transform: translateX(0) scaleX(1); }
+            45% { transform: translateX(40px) scaleX(1); }
+            50% { transform: translateX(42px) scaleX(-1); }
+            95% { transform: translateX(0px) scaleX(-1); }
+            100% { transform: translateX(0) scaleX(1); }
+        }
+
+        .fish.celebrate {
+            animation: fishJump 0.8s ease;
+        }
+
+        @keyframes fishJump {
+            0%, 100% { transform: translateY(0) rotate(0); }
+            50% { transform: translateY(-40px) rotate(-20deg); }
+        }
+
+        .bubble {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.35);
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            border-radius: 50%;
+            animation: bubbleUp linear infinite;
+            pointer-events: none;
+        }
+
+        @keyframes bubbleUp {
+            from { transform: translateY(0); opacity: 0.8; }
+            to { transform: translateY(-50vh); opacity: 0; }
+        }
+
+        /* Number choices */
+        .choices {
+            display: flex;
+            justify-content: center;
+            gap: min(24px, 4vw);
+            padding: 18px 15px calc(24px + env(safe-area-inset-bottom));
+            z-index: 5;
+        }
+
+        .num-btn {
+            width: min(110px, 25vw);
+            height: min(110px, 25vw);
+            font-family: 'Baloo 2', cursive;
+            font-size: clamp(2.2rem, 9vw, 3.4rem);
+            font-weight: 800;
+            color: white;
+            border: 5px solid rgba(255, 255, 255, 0.9);
+            border-radius: 28px;
+            cursor: pointer;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+            transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+            animation: choiceIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) backwards;
+        }
+
+        .num-btn:nth-child(1) { background: linear-gradient(135deg, #FF7043, #F4511E); animation-delay: 0.05s; }
+        .num-btn:nth-child(2) { background: linear-gradient(135deg, #66BB6A, #43A047); animation-delay: 0.15s; }
+        .num-btn:nth-child(3) { background: linear-gradient(135deg, #AB47BC, #8E24AA); animation-delay: 0.25s; }
+
+        @keyframes choiceIn {
+            from { transform: scale(0) rotate(-20deg); opacity: 0; }
+            to { transform: scale(1) rotate(0); opacity: 1; }
+        }
+
+        .num-btn:hover { transform: scale(1.1); }
+        .num-btn:active { transform: scale(0.95); }
+
+        .num-btn.wrong {
+            animation: wobble 0.5s ease;
+        }
+
+        @keyframes wobble {
+            0%, 100% { transform: translateX(0); }
+            20% { transform: translateX(-12px) rotate(-5deg); }
+            40% { transform: translateX(12px) rotate(5deg); }
+            60% { transform: translateX(-8px) rotate(-3deg); }
+            80% { transform: translateX(8px) rotate(3deg); }
+        }
+
+        /* Counting pop label */
+        .count-pop {
+            position: absolute;
+            font-family: 'Baloo 2', cursive;
+            font-size: 2rem;
+            font-weight: 800;
+            color: #FFEB3B;
+            text-shadow: 2px 2px 0 #01579B;
+            pointer-events: none;
+            animation: popCount 0.7s ease forwards;
+            z-index: 100;
+        }
+
+        @keyframes popCount {
+            0% { transform: scale(0); opacity: 1; }
+            50% { transform: scale(1.5); opacity: 1; }
+            100% { transform: scale(1); opacity: 0; }
+        }
+
+        .burst {
+            position: fixed;
+            font-size: 1.8rem;
+            pointer-events: none;
+            z-index: 2000;
+            animation: burstFly 1s ease-out forwards;
+        }
+
+        @keyframes burstFly {
+            to {
+                transform: translate(var(--dx), var(--dy)) rotate(720deg) scale(0.3);
+                opacity: 0;
+            }
+        }
+
+        .win-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(1, 87, 155, 0.85);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 3000;
+        }
+
+        .win-overlay.show { display: flex; }
+
+        .win-card {
+            background: white;
+            border-radius: 30px;
+            padding: 40px 50px;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            margin: 0 20px;
+            animation: cardPop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        @keyframes cardPop {
+            from { transform: scale(0.4); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .win-card .big-emoji {
+            font-size: 5rem;
+            display: block;
+            animation: bounce 1s ease infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-18px); }
+        }
+
+        .win-card h2 {
+            font-family: 'Baloo 2', cursive;
+            font-size: 2.2rem;
+            color: #0288D1;
+            margin: 10px 0;
+        }
+
+        .win-card p {
+            color: #666;
+            font-weight: 700;
+            font-size: 1.1rem;
+            margin-bottom: 20px;
+        }
+
+        .play-again-btn {
+            font-family: 'Baloo 2', cursive;
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: white;
+            background: linear-gradient(135deg, #FF7043, #FFC107);
+            border: none;
+            border-radius: 50px;
+            padding: 14px 36px;
+            cursor: pointer;
+            box-shadow: 0 6px 20px rgba(255, 112, 67, 0.4);
+            transition: transform 0.2s ease;
+        }
+
+        .play-again-btn:hover { transform: scale(1.06); }
+
+        @media (max-height: 600px) {
+            .title { font-size: 1.3rem; margin-top: 8px; }
+            .pond { max-height: 38vh; }
+        }
+    </style>
+</head>
+
+<body>
+    <a href="index.html" class="home-btn">🏠 Home</a>
+    <div class="score-board">🐟 <span id="score">0</span></div>
+
+    <div class="game-container">
+        <div class="sun"></div>
+        <div class="cloud" style="top: 30px; animation-delay: 0s;">☁️</div>
+        <div class="cloud" style="top: 80px; animation-delay: -12s; font-size: 2rem;">☁️</div>
+
+        <h1 class="title">🎣 Number Fishing! 🐠</h1>
+        <div class="prompt-bubble" id="prompt">How many fish do you see? Tap them to count!</div>
+
+        <div class="pond" id="pond">
+            <div class="wave"></div>
+        </div>
+
+        <div class="choices" id="choices"></div>
+    </div>
+
+    <div class="win-overlay" id="winOverlay">
+        <div class="win-card">
+            <span class="big-emoji">🏆</span>
+            <h2>Counting Champion!</h2>
+            <p>You counted all the fish! Great job!</p>
+            <button class="play-again-btn" id="playAgainBtn">Fish Again! 🎣</button>
+        </div>
+    </div>
+
+    <script>
+        const FISH_EMOJIS = ['🐠', '🐟', '🐡', '🦈', '🐙', '🦑', '🦐', '🦀'];
+        const ROUNDS_TO_WIN = 10;
+
+        let score = 0;
+        let round = 0;
+        let answer = 0;
+        let locked = false;
+        let countedFish = 0;
+
+        // ---------- Audio ----------
+        let audioCtx = null;
+        function getCtx() {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            return audioCtx;
+        }
+
+        function tone(freq, dur, type = 'sine', vol = 0.15, when = 0) {
+            const ctx = getCtx();
+            const o = ctx.createOscillator();
+            const g = ctx.createGain();
+            o.connect(g); g.connect(ctx.destination);
+            o.type = type;
+            o.frequency.setValueAtTime(freq, ctx.currentTime + when);
+            g.gain.setValueAtTime(vol, ctx.currentTime + when);
+            g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + when + dur);
+            o.start(ctx.currentTime + when);
+            o.stop(ctx.currentTime + when + dur);
+        }
+
+        function playCount(n) {
+            tone(400 + n * 60, 0.18, 'sine', 0.15);
+        }
+
+        function playCorrect() {
+            tone(523, 0.15); tone(659, 0.15, 'sine', 0.15, 0.12); tone(784, 0.3, 'sine', 0.15, 0.24);
+        }
+
+        function playWrong() {
+            tone(220, 0.2, 'triangle', 0.1); tone(180, 0.25, 'triangle', 0.1, 0.15);
+        }
+
+        function playWin() {
+            [523, 587, 659, 784, 880, 1047].forEach((f, i) => tone(f, 0.25, 'sine', 0.15, i * 0.13));
+        }
+
+        function say(text) {
+            if (!window.speechSynthesis) return;
+            speechSynthesis.cancel();
+            const u = new SpeechSynthesisUtterance(text);
+            u.rate = 0.9;
+            u.pitch = 1.2;
+            speechSynthesis.speak(u);
+        }
+
+        // ---------- Game ----------
+        const pond = document.getElementById('pond');
+        const choicesEl = document.getElementById('choices');
+        const scoreEl = document.getElementById('score');
+        const promptEl = document.getElementById('prompt');
+
+        function shuffle(arr) {
+            const a = [...arr];
+            for (let i = a.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [a[i], a[j]] = [a[j], a[i]];
+            }
+            return a;
+        }
+
+        function addBubbles() {
+            for (let i = 0; i < 6; i++) {
+                const b = document.createElement('div');
+                b.className = 'bubble';
+                const size = 8 + Math.random() * 16;
+                b.style.width = size + 'px';
+                b.style.height = size + 'px';
+                b.style.left = Math.random() * 95 + '%';
+                b.style.bottom = '-20px';
+                b.style.animationDuration = (4 + Math.random() * 4) + 's';
+                b.style.animationDelay = -(Math.random() * 4) + 's';
+                pond.appendChild(b);
+            }
+        }
+
+        function newRound() {
+            locked = false;
+            countedFish = 0;
+            round++;
+
+            // Difficulty ramps: rounds 1-4 → 1-5 fish; later → up to 10
+            const maxFish = round <= 4 ? 5 : 10;
+            answer = 1 + Math.floor(Math.random() * maxFish);
+
+            // Clear old fish
+            pond.querySelectorAll('.fish').forEach(f => f.remove());
+
+            const emoji = FISH_EMOJIS[Math.floor(Math.random() * FISH_EMOJIS.length)];
+            const cols = Math.ceil(Math.sqrt(answer * 1.6));
+            const placed = [];
+            for (let i = 0; i < answer; i++) {
+                const f = document.createElement('div');
+                f.className = 'fish';
+                f.textContent = emoji;
+                // Grid-ish placement with jitter so fish never overlap fully
+                const col = i % cols;
+                const rowIdx = Math.floor(i / cols);
+                const left = 6 + col * (80 / cols) + Math.random() * 6;
+                const top = 15 + rowIdx * 26 + Math.random() * 8;
+                f.style.left = left + '%';
+                f.style.top = Math.min(top, 72) + '%';
+                f.style.animationDelay = -(Math.random() * 5) + 's';
+                f.style.animationDuration = (4 + Math.random() * 3) + 's';
+
+                // Tap-to-count: each fish pops a number when tapped
+                f.addEventListener('pointerdown', () => {
+                    if (f.dataset.counted) return;
+                    f.dataset.counted = '1';
+                    countedFish++;
+                    playCount(countedFish);
+                    say(String(countedFish));
+                    f.style.opacity = '0.55';
+                    const pop = document.createElement('div');
+                    pop.className = 'count-pop';
+                    pop.textContent = countedFish;
+                    pop.style.left = f.style.left;
+                    pop.style.top = f.style.top;
+                    pond.appendChild(pop);
+                    setTimeout(() => pop.remove(), 750);
+                });
+
+                pond.appendChild(f);
+                placed.push(f);
+            }
+
+            // Answer choices: the right number + 2 near misses
+            const options = new Set([answer]);
+            while (options.size < 3) {
+                const delta = Math.ceil(Math.random() * 2) * (Math.random() < 0.5 ? -1 : 1);
+                const opt = answer + delta;
+                if (opt >= 1 && opt <= 10) options.add(opt);
+            }
+
+            choicesEl.innerHTML = '';
+            shuffle([...options]).forEach(n => {
+                const btn = document.createElement('button');
+                btn.className = 'num-btn';
+                btn.textContent = n;
+                btn.addEventListener('pointerdown', () => pick(btn, n));
+                choicesEl.appendChild(btn);
+            });
+
+            promptEl.textContent = 'How many fish do you see? Tap them to count!';
+            say('How many fish do you see?');
+        }
+
+        function burst(x, y) {
+            const emojis = ['🐟', '⭐', '💦', '✨'];
+            for (let i = 0; i < 10; i++) {
+                const b = document.createElement('div');
+                b.className = 'burst';
+                b.textContent = emojis[i % emojis.length];
+                b.style.left = x + 'px';
+                b.style.top = y + 'px';
+                const ang = (Math.PI * 2 * i) / 10;
+                b.style.setProperty('--dx', Math.cos(ang) * (60 + Math.random() * 80) + 'px');
+                b.style.setProperty('--dy', Math.sin(ang) * (60 + Math.random() * 80) + 'px');
+                document.body.appendChild(b);
+                setTimeout(() => b.remove(), 1100);
+            }
+        }
+
+        function pick(btn, n) {
+            if (locked) return;
+            if (n === answer) {
+                locked = true;
+                score++;
+                scoreEl.textContent = score;
+                playCorrect();
+                const r = btn.getBoundingClientRect();
+                burst(r.left + r.width / 2, r.top + r.height / 2);
+                promptEl.textContent = `Yes! ${answer} fish! 🎉`;
+                say(`Yes! ${answer} fish! Great counting!`);
+                pond.querySelectorAll('.fish').forEach(f => f.classList.add('celebrate'));
+
+                setTimeout(() => {
+                    if (score >= ROUNDS_TO_WIN) {
+                        playWin();
+                        document.getElementById('winOverlay').classList.add('show');
+                        say('Hooray! You are a counting champion!');
+                    } else {
+                        newRound();
+                    }
+                }, 1400);
+            } else {
+                playWrong();
+                btn.classList.add('wrong');
+                say('Almost! Count the fish again!');
+                setTimeout(() => btn.classList.remove('wrong'), 600);
+            }
+        }
+
+        document.getElementById('playAgainBtn').addEventListener('click', () => {
+            score = 0;
+            round = 0;
+            scoreEl.textContent = 0;
+            document.getElementById('winOverlay').classList.remove('show');
+            newRound();
+        });
+
+        addBubbles();
+        newRound();
+    </script>
+</body>
+
+</html>

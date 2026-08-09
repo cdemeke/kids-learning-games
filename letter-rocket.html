@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Letter Rocket - Blast Off with Letters!</title>
+    <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@700;800&family=Nunito:wght@600;700&display=swap"
+        rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Nunito', sans-serif;
+            background: linear-gradient(180deg, #0f0c29 0%, #302b63 60%, #24243e 100%);
+            min-height: 100vh;
+            overflow: hidden;
+            touch-action: manipulation;
+        }
+
+        .game-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            height: 100dvh;
+            max-width: 900px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        .star {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+            animation: twinkle 2.5s ease-in-out infinite;
+            pointer-events: none;
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.25; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.4); }
+        }
+
+        .planet {
+            position: absolute;
+            font-size: 2.6rem;
+            opacity: 0.7;
+            animation: planetFloat 12s ease-in-out infinite;
+            pointer-events: none;
+        }
+
+        @keyframes planetFloat {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(15deg); }
+        }
+
+        .home-btn {
+            position: fixed;
+            top: 15px;
+            left: 15px;
+            z-index: 1000;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.85));
+            border: 2px solid #7E57C2;
+            color: #4527A0;
+            padding: 10px 18px;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: 700;
+            text-decoration: none;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .home-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .score-board {
+            position: fixed;
+            top: 15px;
+            right: 15px;
+            z-index: 1000;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.85));
+            border: 2px solid #FFD54F;
+            border-radius: 50px;
+            padding: 10px 18px;
+            font-size: 1.1rem;
+            font-weight: 800;
+            color: #E65100;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+        }
+
+        .title {
+            font-family: 'Baloo 2', cursive;
+            font-size: clamp(1.5rem, 5vw, 2.4rem);
+            font-weight: 800;
+            color: white;
+            text-shadow: 3px 3px 0 #7E57C2, 5px 5px 0 rgba(0, 0, 0, 0.2);
+            margin-top: 70px;
+            z-index: 1;
+        }
+
+        .prompt-bubble {
+            background: white;
+            border: 4px solid #7E57C2;
+            border-radius: 30px;
+            padding: 12px 28px;
+            margin-top: 12px;
+            font-family: 'Baloo 2', cursive;
+            font-size: clamp(1.1rem, 3.5vw, 1.6rem);
+            font-weight: 700;
+            color: #4527A0;
+            box-shadow: 0 8px 25px rgba(126, 87, 194, 0.5);
+            z-index: 5;
+            text-align: center;
+        }
+
+        .prompt-bubble .target-letter {
+            color: #E84393;
+            font-size: 1.4em;
+        }
+
+        /* Rocket launch pad */
+        .launch-zone {
+            flex: 1;
+            width: 100%;
+            position: relative;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            z-index: 1;
+            min-height: 160px;
+        }
+
+        .rocket {
+            font-size: clamp(4rem, 14vw, 6.5rem);
+            position: relative;
+            filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.4));
+            transition: transform 0.3s ease;
+            margin-bottom: 8px;
+        }
+
+        .rocket.launching {
+            animation: blastOff 1.4s ease-in forwards;
+        }
+
+        @keyframes blastOff {
+            0% { transform: translateY(0); }
+            15% { transform: translateY(4px) rotate(-2deg); }
+            30% { transform: translateY(2px) rotate(2deg); }
+            100% { transform: translateY(-110vh); }
+        }
+
+        .rocket.shake {
+            animation: rocketShake 0.4s ease;
+        }
+
+        @keyframes rocketShake {
+            0%, 100% { transform: rotate(0); }
+            25% { transform: rotate(-8deg); }
+            75% { transform: rotate(8deg); }
+        }
+
+        .flame {
+            position: absolute;
+            bottom: -18px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.45em;
+            opacity: 0;
+        }
+
+        .rocket.launching .flame {
+            opacity: 1;
+            animation: flameFlicker 0.15s linear infinite;
+        }
+
+        @keyframes flameFlicker {
+            0%, 100% { transform: translateX(-50%) scale(1); }
+            50% { transform: translateX(-50%) scale(1.3); }
+        }
+
+        .launch-pad {
+            position: absolute;
+            bottom: 0;
+            width: min(220px, 50vw);
+            height: 16px;
+            background: linear-gradient(180deg, #616161, #424242);
+            border-radius: 8px 8px 0 0;
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Letter bubbles */
+        .choices {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: min(22px, 4vw);
+            padding: 16px 15px calc(28px + env(safe-area-inset-bottom));
+            z-index: 5;
+        }
+
+        .letter-bubble {
+            width: min(105px, 22vw);
+            height: min(105px, 22vw);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Baloo 2', cursive;
+            font-size: clamp(2rem, 8vw, 3.2rem);
+            font-weight: 800;
+            color: white;
+            border-radius: 50%;
+            border: 4px solid rgba(255, 255, 255, 0.85);
+            cursor: pointer;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35), inset 0 4px 8px rgba(255, 255, 255, 0.3);
+            transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+            animation: bubbleFloat 3s ease-in-out infinite, choiceIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) backwards;
+        }
+
+        .letter-bubble:nth-child(1) { background: linear-gradient(135deg, #FF7043, #E64A19); animation-delay: 0s, 0.05s; }
+        .letter-bubble:nth-child(2) { background: linear-gradient(135deg, #42A5F5, #1976D2); animation-delay: -0.8s, 0.15s; }
+        .letter-bubble:nth-child(3) { background: linear-gradient(135deg, #66BB6A, #388E3C); animation-delay: -1.6s, 0.25s; }
+        .letter-bubble:nth-child(4) { background: linear-gradient(135deg, #EC407A, #C2185B); animation-delay: -2.4s, 0.35s; }
+
+        @keyframes bubbleFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        @keyframes choiceIn {
+            from { transform: scale(0); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .letter-bubble:hover { transform: scale(1.12); }
+        .letter-bubble:active { transform: scale(0.94); }
+
+        .letter-bubble.wrong {
+            animation: wobble 0.5s ease;
+        }
+
+        @keyframes wobble {
+            0%, 100% { transform: translateX(0); }
+            20% { transform: translateX(-12px) rotate(-5deg); }
+            40% { transform: translateX(12px) rotate(5deg); }
+            60% { transform: translateX(-8px) rotate(-3deg); }
+            80% { transform: translateX(8px) rotate(3deg); }
+        }
+
+        .letter-bubble.zoom-to-rocket {
+            animation: zoomAway 0.6s ease forwards;
+            pointer-events: none;
+        }
+
+        @keyframes zoomAway {
+            50% { transform: scale(1.3); }
+            100% { transform: scale(0) translateY(-30vh); opacity: 0; }
+        }
+
+        /* Alphabet progress trail */
+        .alphabet-trail {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 4px;
+            padding: 8px 20px 0;
+            max-width: 600px;
+            z-index: 1;
+        }
+
+        .trail-letter {
+            font-family: 'Baloo 2', cursive;
+            font-size: 0.85rem;
+            font-weight: 700;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            color: rgba(255, 255, 255, 0.35);
+            background: rgba(255, 255, 255, 0.08);
+            transition: all 0.3s ease;
+        }
+
+        .trail-letter.done {
+            color: #24243e;
+            background: #FFD54F;
+            box-shadow: 0 0 10px rgba(255, 213, 79, 0.7);
+            transform: scale(1.1);
+        }
+
+        .burst {
+            position: fixed;
+            font-size: 1.8rem;
+            pointer-events: none;
+            z-index: 2000;
+            animation: burstFly 1s ease-out forwards;
+        }
+
+        @keyframes burstFly {
+            to {
+                transform: translate(var(--dx), var(--dy)) rotate(720deg) scale(0.3);
+                opacity: 0;
+            }
+        }
+
+        .win-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 12, 41, 0.9);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 3000;
+        }
+
+        .win-overlay.show { display: flex; }
+
+        .win-card {
+            background: white;
+            border-radius: 30px;
+            padding: 40px 50px;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            margin: 0 20px;
+            animation: cardPop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        @keyframes cardPop {
+            from { transform: scale(0.4); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .win-card .big-emoji {
+            font-size: 5rem;
+            display: block;
+            animation: bounce 1s ease infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-18px); }
+        }
+
+        .win-card h2 {
+            font-family: 'Baloo 2', cursive;
+            font-size: 2rem;
+            color: #7E57C2;
+            margin: 10px 0;
+        }
+
+        .win-card p {
+            color: #666;
+            font-weight: 700;
+            font-size: 1.1rem;
+            margin-bottom: 20px;
+        }
+
+        .play-again-btn {
+            font-family: 'Baloo 2', cursive;
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: white;
+            background: linear-gradient(135deg, #7E57C2, #EC407A);
+            border: none;
+            border-radius: 50px;
+            padding: 14px 36px;
+            cursor: pointer;
+            box-shadow: 0 6px 20px rgba(126, 87, 194, 0.5);
+            transition: transform 0.2s ease;
+        }
+
+        .play-again-btn:hover { transform: scale(1.06); }
+
+        @media (max-height: 600px) {
+            .title { margin-top: 58px; font-size: 1.3rem; }
+            .rocket { font-size: 3.2rem; }
+            .alphabet-trail { display: none; }
+        }
+    </style>
+</head>
+
+<body>
+    <a href="index.html" class="home-btn">🏠 Home</a>
+    <div class="score-board">🚀 <span id="score">0</span></div>
+
+    <div class="game-container" id="gameContainer">
+        <h1 class="title">🚀 Letter Rocket! 🌟</h1>
+        <div class="prompt-bubble" id="prompt">Find the letter <span class="target-letter" id="targetLetter">A</span> to launch!</div>
+        <div class="alphabet-trail" id="trail"></div>
+
+        <div class="launch-zone">
+            <div class="rocket" id="rocket">🚀<span class="flame">🔥</span></div>
+            <div class="launch-pad"></div>
+        </div>
+
+        <div class="choices" id="choices"></div>
+    </div>
+
+    <div class="win-overlay" id="winOverlay">
+        <div class="win-card">
+            <span class="big-emoji">🌕</span>
+            <h2>You Reached the Moon!</h2>
+            <p>You launched 10 rockets with letters! Blast-off brilliant!</p>
+            <button class="play-again-btn" id="playAgainBtn">Launch Again! 🚀</button>
+        </div>
+    </div>
+
+    <script>
+        const ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+        // Letter sounds for phonics hints
+        const LETTER_WORDS = {
+            A: 'apple', B: 'ball', C: 'cat', D: 'dog', E: 'elephant', F: 'fish',
+            G: 'goat', H: 'hat', I: 'igloo', J: 'jump', K: 'kite', L: 'lion',
+            M: 'moon', N: 'nest', O: 'octopus', P: 'penguin', Q: 'queen', R: 'rocket',
+            S: 'sun', T: 'tiger', U: 'umbrella', V: 'violin', W: 'whale', X: 'xylophone',
+            Y: 'yo-yo', Z: 'zebra'
+        };
+
+        const ROUNDS_TO_WIN = 10;
+        let score = 0;
+        let target = null;
+        let locked = false;
+        let lettersDone = new Set();
+
+        // ---------- Audio ----------
+        let audioCtx = null;
+        function getCtx() {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            return audioCtx;
+        }
+
+        function tone(freq, dur, type = 'sine', vol = 0.15, when = 0) {
+            const ctx = getCtx();
+            const o = ctx.createOscillator();
+            const g = ctx.createGain();
+            o.connect(g); g.connect(ctx.destination);
+            o.type = type;
+            o.frequency.setValueAtTime(freq, ctx.currentTime + when);
+            g.gain.setValueAtTime(vol, ctx.currentTime + when);
+            g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + when + dur);
+            o.start(ctx.currentTime + when);
+            o.stop(ctx.currentTime + when + dur);
+        }
+
+        function playLaunch() {
+            const ctx = getCtx();
+            const o = ctx.createOscillator();
+            const g = ctx.createGain();
+            o.connect(g); g.connect(ctx.destination);
+            o.type = 'sawtooth';
+            o.frequency.setValueAtTime(120, ctx.currentTime);
+            o.frequency.exponentialRampToValueAtTime(900, ctx.currentTime + 1.2);
+            g.gain.setValueAtTime(0.12, ctx.currentTime);
+            g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 1.3);
+            o.start(); o.stop(ctx.currentTime + 1.3);
+            tone(523, 0.15, 'sine', 0.15, 0.2);
+            tone(784, 0.3, 'sine', 0.15, 0.4);
+        }
+
+        function playWrong() {
+            tone(220, 0.2, 'triangle', 0.1); tone(180, 0.25, 'triangle', 0.1, 0.15);
+        }
+
+        function playWin() {
+            [523, 587, 659, 784, 880, 1047, 1319].forEach((f, i) => tone(f, 0.25, 'sine', 0.15, i * 0.13));
+        }
+
+        function say(text) {
+            if (!window.speechSynthesis) return;
+            speechSynthesis.cancel();
+            const u = new SpeechSynthesisUtterance(text);
+            u.rate = 0.85;
+            u.pitch = 1.2;
+            speechSynthesis.speak(u);
+        }
+
+        // ---------- Game ----------
+        const targetEl = document.getElementById('targetLetter');
+        const rocket = document.getElementById('rocket');
+        const choicesEl = document.getElementById('choices');
+        const scoreEl = document.getElementById('score');
+        const trailEl = document.getElementById('trail');
+
+        function shuffle(arr) {
+            const a = [...arr];
+            for (let i = a.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [a[i], a[j]] = [a[j], a[i]];
+            }
+            return a;
+        }
+
+        function renderTrail() {
+            trailEl.innerHTML = '';
+            ALPHABET.forEach(l => {
+                const s = document.createElement('span');
+                s.className = 'trail-letter' + (lettersDone.has(l) ? ' done' : '');
+                s.textContent = l;
+                trailEl.appendChild(s);
+            });
+        }
+
+        function newRound() {
+            locked = false;
+            rocket.classList.remove('launching');
+
+            // Prefer letters not seen yet this session
+            const remaining = ALPHABET.filter(l => !lettersDone.has(l));
+            const pool = remaining.length >= 4 ? remaining : ALPHABET;
+            const four = shuffle(pool).slice(0, 4);
+            target = four[Math.floor(Math.random() * four.length)];
+
+            targetEl.textContent = target;
+
+            choicesEl.innerHTML = '';
+            shuffle(four).forEach(letter => {
+                const b = document.createElement('div');
+                b.className = 'letter-bubble';
+                b.textContent = letter;
+                b.addEventListener('pointerdown', () => pick(b, letter));
+                choicesEl.appendChild(b);
+            });
+
+            say(`Find the letter ${target}! ${target} is for ${LETTER_WORDS[target]}!`);
+        }
+
+        function burst(x, y) {
+            const emojis = ['⭐', '✨', '💫', '🌟'];
+            for (let i = 0; i < 12; i++) {
+                const b = document.createElement('div');
+                b.className = 'burst';
+                b.textContent = emojis[i % emojis.length];
+                b.style.left = x + 'px';
+                b.style.top = y + 'px';
+                const ang = (Math.PI * 2 * i) / 12;
+                b.style.setProperty('--dx', Math.cos(ang) * (60 + Math.random() * 90) + 'px');
+                b.style.setProperty('--dy', Math.sin(ang) * (60 + Math.random() * 90) + 'px');
+                document.body.appendChild(b);
+                setTimeout(() => b.remove(), 1100);
+            }
+        }
+
+        function pick(el, letter) {
+            if (locked) return;
+            if (letter === target) {
+                locked = true;
+                score++;
+                lettersDone.add(letter);
+                scoreEl.textContent = score;
+                renderTrail();
+                el.classList.add('zoom-to-rocket');
+                playLaunch();
+                say(`${letter}! Blast off!`);
+
+                setTimeout(() => {
+                    rocket.classList.add('launching');
+                    const r = rocket.getBoundingClientRect();
+                    burst(r.left + r.width / 2, r.top + r.height / 2);
+                }, 350);
+
+                setTimeout(() => {
+                    if (score >= ROUNDS_TO_WIN) {
+                        playWin();
+                        document.getElementById('winOverlay').classList.add('show');
+                        say('Amazing! You reached the moon!');
+                    } else {
+                        newRound();
+                    }
+                }, 1900);
+            } else {
+                playWrong();
+                el.classList.add('wrong');
+                rocket.classList.add('shake');
+                say(`That's the letter ${letter}. Find the letter ${target}!`);
+                setTimeout(() => {
+                    el.classList.remove('wrong');
+                    rocket.classList.remove('shake');
+                }, 600);
+            }
+        }
+
+        document.getElementById('playAgainBtn').addEventListener('click', () => {
+            score = 0;
+            scoreEl.textContent = 0;
+            document.getElementById('winOverlay').classList.remove('show');
+            newRound();
+        });
+
+        // Background stars + planets
+        const container = document.getElementById('gameContainer');
+        for (let i = 0; i < 40; i++) {
+            const s = document.createElement('div');
+            s.className = 'star';
+            const size = 2 + Math.random() * 4;
+            s.style.width = size + 'px';
+            s.style.height = size + 'px';
+            s.style.left = Math.random() * 100 + '%';
+            s.style.top = Math.random() * 100 + '%';
+            s.style.animationDelay = -(Math.random() * 2.5) + 's';
+            container.appendChild(s);
+        }
+        [['🪐', '8%', '22%'], ['🌕', '85%', '15%'], ['⭐', '78%', '55%'], ['🛸', '12%', '60%']].forEach(([e, l, t], i) => {
+            const p = document.createElement('div');
+            p.className = 'planet';
+            p.textContent = e;
+            p.style.left = l;
+            p.style.top = t;
+            p.style.animationDelay = -(i * 3) + 's';
+            container.appendChild(p);
+        });
+
+        renderTrail();
+        newRound();
+    </script>
+</body>
+
+</html>
