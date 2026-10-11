@@ -16,6 +16,10 @@ This repo features interactive games created by my kids Penny and Theo. Every ga
 - **Pattern Train** - Finish the pattern to make the train go
 - **Animal Match** - Flip cards and match animal pairs to train memory
 - **Sky Hopper** - Bounce up floating grass platforms, grab stars and ride balloons
+- **Kitty Bakery** - Serve hungry kitties by adding, subtracting and counting treats onto their plates
+- **Turbo Karts** - 3D kart racing on 5 tracks with drifting, boosts, zaps and 2-player split screen
+- **Midnight Cookie Heist** - Sneak past flashlights, freeze on creaky floors and bring the cookie jar back to bed
+- **Super Tennis Stars** - 1 or 2 player tennis with power-ups: super speed, giant ball, mega racket and freeze
 
 ## How to Play
 
