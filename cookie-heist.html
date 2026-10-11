@@ -1,0 +1,2986 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Midnight Cookie Heist - Sneak to the Cookie Jar!</title>
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Cookie Heist">
+    <meta name="theme-color" content="#07081a">
+    <meta name="format-detection" content="telephone=no">
+    <link rel="apple-touch-icon" href="images/cookie-heist/icon-180.png">
+    <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@700;800&display=swap"
+        rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        :root {
+            --ink: #0d1030;
+            --night: #1b1f4f;
+            --gold: #ffcf5a;
+            --deep-gold: #e8a51f;
+            --cookie: #c97a34;
+            --choc: #5b3410;
+            --pink: #ff8fb8;
+            --red: #ff5a6e;
+            --moon: #cfe0ff;
+        }
+
+        html,
+        body {
+            background: #07081a;
+            height: 100%;
+            overflow: hidden;
+            touch-action: none;
+            overscroll-behavior: none;
+            -webkit-touch-callout: none;
+            -webkit-text-size-adjust: 100%;
+            font-family: 'Nunito', sans-serif;
+            color: #fff;
+        }
+
+        canvas#game {
+            position: fixed;
+            inset: 0;
+            display: block;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        img {
+            -webkit-user-drag: none;
+        }
+
+        button img {
+            pointer-events: none;
+        }
+
+        #safeProbe {
+            position: fixed;
+            visibility: hidden;
+            pointer-events: none;
+            padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+        }
+
+        /* ---------- Buttons ---------- */
+        .btn {
+            font-family: 'Baloo 2', cursive;
+            font-weight: 800;
+            font-size: 1.35rem;
+            border: none;
+            border-radius: 999px;
+            padding: .55em 1.6em;
+            color: var(--choc);
+            background: linear-gradient(180deg, #ffe08a, #f4a623);
+            box-shadow: 0 6px 0 #b8741a, 0 10px 24px rgba(0, 0, 0, .35);
+            cursor: pointer;
+            transition: transform .12s, box-shadow .12s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: .4em;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn:active {
+            transform: translateY(4px);
+            box-shadow: 0 2px 0 #b8741a, 0 4px 10px rgba(0, 0, 0, .3);
+        }
+
+        .btn.big {
+            font-size: 1.8rem;
+            padding: .45em 2.2em;
+        }
+
+        .btn.alt {
+            color: #fff;
+            background: linear-gradient(180deg, #7d84ff, #4a4fc9);
+            box-shadow: 0 6px 0 #2e3290, 0 10px 24px rgba(0, 0, 0, .35);
+        }
+
+        .btn.alt:active {
+            box-shadow: 0 2px 0 #2e3290;
+        }
+
+        .btn.ghost {
+            color: #fff;
+            background: rgba(255, 255, 255, .12);
+            box-shadow: 0 4px 0 rgba(0, 0, 0, .35);
+        }
+
+        .home-btn {
+            position: fixed;
+            top: max(12px, env(safe-area-inset-top));
+            left: max(12px, env(safe-area-inset-left));
+            z-index: 40;
+            font-family: 'Baloo 2', cursive;
+            font-weight: 800;
+            font-size: 1.05rem;
+            text-decoration: none;
+            color: var(--choc);
+            background: linear-gradient(180deg, #fff3cf, #ffd877);
+            padding: .3em .9em;
+            border-radius: 999px;
+            box-shadow: 0 4px 0 #b8741a;
+        }
+
+        /* ---------- Screens ---------- */
+        .screen {
+            position: fixed;
+            inset: 0;
+            z-index: 30;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+        }
+
+        .screen.show {
+            display: flex;
+        }
+
+        .dim {
+            background: radial-gradient(ellipse at center, rgba(13, 16, 48, .55), rgba(5, 6, 20, .9));
+            backdrop-filter: blur(3px);
+            -webkit-backdrop-filter: blur(3px);
+        }
+
+        .panel {
+            position: relative;
+            width: min(560px, 100%);
+            max-height: calc(100dvh - 32px);
+            overflow-y: auto;
+            background: linear-gradient(180deg, #2b3175 0%, #1a1d4a 100%);
+            border: 3px solid rgba(255, 207, 90, .35);
+            border-radius: 30px;
+            padding: 26px 24px 24px;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, .6), inset 0 2px 0 rgba(255, 255, 255, .12);
+            animation: pop .38s cubic-bezier(.2, 1.6, .4, 1);
+        }
+
+        @keyframes pop {
+            from {
+                transform: scale(.7);
+                opacity: 0;
+            }
+
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .panel h2 {
+            font-family: 'Baloo 2', cursive;
+            font-weight: 800;
+            font-size: 2.3rem;
+            line-height: 1;
+            color: var(--gold);
+            text-shadow: 0 3px 0 #8a4f0b, 0 0 24px rgba(255, 207, 90, .45);
+            margin-bottom: 6px;
+        }
+
+        .panel .sub {
+            font-size: 1.05rem;
+            color: #c9cdf7;
+            margin-bottom: 16px;
+        }
+
+        .row {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 18px;
+        }
+
+        /* ---------- Title ---------- */
+        #scrTitle {
+            background: #07081a url('images/cookie-heist/title.jpg') center/cover no-repeat;
+            flex-direction: column;
+            justify-content: flex-start;
+            padding-top: max(7vh, 50px);
+        }
+
+        #scrTitle::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(180deg, rgba(5, 6, 25, .75) 0%, rgba(5, 6, 25, .15) 45%, rgba(5, 6, 25, .55) 100%);
+        }
+
+        .logo {
+            position: relative;
+            text-align: center;
+            font-family: 'Baloo 2', cursive;
+            font-weight: 800;
+            line-height: .9;
+            animation: float 3.5s ease-in-out infinite;
+        }
+
+        .logo .l1 {
+            display: block;
+            font-size: clamp(1.6rem, 5vw, 2.8rem);
+            color: var(--moon);
+            letter-spacing: .25em;
+            text-shadow: 0 0 18px rgba(140, 180, 255, .8);
+        }
+
+        .logo .l2 {
+            display: block;
+            font-size: clamp(3rem, 11vw, 6.2rem);
+            color: var(--gold);
+            -webkit-text-stroke: 5px #6b3a07;
+            paint-order: stroke fill;
+            text-shadow: 0 6px 0 #6b3a07, 0 0 40px rgba(255, 200, 80, .7);
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0) rotate(-1deg);
+            }
+
+            50% {
+                transform: translateY(-8px) rotate(1deg);
+            }
+        }
+
+        .title-btns {
+            position: relative;
+            margin-top: auto;
+            margin-bottom: max(6vh, 24px);
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            align-items: center;
+        }
+
+        .loading {
+            position: relative;
+            width: 220px;
+            text-align: center;
+            font-family: 'Baloo 2', cursive;
+            font-size: 1.1rem;
+        }
+
+        .loading .bar {
+            height: 14px;
+            border-radius: 99px;
+            background: rgba(255, 255, 255, .15);
+            overflow: hidden;
+            margin-top: 6px;
+        }
+
+        .loading .bar i {
+            display: block;
+            height: 100%;
+            width: 0;
+            background: linear-gradient(90deg, #ffe08a, #f4a623);
+            transition: width .2s;
+        }
+
+        /* ---------- Level select ---------- */
+        .levels {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 12px;
+            margin-top: 10px;
+        }
+
+        .lvl {
+            position: relative;
+            border: none;
+            border-radius: 20px;
+            padding: 14px 10px 12px;
+            background: linear-gradient(180deg, #3d44a3, #2a2f7a);
+            box-shadow: 0 5px 0 #171a4a;
+            color: #fff;
+            cursor: pointer;
+            font-family: 'Baloo 2', cursive;
+            transition: transform .12s;
+        }
+
+        .lvl:hover {
+            transform: translateY(-3px);
+        }
+
+        .lvl .num {
+            font-size: 2.2rem;
+            font-weight: 800;
+            line-height: 1;
+            color: var(--gold);
+        }
+
+        .lvl .nm {
+            font-size: 1rem;
+            font-weight: 700;
+            line-height: 1.1;
+            min-height: 2.2em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .lvl .stars {
+            font-size: 1.2rem;
+            letter-spacing: 2px;
+        }
+
+        .lvl .faces {
+            display: flex;
+            justify-content: center;
+            gap: 2px;
+            height: 34px;
+            margin: 4px 0;
+        }
+
+        .lvl .faces img {
+            height: 34px;
+        }
+
+        .lvl.locked {
+            filter: grayscale(1) brightness(.6);
+            cursor: not-allowed;
+        }
+
+        .lvl.locked::after {
+            content: '🔒';
+            position: absolute;
+            top: 8px;
+            right: 10px;
+            font-size: 1.2rem;
+        }
+
+        /* ---------- How to ---------- */
+        .how {
+            display: grid;
+            gap: 10px;
+            text-align: left;
+        }
+
+        .how div {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: rgba(255, 255, 255, .07);
+            border-radius: 16px;
+            padding: 8px 12px;
+            font-size: 1.02rem;
+            line-height: 1.25;
+        }
+
+        .how img {
+            width: 52px;
+            height: 52px;
+            object-fit: contain;
+            flex: none;
+        }
+
+        .how b {
+            color: var(--gold);
+        }
+
+        kbd {
+            font-family: 'Baloo 2', cursive;
+            background: #fff;
+            color: #222;
+            border-radius: 6px;
+            padding: 0 6px;
+            box-shadow: 0 2px 0 #999;
+            font-size: .9em;
+        }
+
+        /* ---------- Intro ---------- */
+        .intro-who {
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            gap: 10px;
+            height: 120px;
+            margin: 8px 0 6px;
+        }
+
+        .intro-who img {
+            max-height: 120px;
+            filter: drop-shadow(0 6px 10px rgba(0, 0, 0, .5));
+            animation: bob 1.6s ease-in-out infinite;
+        }
+
+        .intro-who img:nth-child(2) {
+            animation-delay: .3s;
+        }
+
+        .intro-who img:nth-child(3) {
+            animation-delay: .6s;
+        }
+
+        @keyframes bob {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-6px);
+            }
+        }
+
+        .tip {
+            background: rgba(255, 207, 90, .12);
+            border: 2px dashed rgba(255, 207, 90, .45);
+            border-radius: 16px;
+            padding: 10px 14px;
+            font-size: 1.08rem;
+            line-height: 1.3;
+        }
+
+        /* ---------- Win / lose ---------- */
+        .big-stars {
+            font-size: 3.2rem;
+            letter-spacing: 6px;
+            margin: 4px 0 8px;
+            min-height: 1.2em;
+        }
+
+        .big-stars span {
+            display: inline-block;
+            filter: grayscale(1) brightness(.4);
+            transform: scale(.6);
+            transition: all .4s cubic-bezier(.2, 1.8, .4, 1);
+        }
+
+        .big-stars span.on {
+            filter: none;
+            transform: scale(1);
+        }
+
+        .stats {
+            display: grid;
+            gap: 6px;
+            margin: 6px auto 0;
+            max-width: 360px;
+            font-size: 1.1rem;
+        }
+
+        .stats div {
+            display: flex;
+            justify-content: space-between;
+            background: rgba(255, 255, 255, .07);
+            border-radius: 12px;
+            padding: 6px 14px;
+        }
+
+        .stats div.total {
+            background: rgba(255, 207, 90, .18);
+            font-family: 'Baloo 2', cursive;
+            font-size: 1.4rem;
+            color: var(--gold);
+        }
+
+        .stats div.badge {
+            background: rgba(140, 180, 255, .18);
+            color: var(--moon);
+        }
+
+        .hero-img {
+            height: 150px;
+            filter: drop-shadow(0 8px 14px rgba(0, 0, 0, .5));
+            animation: bob 1.4s ease-in-out infinite;
+        }
+
+        .newbest {
+            display: inline-block;
+            margin-top: 8px;
+            font-family: 'Baloo 2', cursive;
+            color: #7dffb0;
+            font-size: 1.2rem;
+            animation: pulse 0.8s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            50% {
+                transform: scale(1.1);
+            }
+        }
+
+        /* ---------- HUD ---------- */
+        #hud {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 10;
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 8px;
+            padding: max(10px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) 0 max(12px, env(safe-area-inset-left));
+            pointer-events: none;
+        }
+
+        .hud-group {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .pill {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            height: 44px;
+            padding: 0 14px 0 8px;
+            border-radius: 999px;
+            background: rgba(10, 12, 40, .72);
+            border: 2px solid rgba(255, 255, 255, .14);
+            font-family: 'Baloo 2', cursive;
+            font-weight: 800;
+            font-size: 1.35rem;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, .35);
+        }
+
+        .pill img {
+            height: 32px;
+        }
+
+        .pill.jar img {
+            filter: grayscale(1) brightness(.55);
+            transition: filter .3s;
+        }
+
+        .pill.jar.got img {
+            filter: drop-shadow(0 0 8px #ffd35a);
+        }
+
+        .pill.jar.got {
+            border-color: var(--gold);
+            animation: pulse 1s ease-in-out 3;
+        }
+
+        .pill.bump {
+            animation: bump .35s;
+        }
+
+        @keyframes bump {
+            40% {
+                transform: scale(1.18);
+            }
+        }
+
+        .hearts {
+            padding: 0 12px;
+            font-size: 1.25rem;
+            letter-spacing: 1px;
+        }
+
+        .hearts .lost {
+            filter: grayscale(1) brightness(.5);
+        }
+
+        .hud-obj {
+            position: fixed;
+            top: calc(max(10px, env(safe-area-inset-top)) + 54px);
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+            pointer-events: none;
+            font-family: 'Baloo 2', cursive;
+            font-weight: 700;
+            font-size: 1.15rem;
+            padding: 4px 16px;
+            border-radius: 999px;
+            background: rgba(10, 12, 40, .6);
+            color: var(--moon);
+            white-space: nowrap;
+        }
+
+        .icon-btn {
+            pointer-events: auto;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            border: 2px solid rgba(255, 255, 255, .2);
+            background: rgba(10, 12, 40, .72);
+            color: #fff;
+            font-size: 1.25rem;
+            cursor: pointer;
+        }
+
+        .banner {
+            position: fixed;
+            left: 50%;
+            top: 30%;
+            transform: translate(-50%, -50%);
+            z-index: 12;
+            pointer-events: none;
+            font-family: 'Baloo 2', cursive;
+            font-weight: 800;
+            font-size: clamp(2.4rem, 9vw, 4.6rem);
+            color: #9fd0ff;
+            -webkit-text-stroke: 5px #0b1c4a;
+            paint-order: stroke fill;
+            text-shadow: 0 5px 0 #0b1c4a, 0 0 30px rgba(120, 180, 255, .9);
+            opacity: 0;
+            transition: opacity .15s;
+            white-space: nowrap;
+        }
+
+        .banner.show {
+            opacity: 1;
+            animation: shiver .18s linear infinite;
+        }
+
+        .banner.busted {
+            color: #ffd0d6;
+            -webkit-text-stroke: 5px #6a0f1f;
+            paint-order: stroke fill;
+            text-shadow: 0 5px 0 #6a0f1f, 0 0 34px rgba(255, 80, 100, .9);
+            font-size: clamp(3rem, 12vw, 6rem);
+            top: 78%;
+        }
+
+        .banner.busted.show {
+            animation: slam .45s cubic-bezier(.2, 1.8, .4, 1);
+        }
+
+        @keyframes shiver {
+            25% {
+                transform: translate(-51%, -50%);
+            }
+
+            75% {
+                transform: translate(-49%, -50%);
+            }
+        }
+
+        @keyframes slam {
+            from {
+                transform: translate(-50%, -50%) scale(2.2);
+                opacity: 0;
+            }
+
+            to {
+                transform: translate(-50%, -50%) scale(1);
+            }
+        }
+
+        #toast {
+            position: fixed;
+            left: 50%;
+            bottom: calc(max(16px, env(safe-area-inset-bottom)) + 8px);
+            transform: translate(-50%, 30px);
+            z-index: 11;
+            pointer-events: none;
+            max-width: min(92vw, 560px);
+            text-align: center;
+            font-family: 'Baloo 2', cursive;
+            font-weight: 700;
+            font-size: 1.25rem;
+            line-height: 1.2;
+            padding: 10px 20px;
+            border-radius: 20px;
+            background: rgba(255, 245, 220, .96);
+            color: var(--choc);
+            box-shadow: 0 8px 26px rgba(0, 0, 0, .45);
+            opacity: 0;
+            transition: opacity .25s, transform .25s;
+        }
+
+        #toast.show {
+            opacity: 1;
+            transform: translate(-50%, 0);
+        }
+
+        body.touch #toast {
+            bottom: auto;
+            top: calc(max(10px, env(safe-area-inset-top)) + 96px);
+        }
+
+        /* ---------- Touch controls ---------- */
+        #touch {
+            position: fixed;
+            inset: 0;
+            z-index: 9;
+            pointer-events: none;
+        }
+
+        #stickZone {
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            top: 96px;
+            width: 60%;
+            pointer-events: auto;
+        }
+
+        #stick {
+            position: absolute;
+            width: 140px;
+            height: 140px;
+            margin: -70px 0 0 -70px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(255, 255, 255, .08), rgba(255, 255, 255, .18));
+            border: 3px solid rgba(255, 255, 255, .3);
+            left: 110px;
+            top: 80%;
+            opacity: .55;
+            transition: opacity .15s;
+            pointer-events: none;
+        }
+
+        #stick::after {
+            content: 'drag to sneak';
+            position: absolute;
+            left: 50%;
+            top: 100%;
+            transform: translateX(-50%);
+            margin-top: 6px;
+            white-space: nowrap;
+            font-family: 'Baloo 2', cursive;
+            font-weight: 700;
+            font-size: .85rem;
+            color: rgba(255, 255, 255, .7);
+            transition: opacity .2s;
+        }
+
+        #stick.active::after {
+            opacity: 0;
+        }
+
+        #stick.soft #knob {
+            background: radial-gradient(circle at 35% 30%, #ffffff, #b9c2ff 60%, #5a62d6);
+        }
+
+        #stick.active {
+            opacity: 1;
+        }
+
+        #knob {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            width: 58px;
+            height: 58px;
+            margin: -29px 0 0 -29px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 35% 30%, #fff8dd, #ffcf5a 60%, #d48a14);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, .45);
+        }
+
+        .tbtn {
+            position: absolute;
+            pointer-events: auto;
+            border: none;
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Baloo 2', cursive;
+            font-weight: 800;
+            color: #fff;
+            font-size: .85rem;
+            box-shadow: 0 6px 0 rgba(0, 0, 0, .35);
+            transition: transform .1s, filter .2s;
+        }
+
+        .tbtn:active {
+            transform: translateY(3px);
+        }
+
+        #btnHide {
+            right: max(22px, env(safe-area-inset-right));
+            bottom: calc(max(22px, env(safe-area-inset-bottom)) + 10px);
+            width: 104px;
+            height: 104px;
+            background: radial-gradient(circle at 40% 30%, #8ee6a8, #2fa65a);
+            filter: grayscale(.9) brightness(.65);
+        }
+
+        #btnHide.ready {
+            filter: none;
+            animation: pulse 1s ease-in-out infinite;
+        }
+
+        #btnHide.on {
+            filter: none;
+            background: radial-gradient(circle at 40% 30%, #ffd26b, #e48a12);
+        }
+
+        #btnHide img {
+            height: 54px;
+        }
+
+        #btnTip {
+            right: calc(max(22px, env(safe-area-inset-right)) + 116px);
+            bottom: calc(max(22px, env(safe-area-inset-bottom)) + 4px);
+            width: 80px;
+            height: 80px;
+            background: radial-gradient(circle at 40% 30%, #a8b2ff, #4a52c9);
+        }
+
+        #btnTip span:first-child {
+            font-size: 1.8rem;
+            line-height: 1;
+        }
+
+        #btnTip.on {
+            background: radial-gradient(circle at 40% 30%, #fff1b0, #f4a623);
+            color: var(--choc);
+            box-shadow: 0 0 0 4px rgba(255, 207, 90, .5), 0 6px 0 rgba(0, 0, 0, .35);
+        }
+
+        .keys-hint {
+            position: fixed;
+            left: 14px;
+            bottom: max(12px, env(safe-area-inset-bottom));
+            z-index: 10;
+            pointer-events: none;
+            font-size: .9rem;
+            color: rgba(220, 225, 255, .75);
+            background: rgba(10, 12, 40, .5);
+            padding: 6px 12px;
+            border-radius: 12px;
+        }
+
+        body.touch .keys-hint {
+            display: none;
+        }
+
+        @media (max-height: 720px) {
+            .panel {
+                padding: 16px 18px 18px;
+            }
+
+            .hero-img {
+                height: 84px;
+            }
+
+            .big-stars {
+                font-size: 2.4rem;
+                margin: 0 0 4px;
+            }
+
+            .stats div {
+                padding: 3px 12px;
+                font-size: 1rem;
+            }
+
+            .stats div.total {
+                font-size: 1.2rem;
+            }
+
+            .row {
+                margin-top: 12px;
+            }
+
+            .intro-who {
+                height: 84px;
+            }
+
+            .intro-who img {
+                max-height: 84px;
+            }
+
+            .how img {
+                width: 40px;
+                height: 40px;
+            }
+
+            .how div {
+                padding: 5px 10px;
+                font-size: .95rem;
+            }
+        }
+
+        @media (max-height: 500px) {
+            .hero-img {
+                display: none;
+            }
+
+            .panel h2 {
+                font-size: 1.7rem;
+            }
+
+            .panel .sub {
+                margin-bottom: 8px;
+            }
+
+            .intro-who {
+                height: 60px;
+                margin: 2px 0;
+            }
+
+            .intro-who img {
+                max-height: 60px;
+            }
+
+            .tip {
+                font-size: .98rem;
+                padding: 6px 12px;
+            }
+
+            .btn.big {
+                font-size: 1.4rem;
+            }
+
+            #scrTitle {
+                padding-top: max(3vh, 12px);
+            }
+
+            .title-btns {
+                flex-direction: row;
+                margin-bottom: max(4vh, 14px);
+            }
+
+            #btnHide {
+                width: 92px;
+                height: 92px;
+            }
+
+            #btnHide img {
+                height: 46px;
+            }
+
+            #btnTip {
+                width: 70px;
+                height: 70px;
+                right: calc(max(22px, env(safe-area-inset-right)) + 104px);
+            }
+
+            #stickZone {
+                top: 64px;
+            }
+
+            .levels {
+                grid-template-columns: repeat(5, 1fr);
+            }
+
+            .lvl .faces {
+                height: 26px;
+            }
+
+            .lvl .faces img {
+                height: 26px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .hud-group {
+                flex-wrap: nowrap;
+                gap: 6px;
+            }
+
+            #hudTime {
+                display: none;
+            }
+
+            .icon-btn {
+                width: 38px;
+                height: 38px;
+                font-size: 1.05rem;
+            }
+
+            .hearts {
+                font-size: 1rem;
+                padding: 0 8px;
+                letter-spacing: 0;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .pill {
+                height: 38px;
+                font-size: 1.1rem;
+                padding: 0 10px 0 6px;
+            }
+
+            .pill img {
+                height: 26px;
+            }
+
+            .hud-obj {
+                font-size: .95rem;
+                top: calc(max(10px, env(safe-area-inset-top)) + 48px);
+            }
+
+            .panel h2 {
+                font-size: 1.9rem;
+            }
+
+            .intro-who {
+                height: 90px;
+            }
+
+            .intro-who img {
+                max-height: 90px;
+            }
+
+            .hero-img {
+                height: 110px;
+            }
+
+            .big-stars {
+                font-size: 2.6rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id="game"></canvas>
+    <div id="safeProbe"></div>
+
+    <!-- HUD -->
+    <div id="hud" class="hidden">
+        <div class="hud-group">
+            <div class="pill" id="hudCookiesPill"><img src="images/cookie-heist/cookie.png" alt=""><span
+                    id="hudCookies">0</span><span style="opacity:.55;font-size:.8em">/<span
+                        id="hudCookiesTotal">0</span></span></div>
+            <div class="pill jar" id="hudJar"><img src="images/cookie-heist/jar.png" alt="Cookie jar"></div>
+            <div class="pill hearts" id="hudLives"></div>
+        </div>
+        <div class="hud-group">
+            <div class="pill" id="hudTime" style="padding:0 14px">0:00</div>
+            <button class="icon-btn" id="btnSound" aria-label="Sound">🔊</button>
+            <button class="icon-btn" id="btnPause" aria-label="Pause">⏸</button>
+        </div>
+    </div>
+    <div class="hud-obj hidden" id="hudObj">🎯 Find the cookie jar!</div>
+    <div class="banner" id="freeze">FREEZE! 🤫</div>
+    <div class="banner busted" id="busted">BUSTED!</div>
+    <div id="toast"></div>
+    <div class="keys-hint hidden" id="keysHint"><kbd>←↑↓→</kbd> sneak · <kbd>Shift</kbd> tiptoe · <kbd>Space</kbd> hide
+    </div>
+
+    <!-- Touch controls -->
+    <div id="touch" class="hidden">
+        <div id="stickZone"></div>
+        <div id="stick">
+            <div id="knob"></div>
+        </div>
+        <button class="tbtn" id="btnTip"><span>🦶</span><span>TIPTOE</span></button>
+        <button class="tbtn" id="btnHide"><img src="images/cookie-heist/kid-hide.png" alt=""><span>HIDE</span></button>
+    </div>
+
+    <!-- Title -->
+    <div class="screen show" id="scrTitle">
+        <a href="index.html" class="home-btn">🏠 Home</a>
+        <div class="logo"><span class="l1">MIDNIGHT</span><span class="l2">Cookie Heist</span></div>
+        <div class="title-btns">
+            <div class="loading" id="loading">Warming up the cookies...<div class="bar"><i id="loadBar"></i></div>
+            </div>
+            <button class="btn big hidden" id="btnPlay">▶ Play</button>
+            <button class="btn alt hidden" id="btnHow">❓ How to Play</button>
+        </div>
+    </div>
+
+    <!-- Level select -->
+    <div class="screen dim" id="scrLevels">
+        <div class="panel" style="width:min(720px,100%)">
+            <h2>Pick a Night</h2>
+            <div class="sub">Each night the house gets sneakier!</div>
+            <div class="levels" id="levelGrid"></div>
+            <div class="row"><button class="btn ghost" id="btnLevelsBack">← Back</button></div>
+        </div>
+    </div>
+
+    <!-- How to play -->
+    <div class="screen dim" id="scrHow">
+        <div class="panel">
+            <h2>How to Sneak</h2>
+            <div class="sub">Grab the cookie jar and get back to bed without getting caught!</div>
+            <div class="how">
+                <div><img src="images/cookie-heist/kid.png" alt=""><span><b>Sneak around</b> with the arrow keys,
+                        WASD, or the joystick.</span></div>
+                <div><img src="images/cookie-heist/mom.png" alt=""><span><b>Stay out of the flashlight!</b> If the
+                        <b>?</b> fills up, you're caught.</span></div>
+                <div><img src="images/cookie-heist/kid-hide.png" alt=""><span>Next to a sofa, chair, plant, table or
+                        counter? Press <kbd>Space</kbd> or <b>HIDE</b>.</span></div>
+                <div><img src="images/cookie-heist/floor-wood.png" alt="" style="border-radius:10px"><span><b>Creaky
+                            boards</b> (cracked planks) make noise. When you see <b>FREEZE!</b>, stop moving until
+                        they give up. Hold <kbd>Shift</kbd> or tap <b>TIPTOE</b> to step quietly.</span></div>
+                <div><img src="images/cookie-heist/duck.png" alt=""><span><b>Squeaky duckies</b> are LOUD. Walk
+                        around them!</span></div>
+                <div><img src="images/cookie-heist/dog.png" alt=""><span>The <b>puppy</b> can sniff you out even when
+                        you hide. If it finds you, it eats a cookie. No cookies? <b>WOOF!</b></span></div>
+                <div><img src="images/cookie-heist/milk.png" alt=""><span><b>Milk</b> gives you a speedy sneak boost!
+                    </span></div>
+            </div>
+            <div class="row"><button class="btn" id="btnHowBack">Got it!</button></div>
+        </div>
+    </div>
+
+    <!-- Level intro -->
+    <div class="screen dim" id="scrIntro">
+        <div class="panel">
+            <div class="sub" id="introNum" style="margin:0;font-family:'Baloo 2';font-size:1.2rem">Night 1</div>
+            <h2 id="introName">Tiptoe Training</h2>
+            <div class="intro-who" id="introWho"></div>
+            <div class="tip" id="introTip"></div>
+            <div class="row"><button class="btn big" id="btnStart">Let's Sneak! 🤫</button></div>
+        </div>
+    </div>
+
+    <!-- Pause -->
+    <div class="screen dim" id="scrPause">
+        <div class="panel">
+            <h2>Paused</h2>
+            <div class="sub">Shhh... everyone's still sleepy.</div>
+            <div class="row" style="flex-direction:column;align-items:center">
+                <button class="btn big" id="btnResume">▶ Keep Sneaking</button>
+                <button class="btn alt" id="btnRestart">↺ Restart Night</button>
+                <button class="btn ghost" id="btnQuit">☰ Pick a Night</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Win -->
+    <div class="screen dim" id="scrWin">
+        <div class="panel">
+            <img class="hero-img" src="images/cookie-heist/jar.png" alt="">
+            <h2 id="winTitle">Cookie Heist Complete!</h2>
+            <div class="big-stars" id="winStars"><span>⭐</span><span>⭐</span><span>⭐</span></div>
+            <div class="stats" id="winStats"></div>
+            <div id="winBest"></div>
+            <div class="row">
+                <button class="btn ghost" id="btnWinLevels">☰</button>
+                <button class="btn alt" id="btnWinRetry">↺ Again</button>
+                <button class="btn" id="btnWinNext">Next Night ▶</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lose -->
+    <div class="screen dim" id="scrLose">
+        <div class="panel">
+            <img class="hero-img" src="images/cookie-heist/kid-caught.png" alt="">
+            <h2>Sent to Bed!</h2>
+            <div class="sub" id="loseLine">No more cookies tonight... but tomorrow is another night!</div>
+            <div class="row">
+                <button class="btn ghost" id="btnLoseLevels">☰ Nights</button>
+                <button class="btn big" id="btnLoseRetry">↺ Try Again</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        (() => {
+            'use strict';
+
+            // =====================================================================
+            //  Helpers
+            // =====================================================================
+            const $ = id => document.getElementById(id);
+            const clamp = (v, a, b) => v < a ? a : v > b ? b : v;
+            const lerp = (a, b, t) => a + (b - a) * t;
+            const rand = (a, b) => a + Math.random() * (b - a);
+            const pick = arr => arr[Math.floor(Math.random() * arr.length)];
+            const dist = (ax, ay, bx, by) => Math.hypot(ax - bx, ay - by);
+            const angDiff = (a, b) => { let d = a - b; while (d > Math.PI) d -= Math.PI * 2; while (d < -Math.PI) d += Math.PI * 2; return d; };
+            const fmtTime = s => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
+
+            // =====================================================================
+            //  Canvas
+            // =====================================================================
+            const cvs = $('game');
+            const ctx = cvs.getContext('2d');
+            const lightCvs = document.createElement('canvas');
+            const lctx = lightCvs.getContext('2d');
+            const vignette = document.createElement('canvas');
+            let W = 0, H = 0, DPR = 1, BASE_S = 64;
+
+            function resize() {
+                DPR = Math.min(window.devicePixelRatio || 1, 2);
+                W = Math.floor(innerWidth * DPR);
+                H = Math.floor(innerHeight * DPR);
+                cvs.width = W; cvs.height = H;
+                cvs.style.width = innerWidth + 'px';
+                cvs.style.height = innerHeight + 'px';
+                lightCvs.width = Math.ceil(W / 2);
+                lightCvs.height = Math.ceil(H / 2);
+                BASE_S = W < H ? W / 8.2 : Math.min(W / 13, H / (innerHeight < 500 ? 7.4 : 8.4));
+                vignette.width = W; vignette.height = H;
+                const v = vignette.getContext('2d');
+                const g = v.createRadialGradient(W / 2, H / 2, Math.min(W, H) * .35, W / 2, H / 2, Math.max(W, H) * .75);
+                g.addColorStop(0, 'rgba(0,0,0,0)');
+                g.addColorStop(1, 'rgba(0,0,10,.65)');
+                v.fillStyle = g; v.fillRect(0, 0, W, H);
+            }
+            addEventListener('resize', resize);
+            resize();
+
+            // =====================================================================
+            //  Assets
+            // =====================================================================
+            const ASSET_DIR = 'images/cookie-heist/';
+            const ASSETS = ['kid', 'kid-hide', 'kid-caught', 'mom', 'dad', 'dog', 'dog-sleep', 'cookie', 'jar', 'milk', 'duck',
+                'sofa', 'armchair', 'table', 'plant', 'bookshelf', 'counter', 'fridge', 'bed', 'rug',
+                'floor-wood', 'floor-tile', 'floor-carpet'];
+            const IMG = {};
+            function loadAssets(onProgress) {
+                let done = 0;
+                return Promise.all(ASSETS.map(n => new Promise(res => {
+                    const im = new Image();
+                    im.onload = () => { done++; onProgress(done / ASSETS.length); res(); };
+                    im.onerror = () => {
+                        const c = document.createElement('canvas'); c.width = c.height = 1; IMG[n] = c;
+                        done++; onProgress(done / ASSETS.length); res();
+                    };
+                    im.src = ASSET_DIR + n + '.png';
+                    IMG[n] = im;
+                })));
+            }
+
+            // =====================================================================
+            //  Sound (all synthesized with WebAudio)
+            // =====================================================================
+            const Snd = {
+                ctx: null, master: null, sfx: null, music: null, noiseBuf: null,
+                muted: false, step: 0, nextT: 0, tension: 0, timer: null,
+                init() {
+                    if (this.ctx) { if (this.ctx.state !== 'running') this.ctx.resume(); return; }
+                    try { this.ctx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { return; }
+                    const c = this.ctx;
+                    this.master = c.createGain(); this.master.gain.value = this.muted ? 0 : .9; this.master.connect(c.destination);
+                    this.sfx = c.createGain(); this.sfx.gain.value = .9; this.sfx.connect(this.master);
+                    this.music = c.createGain(); this.music.gain.value = 0; this.music.connect(this.master);
+                    const len = c.sampleRate;
+                    this.noiseBuf = c.createBuffer(1, len, c.sampleRate);
+                    const d = this.noiseBuf.getChannelData(0);
+                    for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
+                    this.nextT = c.currentTime + .1;
+                    this.timer = setInterval(() => this.schedule(), 50);
+                },
+                setMuted(m) {
+                    this.muted = m;
+                    if (this.master) this.master.gain.setTargetAtTime(m ? 0 : .9, this.ctx.currentTime, .05);
+                },
+                musicOn(on) {
+                    if (!this.ctx) return;
+                    this.musicWanted = on;
+                    this.music.gain.setTargetAtTime(on ? .32 : 0, this.ctx.currentTime, .4);
+                },
+                tone(f, dur, o = {}) {
+                    const c = this.ctx; if (!c) return;
+                    const t = c.currentTime + (o.delay || 0);
+                    const osc = c.createOscillator(), g = c.createGain();
+                    osc.type = o.type || 'sine';
+                    osc.frequency.setValueAtTime(f, t);
+                    if (o.to) osc.frequency.exponentialRampToValueAtTime(o.to, t + dur);
+                    const vol = o.vol || .2;
+                    g.gain.setValueAtTime(.0001, t);
+                    g.gain.exponentialRampToValueAtTime(vol, t + (o.attack || .006));
+                    g.gain.exponentialRampToValueAtTime(.0001, t + dur);
+                    let node = osc;
+                    if (o.lp) { const f2 = c.createBiquadFilter(); f2.type = 'lowpass'; f2.frequency.value = o.lp; node.connect(f2); node = f2; }
+                    node.connect(g); g.connect(o.dest || this.sfx);
+                    osc.start(t); osc.stop(t + dur + .05);
+                },
+                noise(dur, o = {}) {
+                    const c = this.ctx; if (!c) return;
+                    const t = c.currentTime + (o.delay || 0);
+                    const src = c.createBufferSource(); src.buffer = this.noiseBuf;
+                    const f = c.createBiquadFilter(); f.type = o.ftype || 'bandpass'; f.frequency.setValueAtTime(o.freq || 1000, t);
+                    if (o.to) f.frequency.exponentialRampToValueAtTime(o.to, t + dur);
+                    f.Q.value = o.q || 1;
+                    const g = c.createGain();
+                    g.gain.setValueAtTime(.0001, t);
+                    g.gain.exponentialRampToValueAtTime(o.vol || .2, t + (o.attack || .005));
+                    g.gain.exponentialRampToValueAtTime(.0001, t + dur);
+                    src.connect(f); f.connect(g); g.connect(o.dest || this.sfx);
+                    src.start(t, Math.random() * .5); src.stop(t + dur + .05);
+                },
+                // ---- effects ----
+                footstep(soft) { this.noise(.07, { freq: soft ? 500 : 800, q: 1.2, vol: soft ? .025 : .06 }); },
+                creak(soft) {
+                    const c = this.ctx; if (!c) return;
+                    const t = c.currentTime, dur = soft ? .35 : .6;
+                    const o = c.createOscillator(), lfo = c.createOscillator(), lg = c.createGain();
+                    const f = c.createBiquadFilter(), g = c.createGain();
+                    o.type = 'sawtooth'; o.frequency.setValueAtTime(soft ? 190 : 150, t); o.frequency.linearRampToValueAtTime(soft ? 170 : 105, t + dur);
+                    lfo.frequency.value = 28; lg.gain.value = 18; lfo.connect(lg); lg.connect(o.frequency);
+                    f.type = 'bandpass'; f.frequency.value = 900; f.Q.value = 3;
+                    g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(soft ? .07 : .22, t + .05); g.gain.exponentialRampToValueAtTime(.0001, t + dur);
+                    o.connect(f); f.connect(g); g.connect(this.sfx);
+                    o.start(t); lfo.start(t); o.stop(t + dur + .05); lfo.stop(t + dur + .05);
+                },
+                squeak() { this.tone(900, .12, { type: 'square', vol: .1, to: 1700, lp: 3000 }); this.tone(1700, .18, { type: 'square', vol: .09, to: 1100, delay: .11, lp: 3000 }); },
+                cookie() { this.tone(880, .12, { type: 'triangle', vol: .18 }); this.tone(1320, .2, { type: 'triangle', vol: .16, delay: .07 }); },
+                jar() { [523, 659, 784, 1047, 1319].forEach((f, i) => this.tone(f, .3, { type: 'triangle', vol: .18, delay: i * .08 })); },
+                milk() { [0, .12, .24].forEach(d => this.tone(320, .1, { vol: .2, to: 160, delay: d })); this.tone(1200, .4, { vol: .08, to: 2400, delay: .36 }); },
+                hide() { this.noise(.25, { freq: 2000, to: 400, vol: .08, ftype: 'lowpass' }); },
+                spot() { this.tone(500, .18, { type: 'triangle', vol: .16, to: 820 }); },
+                hmm() { this.tone(220, .35, { type: 'triangle', vol: .1, to: 260, lp: 900 }); },
+                heartbeat() { this.tone(70, .12, { vol: .35 }); this.tone(62, .14, { vol: .28, delay: .16 }); },
+                bark() {
+                    [0, .22].forEach(d => {
+                        this.noise(.16, { freq: 700, q: 2, vol: .35, delay: d });
+                        this.tone(260, .14, { type: 'square', vol: .12, to: 150, delay: d, lp: 1400 });
+                    });
+                },
+                munch() { [0, .12, .24, .36].forEach(d => this.noise(.06, { freq: 1500, q: 1, vol: .12, delay: d })); },
+                caught() { [[392, 370], [370, 349], [349, 330], [330, 247]].forEach(([a, b], i) => this.tone(a, i === 3 ? .8 : .28, { type: 'sawtooth', vol: .12, to: b, delay: i * .3, lp: 1200 })); },
+                win() { [523, 659, 784, 659, 784, 1047].forEach((f, i) => this.tone(f, i === 5 ? .7 : .2, { type: 'triangle', vol: .2, delay: i * .12 })); },
+                click() { this.tone(660, .06, { type: 'triangle', vol: .12 }); },
+                // ---- sneaky lullaby music ----
+                schedule() {
+                    const c = this.ctx; if (!c) return;
+                    const stepDur = 60 / 96 / 4;
+                    if (this.nextT < c.currentTime) this.nextT = c.currentTime + .05;
+                    if (this.muted || !this.musicWanted) { this.nextT = c.currentTime + .05; return; }
+                    while (this.nextT < c.currentTime + .25) {
+                        this.playStep(this.step, this.nextT);
+                        this.nextT += stepDur;
+                        this.step = (this.step + 1) % 64;
+                    }
+                },
+                playStep(s, t) {
+                    const c = this.ctx, d = t - c.currentTime;
+                    const bass = { 0: 110, 4: 164.8, 8: 110, 12: 130.8, 16: 98, 20: 146.8, 24: 87.3, 28: 82.4 };
+                    const mel = { 2: 659, 6: 523, 10: 587, 14: 494, 18: 523, 22: 440, 26: 494, 30: 415.3 };
+                    const k = s % 32;
+                    if (bass[k]) this.tone(bass[k], .22, { type: 'triangle', vol: .5, dest: this.music, delay: d, lp: 700 });
+                    if (s >= 32 && mel[k]) {
+                        this.tone(mel[k], .5, { vol: .16, dest: this.music, delay: d });
+                        this.tone(mel[k] * 2, .3, { vol: .05, dest: this.music, delay: d });
+                    }
+                    if (this.tension > .05 && s % 2 === 0) this.noise(.03, { freq: 7000, ftype: 'highpass', vol: .12 * this.tension, dest: this.music, delay: d });
+                    if (this.tension > .4 && k % 4 === 2) this.tone(bass[k - 2] ? bass[k - 2] * 2 : 220, .12, { type: 'square', vol: .1 * this.tension, dest: this.music, delay: d, lp: 900 });
+                }
+            };
+
+            // =====================================================================
+            //  Save data
+            // =====================================================================
+            const SAVE_KEY = 'cookieHeist.v1';
+            const save = { unlocked: 1, best: {}, muted: false };
+            try { Object.assign(save, JSON.parse(localStorage.getItem(SAVE_KEY)) || {}); } catch (e) { }
+            function persist() { try { localStorage.setItem(SAVE_KEY, JSON.stringify(save)); } catch (e) { } }
+            Snd.muted = !!save.muted;
+
+            // =====================================================================
+            //  Furniture & levels
+            // =====================================================================
+            // fw/fh = footprint in tiles (collision), dw = drawn width in tiles.
+            // hide = you can hide next to it, block = blocks flashlights.
+            const FURN = {
+                bed: { fw: 1.2, fh: 2.3, dw: 1.35, solid: true },
+                sofa: { fw: 2.8, fh: .9, dw: 3.0, solid: true, hide: true },
+                armchair: { fw: 1.1, fh: .9, dw: 1.35, solid: true, hide: true },
+                table: { fw: 2.0, fh: 1.6, dw: 2.2, solid: true, hide: true },
+                plant: { fw: .7, fh: .55, dw: 1.25, solid: true, hide: true },
+                bookshelf: { fw: 2.0, fh: .6, dw: 2.0, solid: true, block: true },
+                counter: { fw: 2.6, fh: 1.0, dw: 2.8, solid: true, hide: true, block: true },
+                fridge: { fw: 1.0, fh: .7, dw: 1.15, solid: true, block: true },
+                rug: { fw: 0, fh: 0, dw: 3.0, floor: true },
+            };
+
+            /* Map legend:
+               #  wall           W  wall with a moonlit window
+               .  wood floor     x  CREAKY wood floor
+               ,  kitchen tiles  ~  bedroom carpet            */
+            const LEVELS = [
+                {
+                    name: 'Tiptoe Training', par: 60,
+                    tip: 'Mom is pacing the hallway. Wait until her flashlight points away, then sneak to the <b>cookie jar</b> in the kitchen and back to bed!',
+                    map: [
+                        '####################',
+                        '#~~~~~#......#,,,,,#',
+                        '#~~~~~#......#,,,,,#',
+                        '#~~~~~#..x...#,,,,,W',
+                        '#~~~~~.......,,,,,,#',
+                        '#~~~~~#......#,,,,,#',
+                        '#~~~~~#......#,,,,,#',
+                        'W~~~~~#...x..#,,,,,#',
+                        '#~~~~~.......,,,,,,#',
+                        '#~~~~~#......#,,,,,#',
+                        '#~~~~~#......#,,,,,#',
+                        '####################',
+                    ],
+                    start: [3.6, 2.8],
+                    furn: [['bed', 1.3, 1.1], ['rug', 1.6, 5.6], ['plant', 4.3, 9.6], ['bookshelf', 8.5, 1.0],
+                    ['armchair', 10.8, 5.6], ['plant', 7.2, 9.8], ['counter', 15.0, 1.0], ['fridge', 17.8, 6.3], ['table', 15.2, 8.4]],
+                    jarOn: 6,
+                    items: [['cookie', 8, 7.4], ['cookie', 12, 3], ['cookie', 17.2, 4.5], ['cookie', 14.5, 10.4], ['cookie', 4.5, 5], ['cookie', 10.2, 9.8], ['milk', 18.4, 10.3]],
+                    parents: [{ who: 'mom', wp: [[9.5, 2.4], [9.5, 10.2]], speed: 1.05, range: 4, pause: 2.2 }],
+                },
+                {
+                    name: 'Living Room Loop', par: 90,
+                    tip: 'Mom <b>and</b> Dad are up! Stand next to the sofa or a chair and press <b>HIDE</b> when a flashlight comes close.',
+                    map: [
+                        '##########################',
+                        '#~~~~~~#.........#,,,,,,,#',
+                        '#~~~~~~#.........#,,,,,,,W',
+                        '#~~~~~~#.........#,,,,,,,#',
+                        '#~~~~~~..........,,,,,,,,#',
+                        '#~~~~~~#.........#,,,,,,,#',
+                        '####.###....x....##,,#####',
+                        '#......#.........#.......#',
+                        '#...x..#.........#.......#',
+                        'W......x.........x.......W',
+                        '#......#.........#.......#',
+                        '#......#....x....#..x....#',
+                        '#......#.........#.......#',
+                        '#......#.........#.......#',
+                        '#......#.........#.......#',
+                        '##########################',
+                    ],
+                    start: [3.8, 3.2],
+                    furn: [['bed', 1.3, 1.1], ['rug', 9.9, 6.0], ['sofa', 10.2, 8.0], ['armchair', 14.6, 3.0], ['bookshelf', 10.5, 1.0],
+                    ['plant', 8.2, 13.6], ['plant', 15.7, 13.6], ['counter', 19.2, 1.0], ['fridge', 23.6, 1.1],
+                    ['table', 19.6, 10.0], ['plant', 23.8, 7.3], ['armchair', 23.3, 13.2], ['armchair', 1.3, 12.8], ['rug', 2.0, 9.4]],
+                    jarOn: 7,
+                    items: [['cookie', 12, 5.4], ['cookie', 9, 11], ['cookie', 2.5, 8.6], ['cookie', 5.5, 13.6], ['cookie', 23.5, 11.5],
+                    ['cookie', 16, 7.5], ['cookie', 22.5, 4.4], ['cookie', 4.5, 2], ['milk', 2.4, 14.2]],
+                    parents: [
+                        { who: 'mom', wp: [[9, 3], [15.5, 5.5], [15.5, 12.8], [9, 12.8]], speed: 1.15, range: 4.2, pause: 1.8 },
+                        { who: 'dad', wp: [[22, 3.2], [20, 12.8], [24, 12.8]], speed: 1.0, range: 4, pause: 2.0 },
+                    ],
+                },
+                {
+                    name: "Who's a Good Pup?", par: 100,
+                    tip: 'Shh! The <b>puppy</b> is napping. Hiding won\'t fool its nose... but it LOVES cookies. Keep one handy!',
+                    map: [
+                        '##########################',
+                        '#.....#..........#,,,,,,,#',
+                        '#..x..#..........#,,,,,,,#',
+                        '#.....#..........#,,,,,,,W',
+                        '#.....x.....x....,,,,,,,,#',
+                        '#.....#..........#,,,,,,,#',
+                        '#.....#..........#,,,,,,,#',
+                        '###.###....x.....####,####',
+                        '#~~~~~#..........#.......#',
+                        '#~~~~~#..........#.......#',
+                        'W~~~~~...........x.......W',
+                        '#~~~~~#....x.....#.......#',
+                        '#~~~~~#..........#.......#',
+                        '#~~~~~#..........#...x...#',
+                        '#~~~~~#..........#.......#',
+                        '##########################',
+                    ],
+                    start: [3.8, 10.4],
+                    furn: [['bed', 1.3, 8.1], ['rug', 9.8, 8.6], ['sofa', 9.2, 4.6], ['armchair', 14.6, 11.4], ['bookshelf', 10, 1.0],
+                    ['plant', 7.2, 13.6], ['plant', 15.8, 6.3], ['counter', 19.0, 1.0], ['fridge', 23.6, 1.1], ['table', 19.5, 10.6],
+                    ['armchair', 1.3, 1.2], ['plant', 4.6, 5.6], ['plant', 23.8, 13.6]],
+                    jarOn: 7,
+                    dog: [11.6, 9.8],
+                    items: [['cookie', 2.5, 2.5], ['cookie', 4.4, 4.2], ['cookie', 12, 2.6], ['cookie', 15.5, 8.2], ['cookie', 8.4, 11.5],
+                    ['cookie', 23, 5.5], ['cookie', 19, 13.6], ['cookie', 23.5, 9], ['cookie', 13.5, 13.6], ['milk', 2, 5.6], ['duck', 3, 3.4]],
+                    parents: [
+                        { who: 'mom', wp: [[8, 2.4], [15.8, 2.4], [15.8, 13.8], [8, 13.8]], speed: 1.2, range: 4.3, pause: 1.7 },
+                        { who: 'dad', wp: [[21, 2.8], [21, 12.8], [23.6, 12.4], [23.6, 8.6]], speed: 1.05, range: 4.1, pause: 1.9 },
+                    ],
+                },
+                {
+                    name: 'Squeaky Toy Trouble', par: 120,
+                    tip: 'Somebody left <b>squeaky duckies</b> everywhere! Walk around them. Hold <b>TIPTOE</b> on creaky floors to keep quiet.',
+                    map: [
+                        '############################',
+                        '#~~~~~~#.......#,,,,,,,,,,,#',
+                        '#~~~~~~#.......#,,,,,,,,,,,#',
+                        '#~~~~~~#.......#,,,,,,,,,,,W',
+                        '#~~~~~~x.......x,,,,,,,,,,,#',
+                        '#~~~~~~#.......#,,,,,,,,,,,#',
+                        '#~~~~~~#...x...#####,,######',
+                        '####.###.......#...........#',
+                        '#......#.......#...........#',
+                        '#..x...#...x...x.....x.....#',
+                        'W......x.......#...........#',
+                        '#......#.......#...........#',
+                        '#......#...x...#.....x.....W',
+                        '#......#.......#...........#',
+                        '#...x..#.......#...........#',
+                        '#......x.......x...........#',
+                        '#......#.......#...........#',
+                        '############################',
+                    ],
+                    start: [4, 3.2],
+                    furn: [['bed', 1.3, 1.1], ['bookshelf', 9.5, 1.0], ['plant', 8.2, 7.5], ['armchair', 12.8, 12.3],
+                    ['counter', 23.0, 1.0], ['fridge', 17, 1.1], ['table', 18.5, 3.0],
+                    ['sofa', 18.6, 10.2], ['armchair', 24.6, 8.0], ['rug', 18.6, 12.4], ['plant', 25.6, 15.3], ['bookshelf', 21.5, 7.0],
+                    ['rug', 2.0, 10.4], ['armchair', 1.3, 15.0], ['plant', 5.5, 8.2], ['plant', 13.6, 1.2]],
+                    jarOn: 4,
+                    dog: [22.4, 4.3],
+                    items: [['cookie', 2, 4.6], ['cookie', 9, 3], ['cookie', 13.5, 9], ['cookie', 9, 16.2], ['cookie', 3, 9], ['cookie', 5.5, 15.8],
+                    ['cookie', 17.2, 15.6], ['cookie', 25.5, 10.6], ['cookie', 22, 13.6], ['cookie', 17.4, 2.8], ['milk', 13.6, 2.6],
+                    ['duck', 11.2, 6.5], ['duck', 10.2, 12.2], ['duck', 20, 8.7], ['duck', 24, 14], ['duck', 3, 13.2], ['duck', 16.4, 4.6]],
+                    parents: [
+                        { who: 'mom', wp: [[11.5, 2.4], [11.5, 16]], speed: 1.3, range: 4.6, pause: 1.5 },
+                        { who: 'dad', wp: [[17.4, 8.2], [23.2, 8.6], [26, 11.5], [24.3, 15.8], [17.4, 15.8]], speed: 1.2, range: 4.5, pause: 1.6 },
+                    ],
+                },
+                {
+                    name: 'Midnight Master', par: 160,
+                    tip: 'The BIG house. Mom, Dad <b>and</b> the puppy are all on patrol. The cookie jar is in the far kitchen. Good luck, cookie master!',
+                    map: [
+                        '##############################',
+                        '#~~~~~~#........#............#',
+                        '#~~~~~~#........#....x.......#',
+                        '#~~~~~~#..x.....#............W',
+                        '#~~~~~~.........x............#',
+                        '#~~~~~~#........#.......x....#',
+                        '###x####.....x..#####..#######',
+                        '#......#........#............#',
+                        '#......#..x.....#............#',
+                        'W......x........x.....x......#',
+                        '#......#........#............#',
+                        '#..x...#.....x..#............W',
+                        '#......#........#............#',
+                        '####.###........#####,,#######',
+                        '#......#..x.....#,,,,,,,,,,,,#',
+                        '#......x........x,,,,,,,,,,,,#',
+                        '#...x..#........#,,,,,,,,,,,,#',
+                        '#......#.....x..#,,,,,,,,,,,,#',
+                        '#......#........#,,,,,,,,,,,,#',
+                        '##############################',
+                    ],
+                    start: [4, 3.4],
+                    furn: [['bed', 1.3, 1.1], ['bookshelf', 11.5, 1.0], ['armchair', 14.2, 7.6], ['plant', 8.2, 12.4], ['plant', 14.6, 17.6],
+                    ['rug', 9.6, 9.0],
+                    ['bookshelf', 18, 1.0], ['bookshelf', 25, 1.0], ['armchair', 26.6, 3.6], ['rug', 20.5, 2.6],
+                    ['sofa', 19.5, 9.3], ['armchair', 26.5, 7.2], ['plant', 17.2, 11.6], ['rug', 23.6, 10.2],
+                    ['counter', 24.4, 14.0], ['fridge', 17.2, 14.1], ['table', 20, 16.2],
+                    ['armchair', 1.3, 7.2], ['rug', 2.2, 9.6], ['plant', 5.5, 14.2], ['armchair', 1.3, 17.4]],
+                    jarOn: 14,
+                    dog: [11, 10.2],
+                    items: [['cookie', 2, 5], ['cookie', 5.5, 8], ['cookie', 3.5, 17.6], ['cookie', 9, 17.6], ['cookie', 14.5, 3], ['cookie', 20, 2.4],
+                    ['cookie', 27.5, 1.8], ['cookie', 27.5, 11.5], ['cookie', 18, 7.6], ['cookie', 23, 17.8], ['cookie', 28, 15], ['cookie', 11, 14.4],
+                    ['milk', 27.4, 5.4], ['milk', 1.8, 15.2],
+                    ['duck', 10, 5], ['duck', 13.5, 13.5], ['duck', 20, 11.6], ['duck', 26, 16.5], ['duck', 4, 10.6], ['duck', 3, 16]],
+                    parents: [
+                        { who: 'mom', wp: [[11.8, 2.4], [11.8, 18]], speed: 1.4, range: 5, pause: 1.3 },
+                        { who: 'dad', wp: [[19, 3], [27.4, 2.4], [27.4, 8.4], [18.2, 11.8], [22, 15], [27.7, 17.6], [18, 17.8]], speed: 1.3, range: 4.8, pause: 1.4 },
+                    ],
+                },
+            ];
+
+            const LINES = {
+                spot: ['Hmm?', 'Is someone there?', 'What was that?', 'Hello...?'],
+                investigate: ["Who's up?!", 'I heard that!', 'Sneaky sneaky...', 'Hmmmm...'],
+                giveUp: ['Nobody here...', 'Must be the wind.', 'Silly old house.', 'Back to bed for me...'],
+                listenEnd: ['Just the floor...', 'Hmm... nothing.', '*yawn*'],
+                caught: ['BACK TO BED, sneaky!', 'Are those COOKIE crumbs?!', 'Nice try, cookie monster!', 'Caught you, cookie bandit!', 'Bed. Now. Cookie muncher!'],
+            };
+
+            // =====================================================================
+            //  Game state
+            // =====================================================================
+            const TS = 64; // pixels per tile in pre-rendered layers
+            const game = {
+                mode: 'menu', levelIdx: 0, time: 0, lives: 3, cookies: 0, totalCookies: 0, milk: 0,
+                hasJar: false, caughtCount: 0, everSpotted: false, modeT: 0, freezeT: 0, hints: new Set(),
+            };
+            let map = null;         // {w,h,tiles}
+            let furn = [], solids = [], blockers = [], hideables = [], items = [], parents = [], dog = null, windows = [];
+            let blocked = null;     // Uint8Array for path-finding
+            let staticCvs = null, wallStrips = [];
+            let player = null, bedRect = null, jarItem = null;
+            const parts = [], texts = [], rings = [];
+            const cam = { x: 0, y: 0, zoom: 1, shake: 0 };
+            let S = 64, camOX = 0, camOY = 0;
+
+            const tileAt = (x, y) => (x < 0 || y < 0 || x >= map.w || y >= map.h) ? null : map.tiles[y * map.w + x];
+            const isWall = (tx, ty) => { const t = tileAt(tx, ty); return !t || t.wall; };
+            const inRect = (x, y, r, pad = 0) => x > r.x - pad && x < r.x + r.w + pad && y > r.y - pad && y < r.y + r.h + pad;
+
+            function sightBlocked(x, y) {
+                if (isWall(Math.floor(x), Math.floor(y))) return true;
+                for (const b of blockers) if (inRect(x, y, b)) return true;
+                return false;
+            }
+
+            function buildLevel(idx) {
+                const def = LEVELS[idx];
+                const rows = def.map, h = rows.length, w = rows[0].length;
+                rows.forEach((r, i) => { if (r.length !== w) console.warn(`Level ${idx + 1} row ${i} has length ${r.length}, expected ${w}`); });
+                const tiles = [];
+                for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+                    const ch = rows[y][x] || '#';
+                    tiles.push({
+                        wall: ch === '#' || ch === 'W', win: ch === 'W', creak: ch === 'x', cd: 0,
+                        floor: ch === ',' ? 'tile' : ch === '~' ? 'carpet' : 'wood',
+                    });
+                }
+                map = { w, h, tiles };
+
+                furn = def.furn.map(([type, x, y]) => {
+                    const d = FURN[type];
+                    return { type, d, x, y, w: d.fw, h: d.fh };
+                });
+                solids = furn.filter(f => f.d.solid);
+                blockers = furn.filter(f => f.d.block);
+                hideables = furn.filter(f => f.d.hide);
+                bedRect = furn.find(f => f.type === 'bed');
+
+                // path-finding grid (walls + furniture with a little padding)
+                blocked = new Uint8Array(w * h);
+                for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+                    if (tiles[y * w + x].wall) { blocked[y * w + x] = 1; continue; }
+                    for (const f of solids) if (inRect(x + .5, y + .5, f, .3)) { blocked[y * w + x] = 1; break; }
+                }
+
+                items = def.items.map(([type, x, y]) => ({ type, x, y, z: 0, taken: false, t: Math.random() * 6, cd: 0, vx: 0, vy: 0 }));
+                const counter = furn[def.jarOn];
+                jarItem = { type: 'jar', x: counter.x + counter.w / 2, y: counter.y + .75, z: .95, sortY: counter.y + counter.h + .05, taken: false, t: 0 };
+                items.push(jarItem);
+                game.totalCookies = items.filter(i => i.type === 'cookie').length;
+
+                parents = def.parents.map(p => makeParent(p));
+                dog = def.dog ? makeDog(def.dog) : null;
+
+                windows = [];
+                for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+                    if (!tiles[y * w + x].win) continue;
+                    const dirs = [[0, 1], [1, 0], [-1, 0], [0, -1]];
+                    for (const [dx, dy] of dirs) {
+                        const t = tileAt(x + dx, y + dy);
+                        if (t && !t.wall) { windows.push({ x: x + .5 + dx * .9, y: y + .5 + dy * .9, fx: x, fy: y, dx, dy }); break; }
+                    }
+                }
+
+                renderStatic();
+                renderWallStrips();
+            }
+
+            function makeParent(p) {
+                const [x, y] = p.wp[0];
+                return {
+                    def: p, who: p.who, x, y, dir: Math.PI / 2, baseDir: 0, wp: p.wp, wpi: p.wp.length > 1 ? 1 : 0,
+                    path: null, state: 'patrol', t: 0, speed: p.speed, range: p.range, half: p.half || .5, pauseT: p.pause || 1.8,
+                    sus: 0, unseenT: 0, lastSeen: null, noise: null, listenMoved: 0, phase: 0, moving: false, say: null, target: null,
+                    rays: [],
+                };
+            }
+            function resetParent(P) { Object.assign(P, makeParent(P.def)); }
+
+            function makeDog([x, y]) {
+                return { home: [x, y], x, y, dir: 0, state: 'sleep', t: 0, path: null, repath: 0, phase: 0, moving: false, zz: 0, nap: 0 };
+            }
+
+            // =====================================================================
+            //  Pre-rendered layers (floors + walls)
+            // =====================================================================
+            function makePattern(img, sizePx) {
+                const c = document.createElement('canvas');
+                c.width = c.height = sizePx;
+                c.getContext('2d').drawImage(img, 0, 0, sizePx, sizePx);
+                return c;
+            }
+
+            function renderStatic() {
+                const { w, h } = map;
+                staticCvs = document.createElement('canvas');
+                staticCvs.width = w * TS; staticCvs.height = h * TS;
+                const c = staticCvs.getContext('2d');
+                c.fillStyle = '#120f22';
+                c.fillRect(0, 0, w * TS, h * TS);
+                const pats = {
+                    wood: c.createPattern(makePattern(IMG['floor-wood'], TS * 2.4), 'repeat'),
+                    tile: c.createPattern(makePattern(IMG['floor-tile'], TS * 2), 'repeat'),
+                    carpet: c.createPattern(makePattern(IMG['floor-carpet'], TS * 2.5), 'repeat'),
+                };
+                for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+                    const t = map.tiles[y * w + x];
+                    if (t.wall) continue;
+                    c.fillStyle = pats[t.floor];
+                    c.fillRect(x * TS, y * TS, TS, TS);
+                }
+                // creaky boards: darker plank with cracks
+                for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+                    const t = map.tiles[y * w + x];
+                    if (!t.creak) continue;
+                    const px = x * TS, py = y * TS;
+                    c.fillStyle = 'rgba(70,30,0,.22)';
+                    c.fillRect(px + 4, py + TS * .3, TS - 8, TS * .4);
+                    c.strokeStyle = 'rgba(55,25,5,.85)';
+                    c.lineWidth = 3; c.lineCap = 'round';
+                    c.beginPath();
+                    c.moveTo(px + TS * .18, py + TS * .5); c.lineTo(px + TS * .32, py + TS * .4); c.lineTo(px + TS * .45, py + TS * .56);
+                    c.lineTo(px + TS * .6, py + TS * .42); c.lineTo(px + TS * .78, py + TS * .55);
+                    c.stroke();
+                    c.lineWidth = 2;
+                    c.beginPath();
+                    c.moveTo(px + TS * .5, py + TS * .3); c.lineTo(px + TS * .55, py + TS * .2);
+                    c.moveTo(px + TS * .3, py + TS * .68); c.lineTo(px + TS * .26, py + TS * .78);
+                    c.stroke();
+                    // nail heads
+                    c.fillStyle = 'rgba(40,20,5,.7)';
+                    [[.12, .5], [.88, .5]].forEach(([a, b]) => { c.beginPath(); c.arc(px + TS * a, py + TS * b, 2.5, 0, 7); c.fill(); });
+                }
+                // rugs
+                for (const f of furn) {
+                    if (!f.d.floor) continue;
+                    const im = IMG[f.type], dw = f.d.dw * TS, dh = dw * im.height / im.width;
+                    c.drawImage(im, f.x * TS, f.y * TS, dw, dh);
+                }
+                // soft shadows where floors meet walls
+                for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+                    const t = map.tiles[y * w + x];
+                    if (t.wall) continue;
+                    const px = x * TS, py = y * TS;
+                    if (isWall(x, y - 1)) {
+                        const g = c.createLinearGradient(0, py, 0, py + TS * .55);
+                        g.addColorStop(0, 'rgba(0,0,0,.5)'); g.addColorStop(1, 'rgba(0,0,0,0)');
+                        c.fillStyle = g; c.fillRect(px, py, TS, TS * .55);
+                    }
+                    if (isWall(x - 1, y)) {
+                        const g = c.createLinearGradient(px, 0, px + TS * .3, 0);
+                        g.addColorStop(0, 'rgba(0,0,0,.35)'); g.addColorStop(1, 'rgba(0,0,0,0)');
+                        c.fillStyle = g; c.fillRect(px, py, TS * .3, TS);
+                    }
+                    if (isWall(x + 1, y)) {
+                        const g = c.createLinearGradient(px + TS, 0, px + TS * .7, 0);
+                        g.addColorStop(0, 'rgba(0,0,0,.35)'); g.addColorStop(1, 'rgba(0,0,0,0)');
+                        c.fillStyle = g; c.fillRect(px + TS * .7, py, TS * .3, TS);
+                    }
+                }
+                // furniture contact shadows
+                for (const f of solids) {
+                    c.fillStyle = 'rgba(0,0,0,.28)';
+                    c.beginPath();
+                    c.ellipse((f.x + f.w / 2) * TS, (f.y + f.h * .75) * TS, (f.w / 2 + .12) * TS, (f.h / 2 + .1) * TS, 0, 0, 7);
+                    c.fill();
+                }
+            }
+
+            // Each wall row is its own strip so characters can walk "behind" walls.
+            // A strip covers world y from (row - .6) to (row + 1).
+            const WALL_UP = .6;
+            function renderWallStrips() {
+                wallStrips = [];
+                const { w, h } = map;
+                for (let r = 0; r < h; r++) {
+                    let any = false;
+                    for (let x = 0; x < w; x++) if (map.tiles[r * w + x].wall) { any = true; break; }
+                    if (!any) continue;
+                    const sc = document.createElement('canvas');
+                    sc.width = w * TS; sc.height = Math.ceil((1 + WALL_UP) * TS);
+                    const c = sc.getContext('2d');
+                    for (let x = 0; x < w; x++) {
+                        const t = map.tiles[r * w + x];
+                        if (!t.wall) continue;
+                        const px = x * TS;
+                        const faceVis = r + 1 < h && !map.tiles[(r + 1) * w + x].wall;
+                        const capBottom = faceVis ? TS * 1.0 : sc.height;
+                        // cap
+                        const g = c.createLinearGradient(0, 0, 0, capBottom);
+                        g.addColorStop(0, '#463a63'); g.addColorStop(1, '#382d52');
+                        c.fillStyle = g;
+                        c.fillRect(px, 0, TS + .5, capBottom);
+                        c.fillStyle = 'rgba(255,255,255,.07)';
+                        if (!isWall(x, r - 1)) c.fillRect(px, 0, TS, 4);
+                        c.fillStyle = 'rgba(0,0,0,.35)';
+                        if (!isWall(x - 1, r)) c.fillRect(px, 0, 4, capBottom);
+                        if (!isWall(x + 1, r)) c.fillRect(px + TS - 4, 0, 4, capBottom);
+                        if (t.win && !faceVis) {
+                            // window seen from above (side wall): glowing glass slit
+                            const gg = c.createLinearGradient(px, 0, px + TS, 0);
+                            gg.addColorStop(0, '#2c4f9e'); gg.addColorStop(.5, '#9cc2ff'); gg.addColorStop(1, '#2c4f9e');
+                            c.fillStyle = gg;
+                            c.fillRect(px + TS * .35, TS * .25, TS * .3, capBottom - TS * .35);
+                        }
+                        if (!faceVis) continue;
+                        // wallpaper face
+                        const fy = TS * 1.0, fh = sc.height - fy;
+                        c.fillStyle = '#6d5a91';
+                        c.fillRect(px, fy, TS + .5, fh);
+                        c.fillStyle = 'rgba(255,255,255,.06)';
+                        for (let s = 0; s < 4; s++) c.fillRect(px + s * TS / 4 + 3, fy, 5, fh);
+                        c.fillStyle = 'rgba(255,220,255,.25)';
+                        c.fillRect(px, fy, TS + .5, 3);
+                        c.fillStyle = '#2e2340';
+                        c.fillRect(px, fy + fh - 7, TS + .5, 7);
+                        if (t.win) {
+                            const wx = px + TS * .14, wy = fy + 3, ww = TS * .72, wh = fh - 13;
+                            c.fillStyle = '#e7d2b2'; c.fillRect(wx - 3, wy - 2, ww + 6, wh + 4);
+                            const gg = c.createLinearGradient(0, wy, 0, wy + wh);
+                            gg.addColorStop(0, '#163066'); gg.addColorStop(1, '#5b84d6');
+                            c.fillStyle = gg; c.fillRect(wx, wy, ww, wh);
+                            c.fillStyle = '#fff8d8';
+                            c.beginPath(); c.arc(wx + ww * .72, wy + wh * .35, 4.5, 0, 7); c.fill();
+                            c.fillStyle = '#e7d2b2'; c.fillRect(wx + ww / 2 - 1.5, wy, 3, wh);
+                            c.fillStyle = '#e48aa8';
+                            c.fillRect(wx - 6, wy - 3, 8, wh + 6); c.fillRect(wx + ww - 2, wy - 3, 8, wh + 6);
+                        }
+                    }
+                    wallStrips.push({ r, cvs: sc });
+                }
+            }
+
+            // =====================================================================
+            //  Path-finding (BFS on tiles + line-of-sight smoothing)
+            // =====================================================================
+            const isBlocked = (tx, ty) => tx < 0 || ty < 0 || tx >= map.w || ty >= map.h || blocked[ty * map.w + tx] === 1;
+
+            function nearestFree(tx, ty) {
+                if (!isBlocked(tx, ty)) return [tx, ty];
+                for (let r = 1; r < 6; r++)
+                    for (let dy = -r; dy <= r; dy++) for (let dx = -r; dx <= r; dx++)
+                        if (Math.max(Math.abs(dx), Math.abs(dy)) === r && !isBlocked(tx + dx, ty + dy)) return [tx + dx, ty + dy];
+                return [tx, ty];
+            }
+
+            function walkable(ax, ay, bx, by) {
+                const d = dist(ax, ay, bx, by), n = Math.ceil(d / .15);
+                for (let i = 1; i <= n; i++) {
+                    const t = i / n, x = lerp(ax, bx, t), y = lerp(ay, by, t);
+                    if (isBlocked(Math.floor(x), Math.floor(y))) return false;
+                    // keep a little clearance
+                    if (isBlocked(Math.floor(x + .3), Math.floor(y)) || isBlocked(Math.floor(x - .3), Math.floor(y)) ||
+                        isBlocked(Math.floor(x), Math.floor(y + .3)) || isBlocked(Math.floor(x), Math.floor(y - .3))) return false;
+                }
+                return true;
+            }
+
+            function findPath(x0, y0, x1, y1) {
+                const { w } = map;
+                const [sx, sy] = nearestFree(Math.floor(x0), Math.floor(y0));
+                const [ex, ey] = nearestFree(Math.floor(x1), Math.floor(y1));
+                const prev = new Int32Array(map.w * map.h).fill(-1);
+                const start = sy * w + sx, goal = ey * w + ex;
+                const q = [start]; prev[start] = start;
+                const N = [[1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [1, -1], [-1, 1], [-1, -1]];
+                let found = start === goal;
+                for (let qi = 0; qi < q.length && !found; qi++) {
+                    const cur = q[qi], cx = cur % w, cy = (cur / w) | 0;
+                    for (const [dx, dy] of N) {
+                        const nx = cx + dx, ny = cy + dy;
+                        if (isBlocked(nx, ny)) continue;
+                        if (dx && dy && (isBlocked(cx + dx, cy) || isBlocked(cx, cy + dy))) continue;
+                        const ni = ny * w + nx;
+                        if (prev[ni] !== -1) continue;
+                        prev[ni] = cur; q.push(ni);
+                        if (ni === goal) { found = true; break; }
+                    }
+                }
+                if (!found) return [];
+                const pts = [];
+                for (let cur = goal; cur !== start; cur = prev[cur]) pts.push([cur % w + .5, ((cur / w) | 0) + .5]);
+                pts.reverse();
+                if (!isBlocked(Math.floor(x1), Math.floor(y1))) {
+                    if (pts.length) pts[pts.length - 1] = [x1, y1]; else pts.push([x1, y1]);
+                }
+                // smooth: skip points we can walk straight to
+                const out = [];
+                let ax = x0, ay = y0, i = 0;
+                while (i < pts.length) {
+                    let j = pts.length - 1;
+                    while (j > i && !walkable(ax, ay, pts[j][0], pts[j][1])) j--;
+                    out.push(pts[j]); [ax, ay] = pts[j]; i = j + 1;
+                }
+                return out;
+            }
+
+            function turnTo(A, target, rate) {
+                const d = angDiff(target, A.dir);
+                A.dir += clamp(d, -rate, rate);
+            }
+
+            function followPath(A, speed, dt) {
+                if (!A.path || !A.path.length) { A.moving = false; return true; }
+                const [tx, ty] = A.path[0];
+                const dx = tx - A.x, dy = ty - A.y, d = Math.hypot(dx, dy), step = speed * dt;
+                if (d > .02) turnTo(A, Math.atan2(dy, dx), dt * 5);
+                if (d <= step) { A.x = tx; A.y = ty; A.path.shift(); }
+                else { A.x += dx / d * step; A.y += dy / d * step; }
+                A.moving = true;
+                A.phase += dt * speed * 5.5;
+                return A.path.length === 0;
+            }
+
+            // =====================================================================
+            //  Player
+            // =====================================================================
+            const input = { up: 0, down: 0, left: 0, right: 0, tipHeld: false, tipToggle: false, sx: 0, sy: 0 };
+
+            function makePlayer() {
+                const def = LEVELS[game.levelIdx];
+                return { x: def.start[0], y: def.start[1], vx: 0, vy: 0, face: 1, hidden: false, moving: false, phase: 0, stepT: 0, boost: 0, tile: -1, nearHide: null, tiptoe: false };
+            }
+
+            function resolveCircleRect(p, rx, ry, rw, rh, r) {
+                const cx = clamp(p.x, rx, rx + rw), cy = clamp(p.y, ry, ry + rh);
+                let dx = p.x - cx, dy = p.y - cy;
+                const d2 = dx * dx + dy * dy;
+                if (d2 >= r * r) return;
+                if (d2 > 1e-9) {
+                    const d = Math.sqrt(d2);
+                    p.x += dx / d * (r - d); p.y += dy / d * (r - d);
+                } else {
+                    const l = p.x - rx, rr = rx + rw - p.x, t = p.y - ry, b = ry + rh - p.y, m = Math.min(l, rr, t, b);
+                    if (m === l) p.x = rx - r; else if (m === rr) p.x = rx + rw + r; else if (m === t) p.y = ry - r; else p.y = ry + rh + r;
+                }
+            }
+
+            function collide(p, r) {
+                for (let it = 0; it < 3; it++) {
+                    const x0 = Math.floor(p.x - r - 1), x1 = Math.floor(p.x + r + 1), y0 = Math.floor(p.y - r - 1), y1 = Math.floor(p.y + r + 1);
+                    for (let ty = y0; ty <= y1; ty++) for (let tx = x0; tx <= x1; tx++)
+                        if (isWall(tx, ty)) resolveCircleRect(p, tx, ty, 1, 1, r);
+                    for (const f of solids) resolveCircleRect(p, f.x, f.y, f.w, f.h, r);
+                }
+            }
+
+            function rectDist(x, y, f) {
+                const cx = clamp(x, f.x, f.x + f.w), cy = clamp(y, f.y, f.y + f.h);
+                return Math.hypot(x - cx, y - cy);
+            }
+
+            function setHidden(h) {
+                if (player.hidden === h) return;
+                player.hidden = h;
+                Snd.hide();
+                puff(player.x, player.y - .3, 10, h ? '#cfe0ff' : '#ffffff');
+                if (h) floatText(player.x, player.y - 1.1, 'Hidden!', '#9fffc0', .9);
+            }
+
+            function toggleHide() {
+                if (game.mode !== 'play') return;
+                if (player.hidden) setHidden(false);
+                else if (player.nearHide) { setHidden(true); player.hideLock = true; }
+                else floatText(player.x, player.y - 1.2, 'Get next to furniture!', '#ffd6a0', .7);
+            }
+
+            function updatePlayer(dt) {
+                const p = player;
+                let ix = (input.right - input.left) + input.sx, iy = (input.down - input.up) + input.sy;
+                const len = Math.hypot(ix, iy);
+                if (len > 1) { ix /= len; iy /= len; }
+                const moveIntent = len > .18;
+                if (!moveIntent) p.hideLock = false;
+                if (moveIntent && p.hidden && !p.hideLock) setHidden(false);
+                const stickMag = Math.hypot(input.sx, input.sy);
+                p.tiptoe = input.tipHeld || input.tipToggle || (stickMag > .18 && stickMag < .6);
+                if (p.boost > 0) p.boost -= dt;
+                let speed = p.tiptoe ? 1.6 : 2.9;
+                if (p.boost > 0) speed *= 1.45;
+                const tvx = p.hidden ? 0 : ix * speed, tvy = p.hidden ? 0 : iy * speed;
+                const a = Math.min(1, dt * 14);
+                p.vx += (tvx - p.vx) * a; p.vy += (tvy - p.vy) * a;
+                const ox = p.x, oy = p.y;
+                p.x += p.vx * dt; p.y += p.vy * dt;
+                collide(p, .27);
+                if (dt > 0) { p.vx = (p.x - ox) / dt; p.vy = (p.y - oy) / dt; }
+                const sp = Math.hypot(p.vx, p.vy);
+                p.moving = sp > .25;
+                if (Math.abs(p.vx) > .15) p.face = p.vx > 0 ? 1 : -1;
+                if (p.moving) {
+                    p.phase += dt * sp * 4.2;
+                    p.stepT -= dt;
+                    if (p.stepT <= 0) {
+                        p.stepT = p.tiptoe ? .42 : .3;
+                        Snd.footstep(p.tiptoe);
+                        if (!p.tiptoe) dust(p.x, p.y);
+                    }
+                    if (p.boost > 0 && Math.random() < .5) sparkle(p.x + rand(-.2, .2), p.y - rand(.1, .9), 1, ['#ffffff', '#cfe8ff']);
+                }
+
+                // creaky boards
+                const tx = Math.floor(p.x), ty = Math.floor(p.y), ti = ty * map.w + tx;
+                const tile = tileAt(tx, ty);
+                if (ti !== p.tile) {
+                    p.tile = ti;
+                    if (tile && tile.creak && tile.cd <= 0) {
+                        tile.cd = .8;
+                        if (p.tiptoe) {
+                            Snd.creak(true);
+                            makeNoise(tx + .5, ty + .5, 2.6, 'creak...', '#d9c3a0', false);
+                        } else {
+                            Snd.creak(false);
+                            makeNoise(tx + .5, ty + .5, 6.5, 'CREEEAK!', '#ffd08a', false);
+                            shake(.12);
+                        }
+                        hint('creak', 'Creaky floor! When you see FREEZE, stop moving. Tiptoe to be quieter.');
+                    }
+                }
+                for (const t of map.tiles) if (t.cd > 0) t.cd -= dt;
+
+                // items
+                for (const it of items) {
+                    if (it.taken) continue;
+                    if (it.type === 'duck') {
+                        if (it.cd > 0) it.cd -= dt;
+                        const fr = Math.pow(.9, dt * 60);
+                        it.x += it.vx * dt; it.y += it.vy * dt; it.vx *= fr; it.vy *= fr;
+                        const dk = { x: it.x, y: it.y }; collide(dk, .2); it.x = dk.x; it.y = dk.y;
+                        if (it.cd <= 0 && p.moving && dist(p.x, p.y, it.x, it.y) < .5 && p.vx * (it.x - p.x) + p.vy * (it.y - p.y) > 0) {
+                            it.cd = 1.2;
+                            const ang = Math.atan2(it.y - p.y, it.x - p.x);
+                            it.vx = Math.cos(ang) * 3.5; it.vy = Math.sin(ang) * 3.5;
+                            Snd.squeak();
+                            makeNoise(it.x, it.y, 7.5, 'SQUEAK!', '#fff275', true);
+                            shake(.2);
+                            hint('duck', 'Squeaky duckies are LOUD. Walk around them!');
+                        }
+                        continue;
+                    }
+                    const pickR = it.type === 'jar' ? 1.05 : .6;
+                    const iy2 = it.type === 'jar' ? it.sortY + .15 : it.y;
+                    if (dist(p.x, p.y, it.x, iy2) < pickR) collect(it);
+                }
+
+                // hide spots
+                p.nearHide = null;
+                if (!p.hidden) {
+                    let best = .75;
+                    for (const f of hideables) { const d = rectDist(p.x, p.y, f); if (d < best) { best = d; p.nearHide = f; } }
+                    if (p.nearHide) hint('hide', touchMode ? 'Tap HIDE to hide next to furniture!' : 'Press SPACE to hide next to furniture!');
+                }
+
+                // back in bed with the jar = win
+                if (game.hasJar && rectDist(p.x, p.y, bedRect) < 1.6) winLevel();
+            }
+
+            function collect(it) {
+                it.taken = true;
+                if (it.type === 'cookie') {
+                    game.cookies++;
+                    Snd.cookie();
+                    sparkle(it.x, it.y - .3, 12, ['#ffd35a', '#ffffff', '#c97a34']);
+                    floatText(it.x, it.y - .8, '+1 🍪', '#ffd35a', 1);
+                    bumpHud('hudCookiesPill');
+                } else if (it.type === 'milk') {
+                    game.milk++;
+                    player.boost = 6;
+                    Snd.milk();
+                    sparkle(it.x, it.y - .3, 16, ['#ffffff', '#cfe8ff']);
+                    floatText(it.x, it.y - .9, 'MILK POWER!', '#cfe8ff', 1.2);
+                } else if (it.type === 'jar') {
+                    game.hasJar = true;
+                    Snd.jar();
+                    sparkle(it.x, it.y - it.z - .3, 30, ['#ffd35a', '#ffffff', '#ff6b6b']);
+                    floatText(it.x, it.y - it.z - 1, 'GOT THE JAR!', '#ffd35a', 1.4);
+                    $('hudJar').classList.add('got');
+                    $('hudObj').textContent = '🛏️ Sneak back to bed!';
+                    toast('You got the cookie jar! 🍪 Now sneak back to bed!', 3);
+                }
+                updateHud();
+            }
+
+            // =====================================================================
+            //  Noise, parents & puppy AI
+            // =====================================================================
+            function makeNoise(x, y, r, label, color, loud) {
+                rings.push({ x, y, r, t: 0, life: .9, color });
+                floatText(x, y - .6, label, color, loud ? 1.4 : 1);
+                let anyListen = false;
+                for (const P of parents) {
+                    if (dist(P.x, P.y, x, y) > r || P.state === 'spot') continue;
+                    if (loud) { investigate(P, x, y); continue; }
+                    if (P.state === 'investigate' || P.state === 'search') { P.target = { x, y }; P.path = null; P.state = 'investigate'; continue; }
+                    P.state = 'listen'; P.t = 0; P.noise = { x, y, r }; P.listenMoved = 0; P.moving = false;
+                    say(P, '...?'); Snd.hmm();
+                    anyListen = true;
+                }
+                if (anyListen) game.freezeT = 1.8;
+                if (dog && (dog.state === 'sleep') && dist(dog.x, dog.y, x, y) < r * .85) wakeDog();
+            }
+
+            function investigate(P, x, y) {
+                P.state = 'investigate'; P.t = 0; P.target = { x, y }; P.path = null;
+                say(P, pick(LINES.investigate));
+            }
+
+            function say(A, text, dur = 1.6) { A.say = { text, t: dur }; }
+
+            function canSee(P) {
+                const p = player;
+                if (p.hidden) return false;
+                const d = dist(P.x, P.y, p.x, p.y);
+                if (d < .75) return true;
+                if (d > P.range) return false;
+                if (Math.abs(angDiff(Math.atan2(p.y - P.y, p.x - P.x), P.dir)) > P.half) return false;
+                const n = Math.ceil(d / .1);
+                for (let i = 1; i < n; i++) {
+                    const t = i / n;
+                    if (sightBlocked(lerp(P.x, p.x, t), lerp(P.y, p.y, t))) return false;
+                }
+                return true;
+            }
+
+            function castRays(P) {
+                const N = 34, rays = [];
+                for (let i = 0; i <= N; i++) {
+                    const a = P.dir - P.half + (P.half * 2) * i / N;
+                    const cx = Math.cos(a), cy = Math.sin(a);
+                    let d = .1;
+                    while (d < P.range) { if (sightBlocked(P.x + cx * d, P.y + cy * d)) break; d += .1; }
+                    rays.push([P.x + cx * d, P.y + cy * d]);
+                }
+                P.rays = rays;
+            }
+
+            function updateParent(P, dt) {
+                P.t += dt;
+                if (P.say && (P.say.t -= dt) <= 0) P.say = null;
+                switch (P.state) {
+                    case 'patrol':
+                        if (!P.path) P.path = findPath(P.x, P.y, P.wp[P.wpi][0], P.wp[P.wpi][1]);
+                        if (followPath(P, P.speed, dt)) { P.state = 'pause'; P.t = 0; P.baseDir = P.dir; P.moving = false; }
+                        break;
+                    case 'pause':
+                        P.dir = P.baseDir + Math.sin(P.t * 2) * .95;
+                        if (P.t > P.pauseT) { P.wpi = (P.wpi + 1) % P.wp.length; P.path = null; P.state = 'patrol'; }
+                        break;
+                    case 'listen':
+                        turnTo(P, Math.atan2(P.noise.y - P.y, P.noise.x - P.x), dt * 4);
+                        if (player.moving && !player.hidden && dist(player.x, player.y, P.noise.x, P.noise.y) < P.noise.r * 1.3)
+                            P.listenMoved += dt * (player.tiptoe ? .35 : 1);
+                        if (P.listenMoved > .28) investigate(P, player.x, player.y);
+                        else if (P.t > 1.8) { P.state = 'patrol'; P.path = null; say(P, pick(LINES.listenEnd)); }
+                        break;
+                    case 'investigate':
+                        if (!P.path) P.path = findPath(P.x, P.y, P.target.x, P.target.y);
+                        if (followPath(P, P.speed * 1.5, dt)) { P.state = 'search'; P.t = 0; P.baseDir = P.dir; P.moving = false; }
+                        break;
+                    case 'search':
+                        P.dir = P.baseDir + Math.sin(P.t * 2.6) * 1.4;
+                        if (P.t > 2.6) { P.state = 'patrol'; P.path = null; say(P, pick(LINES.giveUp)); }
+                        break;
+                    case 'spot':
+                        P.moving = false;
+                        turnTo(P, Math.atan2(player.y - P.y, player.x - P.x), dt * 6);
+                        break;
+                }
+                // flashlight sway
+                if (P.state === 'patrol' || P.state === 'investigate') P.dir += Math.sin(performance.now() / 400 + P.x) * .004;
+
+                castRays(P);
+                if (game.mode !== 'play') return;
+                // freezing during a "listen" works: a perfectly still kid isn't noticed
+                const frozenOk = P.state === 'listen' && !player.moving;
+                if (!frozenOk && canSee(P)) {
+                    const d = dist(P.x, P.y, player.x, player.y);
+                    const close = 1 - clamp(d / P.range, 0, 1);
+                    let rate = (.7 + close * 1.9) * (player.tiptoe ? .6 : 1) * (player.moving ? 1 : .75);
+                    if (d < 1.2) rate = 4;
+                    P.sus = Math.min(1, P.sus + rate * dt);
+                    P.lastSeen = { x: player.x, y: player.y }; P.unseenT = 0;
+                    game.everSpotted = true;
+                    if (P.sus > .28 && P.state !== 'spot') { P.state = 'spot'; say(P, pick(LINES.spot)); Snd.spot(); }
+                    if (P.sus >= 1) caught(P);
+                } else {
+                    P.sus = Math.max(0, P.sus - .42 * dt);
+                    if (P.state === 'spot') {
+                        P.unseenT += dt;
+                        if (P.unseenT > .35) investigate(P, P.lastSeen.x, P.lastSeen.y);
+                    }
+                }
+            }
+
+            function wakeDog() {
+                dog.state = 'wake'; dog.t = 0;
+                say(dog, '!?', 1);
+                Snd.tone(700, .12, { type: 'triangle', vol: .12, to: 1000 });
+                hint('dog', 'Uh oh, the puppy is awake! It can sniff you out. If it finds you, it eats a cookie.');
+            }
+
+            function updateDog(dt) {
+                const D = dog;
+                D.t += dt;
+                if (D.say && (D.say.t -= dt) <= 0) D.say = null;
+                const p = player, d = dist(D.x, D.y, p.x, p.y);
+                switch (D.state) {
+                    case 'sleep':
+                        D.moving = false;
+                        D.zz -= dt;
+                        if (D.zz <= 0) { D.zz = .9; texts.push({ x: D.x + .3, y: D.y - .5, text: 'z', color: '#cfe0ff', t: 0, life: 1.6, size: .45, vy: -.5, vx: .25 }); }
+                        if (D.nap > 0) D.nap -= dt;
+                        else if (game.mode === 'play' && !p.hidden && d < 1.3 && !p.tiptoe) wakeDog();
+                        break;
+                    case 'wake':
+                        if (D.t > .9) { D.state = 'sniff'; D.t = 0; D.repath = 0; }
+                        break;
+                    case 'sniff':
+                        D.repath -= dt;
+                        if (D.repath <= 0) { D.repath = .5; D.path = findPath(D.x, D.y, p.x, p.y); }
+                        if (d < 1.4) {
+                            const st = Math.min(d, 1.85 * dt);
+                            D.x += (p.x - D.x) / (d || 1) * st; D.y += (p.y - D.y) / (d || 1) * st;
+                            turnTo(D, Math.atan2(p.y - D.y, p.x - D.x), dt * 6);
+                            D.moving = true; D.phase += dt * 10;
+                        } else followPath(D, 1.85, dt);
+                        if (Math.random() < dt * 1.2) floatText(D.x, D.y - .7, 'sniff sniff', '#ffe2b8', .55);
+                        if (game.mode === 'play' && d < .7) {
+                            if (game.cookies > 0) {
+                                game.cookies--; updateHud();
+                                Snd.munch();
+                                say(D, '♥ Yum!', 1.6);
+                                floatText(p.x, p.y - 1, '-1 🍪', '#ff9b9b', 1);
+                                for (let i = 0; i < 8; i++) parts.push({ x: D.x, y: D.y - .4, vx: rand(-1, 1), vy: rand(-2, -.5), life: 1, t: 0, kind: 'heart', size: rand(.12, .2) });
+                                toast('The puppy ate one of your cookies and went back to sleep! 🐶', 2.6);
+                            } else {
+                                Snd.bark(); shake(.35);
+                                say(D, 'WOOF! WOOF!', 1.6);
+                                makeNoise(p.x, p.y, 14, 'WOOF!', '#ffb36b', true);
+                            }
+                            D.state = 'eat'; D.t = 0; D.moving = false; D.nap = 8;
+                        } else if (D.t > 14) { D.state = 'sleep'; D.t = 0; D.nap = 4; }
+                        break;
+                    case 'eat':
+                        D.moving = false;
+                        if (D.t > 1.6) { D.state = 'sleep'; D.t = 0; }
+                        break;
+                }
+            }
+
+            // =====================================================================
+            //  Effects
+            // =====================================================================
+            function puff(x, y, n, color) {
+                for (let i = 0; i < n; i++) parts.push({ x, y, vx: rand(-1.4, 1.4), vy: rand(-1.4, .4), life: rand(.4, .7), t: 0, kind: 'puff', color, size: rand(.08, .16) });
+            }
+            function dust(x, y) {
+                for (let i = 0; i < 2; i++) parts.push({ x: x + rand(-.15, .15), y: y + rand(-.05, .05), vx: rand(-.4, .4), vy: rand(-.4, -.1), life: .45, t: 0, kind: 'puff', color: 'rgba(230,210,180,.6)', size: rand(.05, .09) });
+            }
+            function sparkle(x, y, n, colors) {
+                for (let i = 0; i < n; i++) parts.push({ x, y, vx: rand(-2.2, 2.2), vy: rand(-2.8, .5), life: rand(.5, 1), t: 0, kind: 'star', color: pick(colors), size: rand(.07, .15), rot: rand(0, 6) });
+            }
+            function floatText(x, y, text, color, size = 1) {
+                texts.push({ x, y, text, color, t: 0, life: 1.3, size: .42 * size, vy: -.7, vx: 0 });
+            }
+            function shake(a) { cam.shake = Math.max(cam.shake, a); }
+
+            function updateFx(dt) {
+                for (let i = parts.length - 1; i >= 0; i--) {
+                    const q = parts[i];
+                    q.t += dt; q.x += q.vx * dt; q.y += q.vy * dt; q.vy += (q.kind === 'star' ? 4 : q.kind === 'heart' ? -.5 : 0) * dt;
+                    q.vx *= .97;
+                    if (q.t > q.life) parts.splice(i, 1);
+                }
+                for (let i = texts.length - 1; i >= 0; i--) {
+                    const q = texts[i];
+                    q.t += dt; q.y += q.vy * dt; q.x += (q.vx || 0) * dt;
+                    if (q.t > q.life) texts.splice(i, 1);
+                }
+                for (let i = rings.length - 1; i >= 0; i--) { rings[i].t += dt; if (rings[i].t > rings[i].life) rings.splice(i, 1); }
+                for (const it of items) it.t += dt;
+            }
+
+            // =====================================================================
+            //  Game flow
+            // =====================================================================
+            function startLevel(idx) {
+                game.levelIdx = idx;
+                buildLevel(idx);
+                Object.assign(game, { time: 0, lives: 3, cookies: 0, milk: 0, hasJar: false, caughtCount: 0, everSpotted: false, modeT: 0, freezeT: 0 });
+                player = makePlayer();
+                parts.length = texts.length = rings.length = 0;
+                cam.x = player.x; cam.y = player.y; cam.zoom = 1;
+                $('hudJar').classList.remove('got');
+                $('hudObj').textContent = '🎯 Find the cookie jar!';
+                updateHud();
+                showIntro(idx);
+            }
+
+            function showIntro(idx) {
+                const def = LEVELS[idx];
+                $('introNum').textContent = `Night ${idx + 1} of ${LEVELS.length}`;
+                $('introName').textContent = def.name;
+                $('introTip').innerHTML = def.tip;
+                const who = $('introWho'); who.innerHTML = '';
+                const faces = def.parents.map(p => p.who);
+                if (def.dog) faces.push('dog');
+                faces.forEach(f => { const im = document.createElement('img'); im.src = ASSET_DIR + f + '.png'; im.alt = f; who.appendChild(im); });
+                game.mode = 'intro';
+                show('scrIntro');
+            }
+
+            function beginPlay() {
+                hideScreens();
+                game.mode = 'play';
+                setHud(true);
+                Snd.init(); Snd.musicOn(true);
+                if (game.levelIdx === 0) {
+                    setTimeout(() => hint('move', touchMode ? 'Drag your thumb on the left side to sneak. Push just a little to TIPTOE 🤫' : 'Use the ARROW KEYS or WASD to sneak around 🤫'), 600);
+                }
+            }
+
+            function caught(P) {
+                if (game.mode !== 'play') return;
+                game.mode = 'caught'; game.modeT = 0; game.caughtCount++;
+                game.caughtBy = P;
+                player.hidden = false;
+                say(P, pick(LINES.caught), 2.4);
+                Snd.caught(); Snd.musicOn(false); shake(.5);
+                $('busted').classList.add('show');
+                $('freeze').classList.remove('show');
+            }
+
+            function afterCaught() {
+                $('busted').classList.remove('show');
+                game.lives--;
+                updateHud();
+                if (game.lives <= 0) {
+                    game.mode = 'lose';
+                    setHud(false);
+                    $('loseLine').textContent = pick(['No more cookies tonight... but tomorrow is another night!', 'So close! The cookies will still be there tomorrow.', 'Practice your tiptoes and try again!']);
+                    show('scrLose');
+                    return;
+                }
+                if (game.hasJar) {
+                    game.hasJar = false; jarItem.taken = false;
+                    $('hudJar').classList.remove('got');
+                    $('hudObj').textContent = '🎯 Find the cookie jar!';
+                }
+                player = makePlayer();
+                parents.forEach(resetParent);
+                if (dog) Object.assign(dog, makeDog(dog.home));
+                game.mode = 'play';
+                Snd.musicOn(true);
+                toast(`Back in bed... the jar went back on the counter. ${game.lives} ${game.lives === 1 ? 'try' : 'tries'} left! 🤫`, 3);
+                if (pendingPause) { pendingPause = false; pause(); }
+            }
+
+            function winLevel() {
+                if (game.mode !== 'play') return;
+                game.mode = 'win'; game.modeT = 0;
+                Snd.win(); Snd.musicOn(false);
+                sparkle(player.x, player.y - .5, 40, ['#ffd35a', '#ffffff', '#ff8fb8', '#9fd0ff']);
+                setTimeout(showWin, 1100);
+            }
+
+            function showWin() {
+                const def = LEVELS[game.levelIdx];
+                const t = game.time;
+                const timeBonus = Math.max(0, Math.round((def.par - t) * 15));
+                const ghost = !game.everSpotted;
+                const noCatch = game.caughtCount === 0;
+                const allCookies = game.cookies >= game.totalCookies;
+                const score = game.cookies * 100 + 500 + game.milk * 150 + timeBonus + (ghost ? 1000 : 0) + (noCatch ? 500 : 0);
+                const stars = 1 + (allCookies ? 1 : 0) + (noCatch ? 1 : 0);
+                const key = game.levelIdx + 1;
+                const prev = save.best[key] || { score: 0, stars: 0 };
+                const isBest = score > prev.score;
+                save.best[key] = { score: Math.max(prev.score, score), stars: Math.max(prev.stars, stars) };
+                save.unlocked = Math.max(save.unlocked, Math.min(LEVELS.length, key + 1));
+                persist();
+
+                const rows = [
+                    ['🫙 Cookie jar', 500],
+                    [`🍪 Cookies ${game.cookies}/${game.totalCookies}`, game.cookies * 100],
+                ];
+                if (game.milk) rows.push([`🥛 Milk x${game.milk}`, game.milk * 150]);
+                rows.push([`⏱️ Time ${fmtTime(t)}`, timeBonus]);
+                if (noCatch) rows.push(['🙌 Never caught', 500]);
+                $('winStats').innerHTML = rows.map(([a, b]) => `<div><span>${a}</span><span>+${b}</span></div>`).join('') +
+                    (ghost ? `<div class="badge"><span>👻 GHOST! Nobody saw you</span><span>+1000</span></div>` : '') +
+                    `<div class="total"><span>Score</span><span id="winScore">0</span></div>`;
+                $('winBest').innerHTML = isBest && prev.score > 0 ? '<span class="newbest">🏆 New best score!</span>' : '';
+                $('winTitle').textContent = game.levelIdx === LEVELS.length - 1 ? 'Cookie Master! 👑' : 'Sweet Success!';
+                $('btnWinNext').classList.toggle('hidden', game.levelIdx >= LEVELS.length - 1);
+                const starEls = $('winStars').children;
+                [...starEls].forEach(s => s.classList.remove('on'));
+                setHud(false);
+                show('scrWin');
+                for (let i = 0; i < stars; i++) setTimeout(() => { starEls[i].classList.add('on'); Snd.tone(784 + i * 200, .25, { type: 'triangle', vol: .2 }); }, 350 + i * 380);
+                const el = $('winScore'), t0 = performance.now();
+                (function count() {
+                    const k = Math.min(1, (performance.now() - t0) / 1100);
+                    el.textContent = Math.round(score * (1 - Math.pow(1 - k, 3))).toLocaleString();
+                    if (k < 1) requestAnimationFrame(count);
+                })();
+            }
+
+            // =====================================================================
+            //  Update loop
+            // =====================================================================
+            let heartT = 0;
+            function update(dt) {
+                if (!map) return;
+                if (game.mode === 'play') {
+                    game.time += dt;
+                    updatePlayer(dt);
+                }
+                if (game.mode === 'play' || game.mode === 'caught') {
+                    for (const P of parents) updateParent(P, dt);
+                    if (dog) updateDog(dt);
+                }
+                if (game.mode === 'caught') {
+                    game.modeT += dt;
+                    if (game.modeT > 2.5) afterCaught();
+                }
+                if (game.mode === 'win') game.modeT += dt;
+                updateFx(dt);
+
+                // freeze banner
+                game.freezeT = Math.max(0, game.freezeT - dt);
+                const listening = parents.some(P => P.state === 'listen');
+                $('freeze').classList.toggle('show', game.mode === 'play' && listening && game.freezeT > 0);
+
+                // tension music + heartbeat
+                const maxSus = parents.reduce((m, P) => Math.max(m, P.sus), 0);
+                const tension = Math.max(maxSus, listening ? .5 : 0, parents.some(P => P.state === 'investigate' || P.state === 'search') ? .3 : 0);
+                Snd.tension = lerp(Snd.tension, tension, Math.min(1, dt * 3));
+                if (game.mode === 'play' && maxSus > .15) {
+                    heartT -= dt;
+                    if (heartT <= 0) { heartT = lerp(.85, .4, maxSus); Snd.heartbeat(); }
+                }
+
+                // camera
+                const zoomTarget = game.mode === 'caught' ? 1.35 : game.mode === 'win' ? 1.25 : 1;
+                cam.zoom = lerp(cam.zoom, zoomTarget, Math.min(1, dt * 3));
+                S = BASE_S * cam.zoom;
+                const viewW = W / S, viewH = H / S;
+                let tx = player.x, ty = player.y - .3;
+                if (game.mode === 'caught' && game.caughtBy) { tx = (player.x + game.caughtBy.x) / 2; ty = (player.y + game.caughtBy.y) / 2 - .4; }
+                tx = map.w <= viewW ? map.w / 2 : clamp(tx, viewW / 2 - .5, map.w - viewW / 2 + .5);
+                ty = map.h <= viewH - 1 ? map.h / 2 : clamp(ty, viewH / 2 - 1.2, map.h - viewH / 2 + .5);
+                cam.x = lerp(cam.x, tx, Math.min(1, dt * 5));
+                cam.y = lerp(cam.y, ty, Math.min(1, dt * 5));
+                cam.shake = Math.max(0, cam.shake - dt * 1.4);
+
+                if (game.mode === 'play') {
+                    $('hudTime').textContent = fmtTime(game.time);
+                    if (touchMode) {
+                        $('btnHide').classList.toggle('ready', !!player.nearHide && !player.hidden);
+                        $('btnHide').classList.toggle('on', player.hidden);
+                    }
+                }
+            }
+
+            // =====================================================================
+            //  Rendering
+            // =====================================================================
+            function setWorld(c, scale = 1) {
+                const sx = (Math.random() - .5) * cam.shake * 30 * DPR, sy = (Math.random() - .5) * cam.shake * 30 * DPR;
+                camOX = W / 2 - cam.x * S + sx; camOY = H / 2 - cam.y * S + sy;
+                c.setTransform(S * scale, 0, 0, S * scale, camOX * scale, camOY * scale);
+            }
+            const toScreen = (x, y) => [x * S + camOX, y * S + camOY];
+
+            function drawSprite(img, x, y, h, opts = {}) {
+                // (x, y) = feet position in tiles, h = height in tiles
+                if (!img || !img.width) return;
+                const w = h * img.width / img.height;
+                ctx.save();
+                ctx.translate(x, y - (opts.lift || 0));
+                if (opts.rot) ctx.rotate(opts.rot);
+                ctx.scale((opts.flip ? -1 : 1) * (opts.sx || 1), opts.sy || 1);
+                if (opts.alpha != null) ctx.globalAlpha = opts.alpha;
+                ctx.drawImage(img, -w / 2, -h, w, h);
+                ctx.restore();
+            }
+
+            function shadow(x, y, rw, rh = rw * .38, a = .35) {
+                ctx.fillStyle = `rgba(0,0,0,${a})`;
+                ctx.beginPath(); ctx.ellipse(x, y, rw, rh, 0, 0, 7); ctx.fill();
+            }
+
+            function render(now) {
+                ctx.setTransform(1, 0, 0, 1, 0, 0);
+                ctx.fillStyle = '#07081a';
+                ctx.fillRect(0, 0, W, H);
+                if (!map || !player) return;
+                setWorld(ctx);
+
+                // floors
+                ctx.imageSmoothingQuality = 'high';
+                ctx.drawImage(staticCvs, 0, 0, map.w, map.h);
+
+                // noise rings (on the floor)
+                for (const r of rings) {
+                    const k = r.t / r.life;
+                    ctx.strokeStyle = r.color; ctx.globalAlpha = (1 - k) * .8; ctx.lineWidth = .08;
+                    ctx.beginPath(); ctx.arc(r.x, r.y, r.r * (.15 + k * .85), 0, 7); ctx.stroke();
+                    ctx.beginPath(); ctx.arc(r.x, r.y, r.r * k * .6, 0, 7); ctx.stroke();
+                    ctx.globalAlpha = 1;
+                }
+
+                // y-sorted world objects
+                const list = [];
+                for (const s of wallStrips) list.push({ y: s.r + 1, f: () => ctx.drawImage(s.cvs, 0, s.r - WALL_UP, map.w, 1 + WALL_UP) });
+                for (const f of furn) {
+                    if (f.d.floor) continue;
+                    list.push({
+                        y: f.y + f.h, f: () => {
+                            const im = IMG[f.type], dw = f.d.dw, dh = dw * im.height / im.width;
+                            ctx.drawImage(im, f.x + f.w / 2 - dw / 2, f.y + f.h + .06 - dh, dw, dh);
+                        }
+                    });
+                }
+                for (const it of items) if (!it.taken) list.push({ y: it.sortY || it.y, f: () => drawItem(it, now) });
+                for (const P of parents) list.push({ y: P.y, f: () => drawParent(P, now) });
+                if (dog) list.push({ y: dog.y, f: () => drawDog(dog, now) });
+                list.push({ y: game.mode === 'caught' ? 1e9 : player.y, f: () => drawPlayer(now) });
+                list.sort((a, b) => a.y - b.y);
+                for (const o of list) o.f();
+
+                // particles
+                for (const q of parts) {
+                    const k = q.t / q.life;
+                    ctx.globalAlpha = 1 - k;
+                    if (q.kind === 'star') {
+                        ctx.fillStyle = q.color;
+                        ctx.save(); ctx.translate(q.x, q.y); ctx.rotate(q.rot + q.t * 6);
+                        ctx.beginPath();
+                        for (let i = 0; i < 8; i++) { const r = i % 2 ? q.size * .4 : q.size; ctx.lineTo(Math.cos(i * Math.PI / 4) * r, Math.sin(i * Math.PI / 4) * r); }
+                        ctx.fill(); ctx.restore();
+                    } else if (q.kind === 'heart') {
+                        ctx.fillStyle = '#ff6b8b';
+                        const s = q.size;
+                        ctx.beginPath();
+                        ctx.moveTo(q.x, q.y + s * .7);
+                        ctx.bezierCurveTo(q.x - s * 1.2, q.y - s * .2, q.x - s * .4, q.y - s, q.x, q.y - s * .3);
+                        ctx.bezierCurveTo(q.x + s * .4, q.y - s, q.x + s * 1.2, q.y - s * .2, q.x, q.y + s * .7);
+                        ctx.fill();
+                    } else {
+                        ctx.fillStyle = q.color;
+                        ctx.beginPath(); ctx.arc(q.x, q.y, q.size * (1 + k), 0, 7); ctx.fill();
+                    }
+                }
+                ctx.globalAlpha = 1;
+
+                renderLighting(now);
+
+                // UI in world space (drawn above the darkness)
+                ctx.setTransform(1, 0, 0, 1, 0, 0);
+                drawObjective(now);
+                for (const P of parents) drawSuspicion(P, now);
+                for (const P of parents) if (P.say) drawBubble(P.x, P.y - 2.1, P.say.text, P === game.caughtBy && game.mode === 'caught');
+                if (dog && dog.say) drawBubble(dog.x, dog.y - 1.1, dog.say.text);
+                for (const q of texts) {
+                    const k = q.t / q.life;
+                    const [sx, sy] = toScreen(q.x, q.y);
+                    const fs = q.size * S * (k < .15 ? .7 + k * 2 : 1);
+                    ctx.globalAlpha = k > .7 ? (1 - k) / .3 : 1;
+                    ctx.font = `800 ${fs}px "Baloo 2", sans-serif`;
+                    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                    ctx.lineWidth = fs * .18; ctx.strokeStyle = 'rgba(10,10,40,.85)';
+                    ctx.strokeText(q.text, sx, sy);
+                    ctx.fillStyle = q.color; ctx.fillText(q.text, sx, sy);
+                }
+                ctx.globalAlpha = 1;
+                if (player.nearHide && !player.hidden && game.mode === 'play') {
+                    const [sx, sy] = toScreen(player.x, player.y - 1.55);
+                    const b = Math.sin(now / 150) * 3 * DPR;
+                    const fs = .3 * S;
+                    ctx.font = `800 ${fs}px "Baloo 2", sans-serif`;
+                    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                    const label = touchMode ? 'HIDE?' : 'SPACE = hide';
+                    const tw = ctx.measureText(label).width + fs;
+                    ctx.fillStyle = 'rgba(47,166,90,.92)';
+                    roundRect(sx - tw / 2, sy - fs * .7 + b, tw, fs * 1.4, fs * .7); ctx.fill();
+                    ctx.fillStyle = '#fff'; ctx.fillText(label, sx, sy + b + fs * .05);
+                }
+
+                // danger vignette
+                ctx.drawImage(vignette, 0, 0);
+                const maxSus = parents.reduce((m, P) => Math.max(m, P.sus), 0);
+                if (maxSus > 0 || game.mode === 'caught') {
+                    const a = game.mode === 'caught' ? .45 : maxSus * .45 * (.75 + Math.sin(now / 90) * .25);
+                    const g = ctx.createRadialGradient(W / 2, H / 2, Math.min(W, H) * .3, W / 2, H / 2, Math.max(W, H) * .7);
+                    g.addColorStop(0, 'rgba(255,40,60,0)'); g.addColorStop(1, `rgba(255,40,60,${a})`);
+                    ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+                }
+            }
+
+            function roundRect(x, y, w, h, r) {
+                ctx.beginPath();
+                ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r);
+                ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath();
+            }
+
+            function drawItem(it, now) {
+                const t = it.t;
+                if (it.type === 'cookie') {
+                    shadow(it.x, it.y + .05, .2, .07, .3);
+                    drawSprite(IMG.cookie, it.x, it.y, .5, { lift: .12 + Math.sin(t * 3) * .06, rot: Math.sin(t * 2) * .15 });
+                    if (Math.random() < .02) sparkle(it.x + rand(-.25, .25), it.y - rand(.2, .6), 1, ['#fff3c0']);
+                } else if (it.type === 'milk') {
+                    shadow(it.x, it.y + .05, .2, .07, .3);
+                    drawSprite(IMG.milk, it.x, it.y, .62, { lift: Math.sin(t * 3) * .04 });
+                } else if (it.type === 'duck') {
+                    shadow(it.x, it.y + .03, .22, .08, .3);
+                    const squish = it.cd > .8 ? 1 + Math.sin(it.cd * 40) * .15 : 1;
+                    drawSprite(IMG.duck, it.x, it.y + .05, .45, { sy: squish, sx: 2 - squish });
+                } else if (it.type === 'jar') {
+                    const pulse = 1 + Math.sin(now / 300) * .03;
+                    drawSprite(IMG.jar, it.x, it.y, .95 * pulse, { lift: it.z });
+                    if (Math.random() < .06) sparkle(it.x + rand(-.35, .35), it.y - it.z - rand(.2, .9), 1, ['#fff3c0', '#ffffff']);
+                }
+            }
+
+            function drawPlayer(now) {
+                const p = player;
+                if (game.mode === 'caught') {
+                    shadow(p.x, p.y, .32);
+                    const wob = Math.sin(now / 60) * .03;
+                    drawSprite(IMG['kid-caught'], p.x, p.y, 1.35, { flip: p.face < 0, rot: wob });
+                    return;
+                }
+                if (game.mode === 'win') {
+                    const hop = Math.abs(Math.sin(game.modeT * 7)) * .35;
+                    shadow(p.x, p.y, .3);
+                    drawSprite(IMG.kid, p.x, p.y, 1.25, { lift: hop, flip: p.face < 0 });
+                    drawSprite(IMG.jar, p.x + .3 * p.face, p.y, .55, { lift: hop + .55 });
+                    return;
+                }
+                if (p.hidden) {
+                    const breathe = 1 + Math.sin(now / 300) * .03;
+                    drawSprite(IMG['kid-hide'], p.x, p.y + .05, .95 * breathe, { alpha: .9 });
+                    return;
+                }
+                shadow(p.x, p.y, .28);
+                const bob = p.moving ? Math.abs(Math.sin(p.phase * Math.PI)) * (p.tiptoe ? .1 : .07) : Math.sin(now / 400) * .01;
+                const tilt = p.moving ? Math.sin(p.phase * Math.PI) * .07 : 0;
+                const sq = p.tiptoe ? .92 : 1;
+                drawSprite(IMG.kid, p.x, p.y, 1.25, { lift: bob, rot: tilt, flip: p.face < 0, sy: sq, sx: 1 / Math.sqrt(sq) });
+                if (game.hasJar) drawSprite(IMG.jar, p.x - .28 * p.face, p.y, .5, { lift: bob + .45, rot: tilt });
+            }
+
+            function drawParent(P, now) {
+                shadow(P.x, P.y, .42);
+                const bob = P.moving ? Math.abs(Math.sin(P.phase)) * .06 : 0;
+                const tilt = P.moving ? Math.sin(P.phase) * .04 : Math.sin(now / 700) * .015;
+                drawSprite(IMG[P.who], P.x, P.y, 1.85, { lift: bob, rot: tilt, flip: Math.cos(P.dir) < 0 });
+            }
+
+            function drawDog(D, now) {
+                shadow(D.x, D.y, .36);
+                if (D.state === 'sleep') {
+                    const br = 1 + Math.sin(now / 500) * .025;
+                    drawSprite(IMG['dog-sleep'], D.x, D.y + .1, .72 * br, { sx: 1 / br });
+                } else {
+                    const bob = D.moving ? Math.abs(Math.sin(D.phase)) * .06 : 0;
+                    const wag = D.state === 'eat' ? Math.sin(now / 60) * .06 : 0;
+                    drawSprite(IMG.dog, D.x, D.y + .08, .9, { lift: bob, flip: Math.cos(D.dir) < 0, rot: wag });
+                }
+            }
+
+            function renderLighting(now) {
+                const lw = lightCvs.width, lh = lightCvs.height;
+                lctx.setTransform(1, 0, 0, 1, 0, 0);
+                lctx.globalCompositeOperation = 'source-over';
+                lctx.clearRect(0, 0, lw, lh);
+                lctx.fillStyle = 'rgba(4,6,24,.84)';
+                lctx.fillRect(0, 0, lw, lh);
+                lctx.globalCompositeOperation = 'destination-out';
+                lctx.setTransform(S / 2, 0, 0, S / 2, camOX / 2, camOY / 2);
+                const glow = (x, y, r, a) => {
+                    const g = lctx.createRadialGradient(x, y, 0, x, y, r);
+                    g.addColorStop(0, `rgba(0,0,0,${a})`); g.addColorStop(.55, `rgba(0,0,0,${a * .6})`); g.addColorStop(1, 'rgba(0,0,0,0)');
+                    lctx.fillStyle = g; lctx.fillRect(x - r, y - r, r * 2, r * 2);
+                };
+                const flick = 1 + Math.sin(now / 120) * .02;
+                glow(player.x, player.y - .4, 2.8, .62);
+                glow(bedRect.x + bedRect.w / 2, bedRect.y + bedRect.h / 2, 2.2, .45 * flick);
+                for (const w of windows) glow(w.x, w.y, 2.6, .5);
+                for (const it of items) {
+                    if (it.taken) continue;
+                    if (it.type === 'jar') glow(it.x, it.y - it.z - .4, 2, .75 * flick);
+                    else if (it.type === 'cookie') glow(it.x, it.y - .2, .85, .55);
+                    else if (it.type === 'milk') glow(it.x, it.y - .2, .8, .45);
+                    else if (it.type === 'duck') glow(it.x, it.y, .6, .35);
+                }
+                for (const P of parents) glow(P.x, P.y - .8, 1.5, .65);
+                if (dog) glow(dog.x, dog.y - .3, 1.1, .45);
+                for (const P of parents) {
+                    if (!P.rays.length) continue;
+                    const g = lctx.createRadialGradient(P.x, P.y, .2, P.x, P.y, P.range);
+                    g.addColorStop(0, 'rgba(0,0,0,1)'); g.addColorStop(.7, 'rgba(0,0,0,.92)'); g.addColorStop(1, 'rgba(0,0,0,.2)');
+                    lctx.fillStyle = g;
+                    lctx.beginPath(); lctx.moveTo(P.x, P.y);
+                    for (const [x, y] of P.rays) lctx.lineTo(x, y);
+                    lctx.closePath(); lctx.fill();
+                }
+                ctx.setTransform(1, 0, 0, 1, 0, 0);
+                ctx.drawImage(lightCvs, 0, 0, W, H);
+
+                // warm flashlight + cool moonlight tint
+                setWorld(ctx);
+                ctx.globalCompositeOperation = 'lighter';
+                for (const P of parents) {
+                    if (!P.rays.length) continue;
+                    const hot = P.sus > 0;
+                    const g = ctx.createRadialGradient(P.x, P.y, .2, P.x, P.y, P.range);
+                    g.addColorStop(0, hot ? 'rgba(255,150,120,.35)' : 'rgba(255,225,150,.3)');
+                    g.addColorStop(1, 'rgba(255,200,120,0)');
+                    ctx.fillStyle = g;
+                    ctx.beginPath(); ctx.moveTo(P.x, P.y);
+                    for (const [x, y] of P.rays) ctx.lineTo(x, y);
+                    ctx.closePath(); ctx.fill();
+                }
+                for (const w of windows) {
+                    const g = ctx.createRadialGradient(w.x, w.y, 0, w.x, w.y, 2.4);
+                    g.addColorStop(0, 'rgba(90,130,255,.18)'); g.addColorStop(1, 'rgba(90,130,255,0)');
+                    ctx.fillStyle = g; ctx.fillRect(w.x - 2.4, w.y - 2.4, 4.8, 4.8);
+                }
+                ctx.globalCompositeOperation = 'source-over';
+            }
+
+            function drawSuspicion(P, now) {
+                if (P.sus <= 0.01 && P.state !== 'listen' && P.state !== 'investigate' && P.state !== 'search') return;
+                const [sx, sy] = toScreen(P.x, P.y - 2.15);
+                const r = .3 * S;
+                const bounce = P.state === 'spot' ? Math.sin(now / 60) * 2 * DPR : 0;
+                const y = sy - (P.say ? .55 * S : 0) + bounce;
+                ctx.fillStyle = 'rgba(15,15,45,.9)';
+                ctx.beginPath(); ctx.arc(sx, y, r, 0, 7); ctx.fill();
+                if (P.sus > 0) {
+                    ctx.strokeStyle = P.sus > .7 ? '#ff4a5e' : P.sus > .35 ? '#ff9c3a' : '#ffd35a';
+                    ctx.lineWidth = r * .28; ctx.lineCap = 'round';
+                    ctx.beginPath(); ctx.arc(sx, y, r * .86, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * P.sus); ctx.stroke();
+                }
+                ctx.fillStyle = P.sus > .7 ? '#ff4a5e' : '#ffe08a';
+                ctx.font = `800 ${r * 1.3}px "Baloo 2", sans-serif`;
+                ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                ctx.fillText(P.state === 'listen' ? '👂' : P.sus > .7 || game.mode === 'caught' ? '!' : '?', sx, y + r * .08);
+            }
+
+            function drawBubble(x, y, text, big) {
+                const [sx, sy] = toScreen(x, y);
+                const fs = (big ? .38 : .3) * S;
+                ctx.font = `800 ${fs}px "Baloo 2", sans-serif`;
+                ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                const tw = ctx.measureText(text).width + fs * 1.1, th = fs * 1.5;
+                const by = sy - th;
+                ctx.fillStyle = big ? '#fff0f2' : 'rgba(255,255,255,.95)';
+                roundRect(sx - tw / 2, by, tw, th, th / 2); ctx.fill();
+                ctx.beginPath(); ctx.moveTo(sx - fs * .3, by + th - 1); ctx.lineTo(sx + fs * .3, by + th - 1); ctx.lineTo(sx, by + th + fs * .45); ctx.fill();
+                ctx.fillStyle = big ? '#c4123a' : '#2a2050';
+                ctx.fillText(text, sx, by + th / 2 + fs * .05);
+            }
+
+            function drawObjective(now) {
+                if (game.mode !== 'play') return;
+                const tx = game.hasJar ? bedRect.x + bedRect.w / 2 : jarItem.x;
+                const ty = game.hasJar ? bedRect.y + .2 : jarItem.y - jarItem.z - 1;
+                const [sx, sy] = toScreen(tx, ty);
+                const m = 50 * DPR;
+                const bounce = Math.sin(now / 200) * 6 * DPR;
+                if (sx > m && sx < W - m && sy > m && sy < H - m) {
+                    ctx.fillStyle = '#ffd35a'; ctx.strokeStyle = '#6b3a07'; ctx.lineWidth = 3 * DPR;
+                    const s = .22 * S, y = sy + bounce;
+                    ctx.beginPath(); ctx.moveTo(sx - s, y - s); ctx.lineTo(sx + s, y - s); ctx.lineTo(sx, y + s * .6); ctx.closePath();
+                    ctx.fill(); ctx.stroke();
+                } else {
+                    const cx = W / 2, cy = H / 2, a = Math.atan2(sy - cy, sx - cx);
+                    const ex = clamp(sx, m * 1.4, W - m * 1.4), ey = clamp(sy, m * 2.6, H - m * 1.4);
+                    ctx.save(); ctx.translate(ex, ey);
+                    ctx.fillStyle = 'rgba(15,15,45,.85)';
+                    ctx.beginPath(); ctx.arc(0, 0, 30 * DPR, 0, 7); ctx.fill();
+                    const im = game.hasJar ? IMG.bed : IMG.jar;
+                    const ih = 40 * DPR, iw = ih * im.width / im.height;
+                    ctx.drawImage(im, -iw / 2, -ih / 2, iw, ih);
+                    ctx.rotate(a);
+                    ctx.fillStyle = '#ffd35a';
+                    ctx.beginPath(); ctx.moveTo(42 * DPR + bounce * .5, 0); ctx.lineTo(30 * DPR, -10 * DPR); ctx.lineTo(30 * DPR, 10 * DPR); ctx.fill();
+                    ctx.restore();
+                }
+            }
+
+            // =====================================================================
+            //  UI glue
+            // =====================================================================
+            const SCREENS = ['scrTitle', 'scrLevels', 'scrHow', 'scrIntro', 'scrPause', 'scrWin', 'scrLose'];
+            function show(id) { SCREENS.forEach(s => $(s).classList.toggle('show', s === id)); }
+            function hideScreens() { SCREENS.forEach(s => $(s).classList.remove('show')); }
+            function setHud(on) {
+                $('hud').classList.toggle('hidden', !on);
+                $('hudObj').classList.toggle('hidden', !on);
+                $('touch').classList.toggle('hidden', !on || !touchMode);
+                $('keysHint').classList.toggle('hidden', !on || touchMode);
+                if (!on) { $('freeze').classList.remove('show'); $('busted').classList.remove('show'); }
+            }
+            function updateHud() {
+                $('hudCookies').textContent = game.cookies;
+                $('hudCookiesTotal').textContent = game.totalCookies;
+                $('hudLives').innerHTML = [0, 1, 2].map(i => `<span class="${i < game.lives ? '' : 'lost'}">❤️</span>`).join('');
+            }
+            function bumpHud(id) { const el = $(id); el.classList.remove('bump'); void el.offsetWidth; el.classList.add('bump'); }
+
+            let toastTimer = null;
+            function toast(msg, secs = 2.5) {
+                const el = $('toast');
+                el.textContent = msg; el.classList.add('show');
+                clearTimeout(toastTimer);
+                toastTimer = setTimeout(() => el.classList.remove('show'), secs * 1000);
+            }
+            function hint(key, msg) {
+                if (game.hints.has(key)) return;
+                game.hints.add(key);
+                toast(msg, 3.6);
+            }
+
+            function buildLevelGrid() {
+                const grid = $('levelGrid');
+                grid.innerHTML = '';
+                LEVELS.forEach((L, i) => {
+                    const locked = i + 1 > save.unlocked;
+                    const best = save.best[i + 1];
+                    const b = document.createElement('button');
+                    b.className = 'lvl' + (locked ? ' locked' : '');
+                    const faces = L.parents.map(p => p.who).concat(L.dog ? ['dog'] : []);
+                    b.innerHTML = `<div class="num">${i + 1}</div><div class="faces">${faces.map(f => `<img src="${ASSET_DIR}${f}.png" alt="">`).join('')}</div>
+                        <div class="nm">${L.name}</div><div class="stars">${[0, 1, 2].map(s => best && s < best.stars ? '⭐' : '<span style="opacity:.25">⭐</span>').join('')}</div>
+                        ${best ? `<div style="font-size:.85rem;opacity:.8">Best ${best.score.toLocaleString()}</div>` : ''}`;
+                    b.onclick = () => { if (locked) { Snd.tone(200, .15, { type: 'square', vol: .08 }); return; } Snd.click(); startLevel(i); };
+                    grid.appendChild(b);
+                });
+            }
+
+            function openLevels() { Snd.init(); buildLevelGrid(); show('scrLevels'); game.mode = 'menu'; setHud(false); }
+
+            let pendingPause = false;
+            function pause() {
+                if (game.mode === 'caught') { pendingPause = true; return; }
+                if (game.mode !== 'play') return;
+                game.mode = 'pause';
+                Snd.musicOn(false);
+                show('scrPause');
+            }
+            function resume() {
+                if (game.mode !== 'pause') return;
+                hideScreens(); game.mode = 'play'; Snd.init(); Snd.musicOn(true);
+            }
+
+            $('btnPlay').onclick = () => { Snd.init(); Snd.click(); if (save.unlocked <= 1 && !save.best[1]) startLevel(0); else openLevels(); };
+            $('btnHow').onclick = () => { Snd.init(); Snd.click(); show('scrHow'); };
+            $('btnHowBack').onclick = () => { Snd.click(); show(game.mode === 'menu' && map ? 'scrLevels' : 'scrTitle'); };
+            $('btnLevelsBack').onclick = () => { Snd.click(); show('scrTitle'); };
+            $('btnStart').onclick = () => { Snd.click(); beginPlay(); };
+            $('btnPause').onclick = pause;
+            $('btnResume').onclick = resume;
+            $('btnRestart').onclick = () => { Snd.click(); setHud(false); startLevel(game.levelIdx); };
+            $('btnQuit').onclick = () => { Snd.click(); openLevels(); };
+            $('btnWinNext').onclick = () => { Snd.click(); startLevel(Math.min(LEVELS.length - 1, game.levelIdx + 1)); };
+            $('btnWinRetry').onclick = () => { Snd.click(); startLevel(game.levelIdx); };
+            $('btnWinLevels').onclick = () => { Snd.click(); openLevels(); };
+            $('btnLoseRetry').onclick = () => { Snd.click(); startLevel(game.levelIdx); };
+            $('btnLoseLevels').onclick = () => { Snd.click(); openLevels(); };
+            function syncSoundBtn() { $('btnSound').textContent = Snd.muted ? '🔇' : '🔊'; }
+            $('btnSound').onclick = () => { Snd.init(); Snd.setMuted(!Snd.muted); save.muted = Snd.muted; persist(); syncSoundBtn(); };
+            syncSoundBtn();
+
+            // ---------- keyboard ----------
+            const KEYMAP = { ArrowUp: 'up', KeyW: 'up', ArrowDown: 'down', KeyS: 'down', ArrowLeft: 'left', KeyA: 'left', ArrowRight: 'right', KeyD: 'right' };
+            addEventListener('keydown', e => {
+                if (KEYMAP[e.code]) { input[KEYMAP[e.code]] = 1; e.preventDefault(); }
+                if (e.code === 'ShiftLeft' || e.code === 'ShiftRight') input.tipHeld = true;
+                if (e.repeat) return;
+                if (e.code === 'Space' || e.code === 'KeyE' || e.code === 'KeyH') { e.preventDefault(); toggleHide(); }
+                if (e.code === 'KeyT') { input.tipToggle = !input.tipToggle; $('btnTip').classList.toggle('on', input.tipToggle); }
+                if (e.code === 'Escape' || e.code === 'KeyP') { if (game.mode === 'play') pause(); else if (game.mode === 'pause') resume(); }
+                if (e.code === 'KeyM') $('btnSound').click();
+                if (e.code === 'Enter' && e.target.tagName !== 'BUTTON') {
+                    if (game.mode === 'intro') beginPlay();
+                    else if ($('scrWin').classList.contains('show')) $(game.levelIdx < LEVELS.length - 1 ? 'btnWinNext' : 'btnWinLevels').click();
+                    else if ($('scrLose').classList.contains('show')) $('btnLoseRetry').click();
+                }
+            });
+            addEventListener('keyup', e => {
+                if (KEYMAP[e.code]) input[KEYMAP[e.code]] = 0;
+                if (e.code === 'ShiftLeft' || e.code === 'ShiftRight') input.tipHeld = false;
+            });
+            addEventListener('blur', () => { input.up = input.down = input.left = input.right = 0; input.tipHeld = false; pause(); });
+            document.addEventListener('visibilitychange', () => { if (document.hidden) pause(); });
+
+            // ---------- touch ----------
+            ['gesturestart', 'gesturechange', 'gestureend'].forEach(t => document.addEventListener(t, e => e.preventDefault()));
+            document.addEventListener('dblclick', e => e.preventDefault());
+            document.addEventListener('touchmove', e => {
+                if (!e.target.closest('.panel')) e.preventDefault();
+            }, { passive: false });
+            addEventListener('touchend', () => Snd.init(), { passive: true });
+            addEventListener('orientationchange', () => setTimeout(() => { resize(); if (stickId === null) resetStick(); }, 250));
+            let touchMode = matchMedia('(pointer: coarse)').matches;
+            if (touchMode) document.body.classList.add('touch');
+            addEventListener('touchstart', () => {
+                if (!touchMode) { touchMode = true; document.body.classList.add('touch'); if (game.mode === 'play') setHud(true); }
+            }, { passive: true });
+
+            const stick = $('stick'), knob = $('knob'), zone = $('stickZone');
+            let stickId = null, stickOX = 0, stickOY = 0;
+            const STICK_R = 56;
+            function safeInsets() {
+                const cs = getComputedStyle($('safeProbe'));
+                return { t: parseFloat(cs.paddingTop) || 0, r: parseFloat(cs.paddingRight) || 0, b: parseFloat(cs.paddingBottom) || 0, l: parseFloat(cs.paddingLeft) || 0 };
+            }
+            function placeStick(x, y) { stick.style.left = x + 'px'; stick.style.top = y + 'px'; stick.style.bottom = 'auto'; }
+            function resetStick() {
+                stickId = null; input.sx = input.sy = 0;
+                knob.style.transform = ''; stick.classList.remove('active');
+                const sa = safeInsets();
+                stick.style.left = (Math.max(16, sa.l) + 92) + 'px';
+                stick.style.top = (innerHeight - Math.max(20, sa.b) - 100) + 'px';
+                stick.classList.remove('soft');
+            }
+            resetStick();
+            addEventListener('resize', () => { if (stickId === null) resetStick(); });
+            zone.addEventListener('pointerdown', e => {
+                e.preventDefault();
+                Snd.init();
+                stickId = e.pointerId; stickOX = e.clientX; stickOY = e.clientY;
+                placeStick(stickOX, stickOY); stick.classList.add('active');
+                zone.setPointerCapture(e.pointerId);
+            });
+            zone.addEventListener('pointermove', e => {
+                if (e.pointerId !== stickId) return;
+                let dx = e.clientX - stickOX, dy = e.clientY - stickOY;
+                const d = Math.hypot(dx, dy);
+                if (d > STICK_R) { dx *= STICK_R / d; dy *= STICK_R / d; }
+                knob.style.transform = `translate(${dx}px, ${dy}px)`;
+                input.sx = dx / STICK_R; input.sy = dy / STICK_R;
+                const mag = Math.hypot(input.sx, input.sy);
+                stick.classList.toggle('soft', mag > .18 && mag < .6);
+            });
+            ['pointerup', 'pointercancel'].forEach(t => zone.addEventListener(t, e => { if (e.pointerId === stickId) resetStick(); }));
+            $('btnHide').addEventListener('pointerdown', e => { e.preventDefault(); toggleHide(); });
+            $('btnTip').addEventListener('pointerdown', e => {
+                e.preventDefault(); input.tipToggle = !input.tipToggle;
+                $('btnTip').classList.toggle('on', input.tipToggle); Snd.click();
+            });
+
+            // =====================================================================
+            //  Main loop
+            // =====================================================================
+            let last = performance.now();
+            function frame(now) {
+                requestAnimationFrame(frame);
+                const dt = Math.min(.05, (now - last) / 1000);
+                last = now;
+                if (W !== Math.floor(innerWidth * DPR) || H !== Math.floor(innerHeight * DPR) || !lightCvs.width) resize();
+                if (!W || !H) return;
+                update(dt);
+                render(now);
+            }
+
+            loadAssets(k => { $('loadBar').style.width = (k * 100) + '%'; }).then(() => {
+                $('loading').classList.add('hidden');
+                $('btnPlay').classList.remove('hidden');
+                $('btnHow').classList.remove('hidden');
+                requestAnimationFrame(frame);
+            });
+
+            // small debugging hook (handy for testing levels from the console)
+            window.__heist = {
+                game, LEVELS, input, get dog() { return dog; }, get player() { return player; }, get parents() { return parents; }, get items() { return items; },
+                startLevel, beginPlay, findPath, isBlocked: (x, y) => isBlocked(x, y), tick: (n, dt = 1 / 60) => { for (let i = 0; i < n; i++) update(dt); },
+            };
+        })();
+    </script>
+</body>
+
+</html>

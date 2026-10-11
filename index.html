@@ -306,6 +306,9 @@
         .game-card:nth-child(14) { animation-delay: 2.15s; }
         .game-card:nth-child(15) { animation-delay: 2.3s; }
         .game-card:nth-child(16) { animation-delay: 2.45s; }
+        .game-card:nth-child(17) { animation-delay: 2.6s; }
+        .game-card:nth-child(18) { animation-delay: 2.75s; }
+        .game-card:nth-child(19) { animation-delay: 2.9s; }
 
         @keyframes cardIn {
             to {
@@ -346,6 +349,10 @@
         .game-card.patterns::before { background: linear-gradient(90deg, #2E8B57, #A8E6CF); }
         .game-card.match::before { background: linear-gradient(90deg, #FF6A88, #FFB88C); }
         .game-card.hopper::before { background: linear-gradient(90deg, #63c74d, #8fd8f2); }
+        .game-card.bakery::before { background: linear-gradient(90deg, #ff8fb8, #ffc94d); }
+        .game-card.karts::before { background: linear-gradient(90deg, #ff3d4d, #ffcb2e); }
+        .game-card.heist::before { background: linear-gradient(90deg, #2b3175, #f4a623); }
+        .game-card.tennis::before { background: linear-gradient(90deg, #1f7ae0, #c6e335); }
 
         .game-icon {
             font-size: 4rem;
@@ -381,6 +388,10 @@
         .game-card.patterns .game-title { color: #2E8B57; }
         .game-card.match .game-title { color: #FF6A88; }
         .game-card.hopper .game-title { color: #45a832; }
+        .game-card.bakery .game-title { color: #d4436f; }
+        .game-card.karts .game-title { color: #e8442e; }
+        .game-card.heist .game-title { color: #3d44a3; }
+        .game-card.tennis .game-title { color: #1a6bc4; }
 
         .game-desc {
             color: #666;
@@ -418,6 +429,10 @@
         .game-card.patterns .play-btn { background: linear-gradient(135deg, #2E8B57, #A8E6CF); }
         .game-card.match .play-btn { background: linear-gradient(135deg, #FF6A88, #FFB88C); }
         .game-card.hopper .play-btn { background: linear-gradient(135deg, #63c74d, #4aa8d8); }
+        .game-card.bakery .play-btn { background: linear-gradient(135deg, #ff8fb8, #ffc94d); }
+        .game-card.karts .play-btn { background: linear-gradient(135deg, #ff3d4d, #ff8a3d); }
+        .game-card.heist .play-btn { background: linear-gradient(135deg, #3d44a3, #f4a623); }
+        .game-card.tennis .play-btn { background: linear-gradient(135deg, #1f7ae0, #8cc63f); }
 
         .game-card:hover .play-btn {
             transform: scale(1.05);
@@ -840,6 +855,38 @@
                 <p class="game-desc">Bounce up and up on grassy platforms! Grab stars, ride balloons, and climb past the clouds!</p>
                 <span class="play-btn">Play Now</span>
                 <span class="card-deco">⭐</span>
+            </a>
+
+            <a href="kitty-bakery.html" class="game-card bakery">
+                <span class="game-icon">😻</span>
+                <h2 class="game-title">Kitty Bakery</h2>
+                <p class="game-desc">Hungry kitties order treats! Add, subtract and count to fill each plate before they nap!</p>
+                <span class="play-btn">Play Now</span>
+                <span class="card-deco">🍪</span>
+            </a>
+
+            <a href="kart-racer.html" class="game-card karts">
+                <span class="game-icon">🏎️</span>
+                <h2 class="game-title">Turbo Karts</h2>
+                <p class="game-desc">Race on 5 wild tracks! Drift, boost and zap your friends in 2-player split screen!</p>
+                <span class="play-btn">Play Now</span>
+                <span class="card-deco">🏁</span>
+            </a>
+
+            <a href="cookie-heist.html" class="game-card heist">
+                <span class="game-icon">🔦</span>
+                <h2 class="game-title">Midnight Cookie Heist</h2>
+                <p class="game-desc">Tiptoe past Mom and Dad's flashlights, hide from the puppy, and sneak the cookie jar back to bed!</p>
+                <span class="play-btn">Play Now</span>
+                <span class="card-deco">🍪</span>
+            </a>
+
+            <a href="tennis.html" class="game-card tennis">
+                <span class="game-icon">🎾</span>
+                <h2 class="game-title">Super Tennis Stars</h2>
+                <p class="game-desc">Smash the ball with WASD or the arrows! Grab power-ups for super speed, a giant ball or a mega racket. 1 or 2 players!</p>
+                <span class="play-btn">Play Now</span>
+                <span class="card-deco">🏆</span>
             </a>
         </div>
 
