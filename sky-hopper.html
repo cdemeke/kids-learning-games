@@ -262,6 +262,19 @@
             transform: translateY(-1px);
         }
 
+        #diffSeg button[data-diff="hard"].on {
+            background: linear-gradient(180deg, #ff8a5c, #e2483a);
+            box-shadow: 0 3px 0 #a8291e;
+        }
+        #diffSeg button[data-diff="extra"].on {
+            background: linear-gradient(180deg, #b48cff, #7a4fd6);
+            box-shadow: 0 3px 0 #5232a0;
+        }
+        #diffSeg button[data-diff="insane"].on {
+            background: linear-gradient(180deg, #4a4566, #1e1a33);
+            box-shadow: 0 3px 0 #0b0916;
+        }
+
         .seg.small button { font-size: .78rem; padding: 7px 4px; }
 
         .chk {
@@ -445,6 +458,9 @@
             .char-btn { max-width: 50px; height: 54px; border-width: 3px; border-radius: 14px; }
             .char-btn canvas { width: 32px; height: 32px; }
             .char-btn span { font-size: .55rem; }
+            .settings-row { display: flex; gap: 10px; }
+            .settings-row .setting { flex: 1; margin-top: 4px; }
+            .seg button { padding: 6px 6px; }
             .big-btn { font-size: 1.25rem; padding: 9px 40px; }
             .btn-row .big-btn { font-size: 1rem; padding: 8px 22px; }
             .how { font-size: .72rem; line-height: 1.35; margin-top: 8px; padding: 8px 10px; border-radius: 12px; }
@@ -499,12 +515,24 @@
                 <div class="game-sub">HOP UP, UP AND UP!</div>
                 <div class="char-row" id="charRow"></div>
 
+                <div class="settings-row">
                 <div class="setting">
                     <div class="setting-label">HOW TO STEER</div>
                     <div class="seg" id="modeSeg">
                         <button data-mode="touch">🫱 Slide</button>
                         <button data-mode="letters">⌨️ Letter Keys</button>
                     </div>
+                </div>
+
+                <div class="setting">
+                    <div class="setting-label">HOW HARD</div>
+                    <div class="seg small" id="diffSeg">
+                        <button data-diff="easy">🐣 Easy</button>
+                        <button data-diff="hard">🔥 Hard</button>
+                        <button data-diff="extra">💨 Extra</button>
+                        <button data-diff="insane">🌑 Insane</button>
+                    </div>
+                </div>
                 </div>
 
                 <div class="setting hidden" id="keySetWrap">
@@ -644,6 +672,7 @@
             const x = playX + p.x, y = sy, w = p.w, h = p.h;
 
             if (p.type === 'cloud') { drawCloudPlatform(p, sy); return; }
+            if (p.type === 'spike') { drawSpikePlatform(p, sy); return; }
 
             const pk = peakH();
             const dy = y + pk;          // dirt starts below the grass humps
@@ -705,6 +734,74 @@
 
             if (p.spring) drawSpring(x + w / 2, y, p);
             if (p.key) drawLetterBadge(p.key, x + w / 2, y + h * 0.46, Math.min(13 * S, w * 0.3), p.spring ? '#e2483a' : '#3f9142');
+        }
+
+        // Zig-zag cracks that spread across a crumbling platform.
+        function drawCracks(p, sy, k) {
+            if (!p.cracks) {
+                p.cracks = [];
+                for (let i = 0; i < 3; i++) {
+                    const pts = [];
+                    let cx = rand(0.15, 0.85), cy = 0.2;
+                    for (let j = 0; j < 4; j++) { pts.push([cx, cy]); cx += rand(-0.12, 0.12); cy += 0.22; }
+                    p.cracks.push(pts);
+                }
+            }
+            ctx.strokeStyle = 'rgba(50,30,15,.85)';
+            ctx.lineWidth = 2 * S;
+            ctx.lineCap = 'round';
+            const lines = Math.max(1, Math.round(p.cracks.length * k));
+            for (const pts of p.cracks.slice(0, lines)) {
+                const n = Math.max(2, Math.ceil(pts.length * Math.min(1, k + 0.3)));
+                ctx.beginPath();
+                pts.slice(0, n).forEach(([cx, cy], i) => {
+                    const X = playX + p.x + cx * p.w, Y = sy + cy * p.h;
+                    i ? ctx.lineTo(X, Y) : ctx.moveTo(X, Y);
+                });
+                ctx.stroke();
+            }
+        }
+
+        // Hard-mode decoy: a dark stone slab with a row of silver spikes on top.
+        function drawSpikePlatform(p, sy) {
+            const x = playX + p.x, w = p.w, h = p.h;
+            const spikeH = 12 * S;
+            const by = sy + spikeH * 0.55, bh = h - spikeH * 0.55;
+
+            ctx.fillStyle = 'rgba(0,0,0,.16)';
+            platformPath(x + 2 * S, by + 5 * S, w, bh);
+            ctx.fill();
+
+            const g = ctx.createLinearGradient(0, by, 0, by + bh);
+            g.addColorStop(0, '#7d6f8c');
+            g.addColorStop(1, '#4a3f58');
+            ctx.fillStyle = g;
+            platformPath(x, by, w, bh);
+            ctx.fill();
+            ctx.strokeStyle = '#3a3046';
+            ctx.lineWidth = 2 * S;
+            ctx.stroke();
+
+            const n = Math.max(4, Math.round(w / (13 * S)));
+            const step = (w - 8 * S) / n;
+            for (let i = 0; i < n; i++) {
+                const sx = x + 4 * S + i * step;
+                const sg = ctx.createLinearGradient(sx, 0, sx + step, 0);
+                sg.addColorStop(0, '#f4f6fa');
+                sg.addColorStop(1, '#9aa3b4');
+                ctx.fillStyle = sg;
+                ctx.beginPath();
+                ctx.moveTo(sx, by + 2 * S);
+                ctx.lineTo(sx + step / 2, sy - spikeH * 0.45);
+                ctx.lineTo(sx + step, by + 2 * S);
+                ctx.closePath();
+                ctx.fill();
+                ctx.strokeStyle = '#5b6274';
+                ctx.lineWidth = 1.3 * S;
+                ctx.stroke();
+            }
+
+            if (p.key) drawLetterBadge(p.key, x + w / 2, by + bh * 0.5, Math.min(12 * S, w * 0.28), '#8a2d3b');
         }
 
         // Bouncy clouds have to read as *platforms*, not scenery, so they get a
@@ -1141,6 +1238,8 @@
             lock: () => { beep(700, 0.08, 'triangle', 0.09, 1000); setTimeout(() => beep(1100, 0.1, 'sine', 0.07), 60); },
             miss: () => beep(190, 0.13, 'sine', 0.07, 150),
             fall: () => beep(500, 0.4, 'sawtooth', 0.09, 120),
+            crack: () => beep(160, 0.12, 'square', 0.05, 90),
+            wind: () => { beep(240, 0.9, 'sawtooth', 0.03, 520); setTimeout(() => beep(520, 0.8, 'sawtooth', 0.025, 260), 300); },
             save: () => { beep(600, 0.12, 'sine', 0.1, 900); setTimeout(() => beep(1200, 0.18, 'sine', 0.09), 120); },
             cheer: () => [0, 120, 240, 380].forEach((d, i) => setTimeout(() => beep([523, 659, 784, 1047][i], 0.22, 'triangle', 0.1), d)),
             over: () => [0, 150, 300].forEach((d, i) => setTimeout(() => beep([440, 370, 294][i], 0.28, 'sine', 0.1), d))
@@ -1150,15 +1249,29 @@
         // "Letter Keys" turns every touchable thing in the sky into a labelled
         // target: press the letter you see and the hopper steers itself there.
         // It is only ever an option — sliding still works exactly as before.
+        // Each level keeps everything from the one before it:
+        //   hard   — bigger gaps, smaller platforms, spike decoys
+        //   extra  — + platforms crack and break after 3–4 bounces, + wind gusts
+        //   insane — + the sky goes dark; you only see near the hopper
+        const DIFFS = ['easy', 'hard', 'extra', 'insane'];
+        const BEST_KEYS = { easy: 'skyHopperBest', hard: 'skyHopperBestHard', extra: 'skyHopperBestExtra', insane: 'skyHopperBestInsane' };
+        const DIFF_NAMES = { hard: '🔥 Hard', extra: '💨 Extra', insane: '🌑 Insane' };
+
         const SET = {
             mode: localStorage.getItem('skyHopperMode') === 'letters' ? 'letters' : 'touch',
             keys: ['home', 'alpha', 'num'].includes(localStorage.getItem('skyHopperKeys') || '') ? localStorage.getItem('skyHopperKeys') : 'home',
             osk: localStorage.getItem('skyHopperOSK') !== null
                 ? localStorage.getItem('skyHopperOSK') === '1'
-                : !window.matchMedia('(pointer: fine)').matches   // tablets get the pad by default
+                : !window.matchMedia('(pointer: fine)').matches,  // tablets get the pad by default
+            diff: DIFFS.includes(localStorage.getItem('skyHopperDiff')) ? localStorage.getItem('skyHopperDiff') : 'easy'
         };
 
         function letterMode() { return SET.mode === 'letters'; }
+        function diffLevel() { return DIFFS.indexOf(SET.diff); }
+        function hardMode() { return diffLevel() >= 1; }
+        function extraMode() { return diffLevel() >= 2; }
+        function insaneMode() { return diffLevel() >= 3; }
+        function bestKey() { return BEST_KEYS[SET.diff]; }
 
         const KEY_POOLS = {
             home: 'ASDFGHJKL'.split(''),
@@ -1219,9 +1332,12 @@
         let platforms = [], stars = [], balloons = [], particles = [], floaters = [], clouds = [], decor = [];
         let camY = 0, nextSpawnY = 0, startY = 0;
         let heightM = 0, bestHeightM = 0, starCount = 0, hearts = 3;
-        let bestScore = +(localStorage.getItem('skyHopperBest') || 0);
+        let bestScore = +(localStorage.getItem(bestKey()) || 0);
         let lastZoneIdx = 0, milestoneNext = 100;
         let shakeT = 0;
+        // wind: calm → warn (arrow shows) → blow → calm …
+        const wind = { phase: 'calm', t: 6, dir: 1, power: 0 };
+        const CRUMBLE_T = 0.3;   // seconds a platform hangs on after its last bounce
 
         const GRAV = 0.60;
         const HOP = -15.4;
@@ -1241,18 +1357,27 @@
             for (let i = 0; i < m; i++) p.blades.push({ x: rand(0.08, 0.92), y: rand(0, 1), r: rand(1.4, 2.6) });
         }
 
+        // How far up the difficulty ramp we are, 0 → 1. Hard mode starts the
+        // ramp right away and tops out sooner.
+        function rampDiff() {
+            return hardMode()
+                ? Math.max(0, Math.min(1, heightM / 450))
+                : Math.max(0, Math.min(1, (heightM - 60) / 700));
+        }
+
         function addPlatform(y, forceType) {
-            const diff = Math.max(0, Math.min(1, (heightM - 60) / 700));
-            let w = (128 - 34 * diff + rand(-10, 12)) * S;
-            w = Math.max(76 * S, Math.min(w, playW * 0.55));
+            const diff = rampDiff();
+            const hard = hardMode();
+            let w = (hard ? 96 - 36 * diff + rand(-8, 10) : 128 - 34 * diff + rand(-10, 12)) * S;
+            w = Math.max((hard ? 56 : 76) * S, Math.min(w, playW * 0.55));
             const h = 30 * S;
             const x = rand(6 * S, playW - w - 6 * S);
 
             let type = forceType || 'grass';
             if (!forceType) {
                 const r = Math.random();
-                if (heightM > 300 && r < 0.16) type = 'cloud';
-                else if (heightM > 120 && r < 0.38) type = 'move';
+                if (heightM > (hard ? 150 : 300) && r < (hard ? 0.22 : 0.16)) type = 'cloud';
+                else if (heightM > (hard ? 60 : 120) && r < (hard ? 0.45 : 0.38)) type = 'move';
             }
 
             const p = {
@@ -1266,7 +1391,7 @@
             makeDecor(p);
 
             // a bouncy mushroom now and then (never on clouds)
-            if (type !== 'cloud' && Math.random() < 0.09 && heightM > 40) p.spring = true;
+            if (type !== 'cloud' && Math.random() < (hard ? 0.05 : 0.09) && heightM > 40) p.spring = true;
             if (letterMode()) p.key = takeLetter(y);
 
             platforms.push(p);
@@ -1289,12 +1414,35 @@
             return p;
         }
 
+        // Hard mode only: a spiky decoy sitting off to the side of a real
+        // platform. It's always an extra, never the only way up, so every
+        // climb stays possible — you just have to pick the right one.
+        function addSpikeDecoy(real) {
+            const w = Math.max(60 * S, Math.min(rand(70, 110) * S, playW * 0.4));
+            const margin = 24 * S;
+            const left = [6 * S, real.x - margin - w];
+            const right = [real.x + real.w + margin, playW - w - 6 * S];
+            const sides = [left, right].filter(([a, b]) => b >= a);
+            if (!sides.length) return;
+            const [a, b] = pick(sides);
+            const y = real.y + rand(-34, 30) * S;
+            const p = {
+                x: rand(a, b), y, w, h: 30 * S, type: 'spike', alpha: 1, dead: false,
+                spring: false, springSquish: 0, baseX: 0
+            };
+            p.baseX = p.x;
+            if (letterMode()) p.key = takeLetter(y);
+            platforms.push(p);
+        }
+
         function generateUp() {
             while (nextSpawnY > camY - H * 0.9) {
-                const diff = Math.max(0, Math.min(1, (heightM - 60) / 700));
-                const gap = (74 + 42 * diff + rand(0, 22)) * S;
+                const diff = rampDiff();
+                // jump height tops out near 197; hard-mode gaps peak just under it
+                const gap = (hardMode() ? 98 + 60 * diff + rand(0, 18) : 74 + 42 * diff + rand(0, 22)) * S;
                 nextSpawnY -= gap;
-                addPlatform(nextSpawnY);
+                const p = addPlatform(nextSpawnY);
+                if (hardMode() && heightM > 25 && p.type !== 'move' && Math.random() < 0.2 + 0.25 * diff) addSpikeDecoy(p);
             }
         }
 
@@ -1303,6 +1451,7 @@
             usedLetters.clear(); lock = null;
             heightM = 0; bestHeightM = 0; starCount = 0; hearts = 3;
             milestoneNext = 100; lastZoneIdx = 0; shakeT = 0;
+            wind.phase = 'calm'; wind.t = rand(5, 8); wind.power = 0;
 
             player.r = 22 * S;
             startY = 0;
@@ -1480,6 +1629,8 @@
             } else {
                 player.vx *= Math.pow(0.86, d);
             }
+            updateWind(d);
+            if (wind.power > 0) player.vx += wind.dir * wind.power * S * d;
             const maxV = MOVE_MAX * S;
             player.vx = Math.max(-maxV, Math.min(maxV, player.vx));
             player.x += player.vx * d;
@@ -1518,13 +1669,26 @@
                     p.x = Math.max(4 * S, Math.min(playW - p.w - 4 * S, p.x));
                 }
                 if (p.springSquish > 0) p.springSquish = Math.max(0, p.springSquish - 0.06 * d);
-                if (p.type === 'cloud' && p.dead) { p.alpha -= 0.055 * d; }
+                if (p.dead && (p.type === 'cloud' || p.type === 'spike')) { p.alpha -= 0.055 * d; }
+                if (p.crumble > 0) {
+                    p.crumble -= d / 60;
+                    if (p.crumble <= 0) {
+                        p.dead = true; p.fallV = 0;
+                        burst(playX + p.x + p.w / 2, p.y + p.h / 2, '#a07850', 12, 4);
+                    }
+                }
+                if (p.dead && p.fallV !== undefined) {
+                    p.fallV += 0.5 * S * d;
+                    p.y += p.fallV * d;
+                    p.alpha -= 0.03 * d;
+                }
 
-                if (player.vy > 0 && player.balloon <= 0 && !(p.type === 'cloud' && p.dead)) {
+                if (player.vy > 0 && player.balloon <= 0 && !p.dead) {
                     const top = p.y;
                     const pad = 8 * S;
                     if (prevBottom <= top + 2 && bottom >= top &&
                         player.x + player.r * 0.55 > p.x - pad && player.x - player.r * 0.55 < p.x + p.w + pad) {
+                        if (p.type === 'spike') { hitSpikes(p, top); continue; }
                         // bounce!
                         player.y = top - player.r;
                         if (p.spring) {
@@ -1540,6 +1704,7 @@
                         }
                         player.sy = 0.72; player.sx = 1.28;
                         if (p.type === 'cloud') { p.dead = true; }
+                        else if (extraMode() && p.type !== 'ground' && !p.crumble) crackPlatform(p);
                         if (lock && lock.obj === p) clearLock(true);
                     }
                 }
@@ -1614,6 +1779,52 @@
             if (shakeT > 0) shakeT -= d / 60;
         }
 
+        // Extra Hard and up: each platform takes 3 or 4 bounces. The cracks
+        // spread a little every time, and the last bounce breaks it.
+        function crackPlatform(p) {
+            if (!p.maxHits) { p.maxHits = Math.random() < 0.5 ? 3 : 4; p.hits = 0; }
+            p.hits++;
+            SFX.crack();
+            burst(playX + p.x + p.w / 2, p.y + p.h * 0.4, '#a07850', 3 + p.hits * 2, 2.5);
+            if (p.hits >= p.maxHits) p.crumble = CRUMBLE_T;
+        }
+
+        // Extra Hard and up: every so often a gust shoves the hopper sideways.
+        // An arrow warns which way it'll blow a moment before it starts.
+        function updateWind(d) {
+            if (!extraMode() || state !== 'playing' || heightM < 40) { wind.power = 0; return; }
+            wind.t -= d / 60;
+            const diff = rampDiff();
+            if (wind.phase === 'calm' && wind.t <= 0) {
+                wind.phase = 'warn'; wind.t = 1.3;
+                wind.dir = Math.random() < 0.5 ? -1 : 1;
+            } else if (wind.phase === 'warn' && wind.t <= 0) {
+                wind.phase = 'blow'; wind.t = rand(2, 3.2) + diff;
+                SFX.wind();
+            } else if (wind.phase === 'blow' && wind.t <= 0) {
+                wind.phase = 'calm'; wind.t = rand(4, 7.5) - diff * 2;
+            }
+            const goal = wind.phase === 'blow' ? 0.42 + 0.3 * diff : 0;
+            wind.power += (goal - wind.power) * Math.min(1, 0.06 * d);
+        }
+
+        // Ouch: lose a heart and get a weak, floppy bounce. The spikes crumble
+        // away so you can't land on them twice.
+        function hitSpikes(p, top) {
+            p.dead = true;
+            if (lock && lock.obj === p) clearLock(false);
+            hearts--;
+            updateHUD();
+            SFX.fall();
+            shakeT = 0.35;
+            burst(playX + player.x, top, '#ff5a4a', 18, 5);
+            floatText(playX + player.x, top - 20 * S, 'OUCH!', '#e2483a');
+            if (hearts <= 0) { gameOver(); return; }
+            player.y = top - player.r;
+            player.vy = HOP * S * 0.5;
+            player.sy = 0.72; player.sx = 1.28;
+        }
+
         function loseLife() {
             hearts--;
             updateHUD();
@@ -1624,7 +1835,7 @@
             // friendly rescue: pop the hopper back onto a platform on screen
             let best = null;
             for (const p of platforms) {
-                if (p.dead) continue;
+                if (p.dead || p.crumble || p.type === 'spike') continue;
                 if (p.y > camY + H * 0.25 && p.y < camY + H * 0.92) {
                     if (!best || Math.abs(p.y - (camY + H * 0.66)) < Math.abs(best.y - (camY + H * 0.66))) best = p;
                 }
@@ -1825,8 +2036,16 @@
                 if (sy < -120 || sy > H + 120) continue;
                 if (p.type === 'ground') { drawGround(p, sy); continue; }
                 ctx.save();
-                ctx.globalAlpha = p.alpha;
-                drawPlatform(p, sy);
+                ctx.globalAlpha = Math.max(0, p.alpha);
+                if (p.hits) {
+                    const breaking = p.crumble > 0 || p.dead;
+                    const k = breaking ? 1 : p.hits / p.maxHits;
+                    if (breaking) ctx.translate(rand(-1, 1) * 2.2 * S, 0);
+                    drawPlatform(p, sy);
+                    drawCracks(p, sy, k);
+                } else {
+                    drawPlatform(p, sy);
+                }
                 ctx.restore();
             }
 
@@ -1887,6 +2106,9 @@
                 ctx.restore();
             }
 
+            if (insaneMode()) drawDarkness(psy);
+            if (extraMode()) drawWind();
+
             // floating texts
             for (const f of floaters) {
                 ctx.save();
@@ -1902,6 +2124,68 @@
             }
 
             ctx.restore();
+        }
+
+        // Insane: past 60m the sky fades to black, leaving a small pool of
+        // light around the hopper. Spikes and grass look alike in the dark.
+        function drawDarkness(psy) {
+            const dark = Math.max(0, Math.min(0.94, (bestHeightM - 60) / 100));
+            if (dark <= 0 || state === 'menu') return;
+            const shrink = rampDiff();
+            const R = (190 - 45 * shrink) * S;
+            const cx = playX + player.x;
+            const g = ctx.createRadialGradient(cx, psy, R * 0.45, cx, psy, R * 1.35);
+            g.addColorStop(0, 'rgba(8,6,24,0)');
+            g.addColorStop(1, `rgba(8,6,24,${dark})`);
+            ctx.fillStyle = g;
+            ctx.fillRect(-20, -20, W + 40, H + 40);
+        }
+
+        // Wind: a blinking arrow while it's coming, streaks while it blows.
+        function drawWind() {
+            if (state !== 'playing') return;
+            if (wind.phase === 'warn' && Math.floor(tNow / 180) % 2 === 0) {
+                const cx = playX + playW / 2 + wind.dir * 40 * S, cy = H * 0.2;
+                ctx.save();
+                ctx.translate(cx, cy);
+                ctx.scale(wind.dir, 1);
+                ctx.fillStyle = 'rgba(255,255,255,.92)';
+                ctx.strokeStyle = 'rgba(60,90,140,.6)';
+                ctx.lineWidth = 3 * S;
+                ctx.beginPath();
+                ctx.moveTo(-34 * S, -9 * S); ctx.lineTo(6 * S, -9 * S); ctx.lineTo(6 * S, -22 * S);
+                ctx.lineTo(34 * S, 0); ctx.lineTo(6 * S, 22 * S); ctx.lineTo(6 * S, 9 * S);
+                ctx.lineTo(-34 * S, 9 * S); ctx.closePath();
+                ctx.stroke(); ctx.fill();
+                ctx.restore();
+                ctx.save();
+                ctx.font = `900 ${15 * S}px Nunito, sans-serif`;
+                ctx.textAlign = 'center';
+                ctx.lineWidth = 4 * S;
+                ctx.strokeStyle = 'rgba(60,90,140,.6)';
+                ctx.strokeText('WIND!', cx, cy + 40 * S);
+                ctx.fillStyle = '#fff';
+                ctx.fillText('WIND!', cx, cy + 40 * S);
+                ctx.restore();
+            }
+            if (wind.power > 0.03) {
+                if (!wind.streaks) wind.streaks = Array.from({ length: 22 }, () => ({ x: Math.random(), y: Math.random(), l: rand(30, 90), sp: rand(0.8, 1.6) }));
+                ctx.save();
+                ctx.strokeStyle = `rgba(255,255,255,${Math.min(0.75, wind.power * 1.2)})`;
+                ctx.lineWidth = 2.2 * S;
+                ctx.lineCap = 'round';
+                for (const st of wind.streaks) {
+                    st.x += wind.dir * st.sp * wind.power * 0.03;
+                    if (st.x > 1.15) { st.x = -0.15; st.y = Math.random(); }
+                    if (st.x < -0.15) { st.x = 1.15; st.y = Math.random(); }
+                    const x = st.x * W, y = st.y * H;
+                    ctx.beginPath();
+                    ctx.moveTo(x, y);
+                    ctx.lineTo(x - wind.dir * st.l * S, y);
+                    ctx.stroke();
+                }
+                ctx.restore();
+            }
         }
 
         function drawGround(p, sy) {
@@ -2084,6 +2368,8 @@
                 b.classList.toggle('on', b.dataset.mode === SET.mode));
             document.querySelectorAll('#keySeg button').forEach(b =>
                 b.classList.toggle('on', b.dataset.keys === SET.keys));
+            document.querySelectorAll('#diffSeg button').forEach(b =>
+                b.classList.toggle('on', b.dataset.diff === SET.diff));
             document.getElementById('oskChk').checked = SET.osk;
             document.getElementById('keySetWrap').classList.toggle('hidden', !letterMode());
             document.getElementById('modeToggle').classList.toggle('on', letterMode());
@@ -2099,6 +2385,14 @@
             localStorage.setItem('skyHopperMode', mode);
             relabelWorld(letterMode());
             if (letterMode()) buildKeyPad();
+            syncSettingsUI();
+        }
+
+        function setDiff(diff) {
+            if (SET.diff === diff) return;
+            SET.diff = diff;
+            localStorage.setItem('skyHopperDiff', diff);
+            bestScore = +(localStorage.getItem(bestKey()) || 0);
             syncSettingsUI();
         }
 
@@ -2152,7 +2446,10 @@
             document.getElementById('overScreen').classList.add('hidden');
             document.getElementById('hud').style.display = 'flex';
             syncKeyPad();
-            if (letterMode()) toast('PRESS A LETTER!', 'HOP TO IT');
+            if (insaneMode()) toast('INSANE MODE', 'IT GETS DARK UP THERE…');
+            else if (extraMode()) toast('EXTRA HARD', 'NO STANDING STILL!');
+            else if (hardMode()) toast('HARD MODE', 'WATCH OUT FOR SPIKES!');
+            else if (letterMode()) toast('PRESS A LETTER!', 'HOP TO IT');
             SFX.hop();
         }
 
@@ -2160,11 +2457,11 @@
             state = 'over';
             SFX.over();
             const isBest = bestHeightM > bestScore;
-            if (isBest) { bestScore = bestHeightM; localStorage.setItem('skyHopperBest', bestScore); }
+            if (isBest) { bestScore = bestHeightM; localStorage.setItem(bestKey(), bestScore); }
             document.getElementById('overTitle').textContent = pick(['Great climbing!', 'What a hopper!', 'Nice jumping!', 'So high!']);
             document.getElementById('bestBadgeWrap').innerHTML = isBest
                 ? '<div class="best-badge">🏆 NEW BEST!</div>'
-                : `<div class="best-badge">Best: ${bestScore}m</div>`;
+                : `<div class="best-badge">${hardMode() ? DIFF_NAMES[SET.diff] + ' best' : 'Best'}: ${bestScore}m</div>`;
             document.getElementById('finalHeight').textContent = bestHeightM;
             document.getElementById('finalStars').textContent = starCount;
             document.getElementById('overScreen').classList.remove('hidden');
@@ -2193,6 +2490,12 @@
             if (!b) return;
             ensureAudio(); SFX.hop();
             setMode(b.dataset.mode);
+        };
+        document.getElementById('diffSeg').onclick = e => {
+            const b = e.target.closest('button');
+            if (!b) return;
+            ensureAudio(); SFX.hop();
+            setDiff(b.dataset.diff);
         };
         document.getElementById('keySeg').onclick = e => {
             const b = e.target.closest('button');
