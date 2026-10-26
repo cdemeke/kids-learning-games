@@ -309,6 +309,7 @@
         .game-card:nth-child(17) { animation-delay: 2.6s; }
         .game-card:nth-child(18) { animation-delay: 2.75s; }
         .game-card:nth-child(19) { animation-delay: 2.9s; }
+        .game-card:nth-child(20) { animation-delay: 3.05s; }
 
         @keyframes cardIn {
             to {
@@ -353,6 +354,7 @@
         .game-card.karts::before { background: linear-gradient(90deg, #ff3d4d, #ffcb2e); }
         .game-card.heist::before { background: linear-gradient(90deg, #2b3175, #f4a623); }
         .game-card.tennis::before { background: linear-gradient(90deg, #1f7ae0, #c6e335); }
+        .game-card.street::before { background: linear-gradient(90deg, #6c5fd6, #8ef58a); }
 
         .game-icon {
             font-size: 4rem;
@@ -392,6 +394,7 @@
         .game-card.karts .game-title { color: #e8442e; }
         .game-card.heist .game-title { color: #3d44a3; }
         .game-card.tennis .game-title { color: #1a6bc4; }
+        .game-card.street .game-title { color: #5a4fc8; }
 
         .game-desc {
             color: #666;
@@ -433,6 +436,7 @@
         .game-card.karts .play-btn { background: linear-gradient(135deg, #ff3d4d, #ff8a3d); }
         .game-card.heist .play-btn { background: linear-gradient(135deg, #3d44a3, #f4a623); }
         .game-card.tennis .play-btn { background: linear-gradient(135deg, #1f7ae0, #8cc63f); }
+        .game-card.street .play-btn { background: linear-gradient(135deg, #6c5fd6, #ef6a5a); }
 
         .game-card:hover .play-btn {
             transform: scale(1.05);
@@ -887,6 +891,14 @@
                 <p class="game-desc">Smash the ball with WASD or the arrows! Grab power-ups for super speed, a giant ball or a mega racket. 1 or 2 players!</p>
                 <span class="play-btn">Play Now</span>
                 <span class="card-deco">🏆</span>
+            </a>
+
+            <a href="street-rush.html" class="game-card street">
+                <span class="game-icon">🚗</span>
+                <h2 class="game-title">Street Rush GT</h2>
+                <p class="game-desc">Comic-style city street racing! Drift, hit the nitro and race up to 4 friends in split screen with keyboards or gamepads!</p>
+                <span class="play-btn">Play Now</span>
+                <span class="card-deco">⭐</span>
             </a>
         </div>
 

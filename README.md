@@ -20,6 +20,7 @@ This repo features interactive games created by my kids Penny and Theo. Every ga
 - **Turbo Karts** - 3D kart racing on 5 tracks with drifting, boosts, zaps and 2-player split screen
 - **Midnight Cookie Heist** - Sneak past flashlights, freeze on creaky floors and bring the cookie jar back to bed
 - **Super Tennis Stars** - 1 or 2 player tennis with power-ups: super speed, giant ball, mega racket and freeze
+- **Street Rush GT: Underground** - Comic-style 3D street racing with drifting, nitro, city traffic, a garage of unlockable cars and up to 4-player split screen (keyboard or gamepads)
 
 ## How to Play
 
