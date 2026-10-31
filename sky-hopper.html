@@ -1652,6 +1652,12 @@
             player.y += player.vy * d;
             const bottom = player.y + player.r;
 
+            // Resolve falls before hidden platforms or collectibles can rescue us.
+            if (player.y - player.r > camY + H) {
+                loseLife();
+                return;
+            }
+
             // --- squash & stretch ----------------------------------------
             const tsy = player.vy < -2 ? 1.14 : (player.vy > 6 ? 0.93 : 1);
             player.sy += (tsy - player.sy) * 0.14 * d;
@@ -1683,7 +1689,7 @@
                     p.alpha -= 0.03 * d;
                 }
 
-                if (player.vy > 0 && player.balloon <= 0 && !p.dead) {
+                if (player.vy > 0 && player.balloon <= 0 && !p.dead && p.y < camY + H) {
                     const top = p.y;
                     const pad = 8 * S;
                     if (prevBottom <= top + 2 && bottom >= top &&
@@ -1764,9 +1770,6 @@
             let zi = 0;
             for (let k = 0; k < ZONES.length; k++) if (bestHeightM >= ZONES[k].at) zi = k;
             if (zi !== lastZoneIdx) { lastZoneIdx = zi; toast(ZONES[zi].name, 'NEW PLACE!'); SFX.cheer(); }
-
-            // --- falling --------------------------------------------------
-            if (player.y - player.r > camY + H + 40) loseLife();
 
             // --- particles ------------------------------------------------
             for (const pt of particles) {
