@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#f7f9f5">
+    <meta name="description" content="A little airport-code adventure. Match cities or land a pin on the map and explore 36 U.S. airports.">
+    <title>Airport Explorer • Penny & Theo’s Games</title>
+    <link rel="stylesheet" href="assets/airport-explorer/game.css">
+    <script defer src="assets/airport-explorer/airports.js"></script>
+    <script defer src="assets/airport-explorer/states.js"></script>
+    <script defer src="assets/airport-explorer/geo.js"></script>
+    <script defer src="assets/airport-explorer/trip.js"></script>
+    <script defer src="assets/airport-explorer/game.js"></script>
+</head>
+<body>
+    <header class="topbar">
+        <a class="back-link" href="index.html"><span aria-hidden="true">←</span> All games</a>
+        <a class="brand" href="airport-explorer.html"><span class="brand-icon" aria-hidden="true">✈</span> Airport Explorer</a>
+        <button id="sound-toggle" class="quiet-button" type="button" aria-pressed="false" aria-label="Turn sound on">Sound off <span aria-hidden="true">♫</span></button>
+    </header>
+    <main>
+        <section id="welcome" aria-labelledby="welcome-title">
+            <div class="hero">
+                <div class="hero-copy">
+                    <p class="eyebrow"><span class="tiny-star" aria-hidden="true">✦</span> A LITTLE GEOGRAPHY. A BIG ADVENTURE.</p>
+                    <h1 id="welcome-title">Little codes.<br>Big <span>adventures.</span></h1>
+                    <p class="intro">Three letters can take you anywhere.<br>Learn airport codes, discover new cities, and earn your wings.</p>
+                    <div class="trip-details"><span>🇺🇸 36 U.S. airports</span><span>✧ 10 stops per trip</span><span>♡ No timer, just fun</span></div>
+                </div>
+                <div class="hero-art" aria-hidden="true">
+                    <svg class="flight-path" viewBox="0 0 420 310"><path d="M25 220 C-10 70 200 30 240 125 S360 290 395 105" fill="none" stroke="#a4bcb6" stroke-width="2" stroke-dasharray="5 8"/><circle cx="25" cy="220" r="7" fill="#e9ad55"/><circle cx="395" cy="105" r="7" fill="#e9ad55"/></svg>
+                    <div class="art-cloud cloud-one"></div><div class="art-cloud cloud-two"></div>
+                    <div class="souvenir-ticket"><div class="ticket-top"><span>EXPLORER AIRLINES</span><span>✈</span></div><p>YOUR NEXT ADVENTURE</p><div class="ticket-route"><strong>IAD</strong><span>╌ ✈ ╌</span><strong>?</strong></div><div class="ticket-bottom"><span>PASSENGER<br><b>Little explorer</b></span><span>SEAT<br><b>01A</b></span><span>CLASS<br><b>Fun</b></span></div><div class="ticket-perf"></div><div class="ticket-stub"><span>THE WORLD IS WAITING</span><span class="barcode"></span></div></div>
+                    <span class="art-spark spark-one">✧</span><span class="art-spark spark-two">✦</span><span class="art-plane">✈</span>
+                </div>
+            </div>
+            <div class="choose-heading"><h2>How do you want to fly?</h2><span>Your adventure, your pace.</span></div>
+            <fieldset class="mode-options"><legend class="sr-only">Choose your game mode</legend>
+                <label class="mode-card"><input type="radio" name="mode" value="easy" checked><span class="mode-icon easy-icon" aria-hidden="true">✈</span><span class="mode-copy"><span class="mode-label">EASY <span>First-time flyer</span></span><strong>Pick the city</strong><span>One airport code. Four cities.<br>Which one is your destination?</span></span><span class="radio-mark" aria-hidden="true"></span></label>
+                <label class="mode-card"><input type="radio" name="mode" value="hard"><span class="mode-icon hard-icon" aria-hidden="true">⌖</span><span class="mode-copy"><span class="mode-label">HARD <span>Map adventurer</span></span><strong>Land on the map</strong><span>Drop a pin where the airport is.<br>Within 40 miles? Perfect landing!</span></span><span class="radio-mark" aria-hidden="true"></span></label>
+            </fieldset>
+            <div class="departure"><button id="start" class="primary-button" type="button">Let’s fly <span aria-hidden="true">↗</span></button><p id="personal-best">A new place to discover with every stop.</p></div>
+            <div class="how-it-works"><span><b>01</b> Spot the code</span><span class="step-line"></span><span><b>02</b> Make your guess</span><span class="step-line"></span><span><b>03</b> Earn your wings</span></div>
+        </section>
+
+        <section id="game" hidden aria-labelledby="game-title">
+            <div class="game-heading"><div><p class="eyebrow" id="mode-caption">FIRST-TIME FLYER</p><h1 id="game-title">Where are we flying?</h1></div><button id="new-trip" class="quiet-button" type="button">Change mode</button></div>
+            <div class="journey-bar"><div class="journey-info"><span id="round-label">STOP 1 OF 10</span><strong id="score">★ 0 / 10</strong></div><div id="progress" class="progress" role="list" aria-label="Trip progress"></div></div>
+            <div class="play-grid" id="play-grid">
+                <aside class="boarding-pass"><div class="pass-heading"><span>YOUR BOARDING PASS</span><span aria-hidden="true">✈</span></div><p class="code-label">AIRPORT CODE</p><h2 id="airport-code">IAD</h2><p id="question-hint">Which city does this airport serve?</p><div class="pass-divider"></div><div class="pass-meta"><span>EXPLORER<br><b>That’s you!</b></span><span>MISSION<br><b id="mission">Find the city</b></span></div><div class="pass-footer"><span class="barcode" aria-hidden="true"></span><span>LET CURIOSITY TAKE FLIGHT</span></div></aside>
+                <div class="answer-area">
+                    <div id="easy-panel"><div class="panel-heading"><h2>Choose your destination</h2><span>Pick one ↓</span></div><div id="choices" class="choices"></div><p class="gentle-note">Take your time. Every guess is a chance to learn.</p></div>
+                    <div id="hard-panel" hidden>
+                        <div class="panel-heading"><h2>Where would you land?</h2><span class="target-badge">⌖ Within 40 miles</span></div>
+                        <div class="map-wrap"><svg id="airport-map" viewBox="0 0 1000 600" tabindex="0" role="application" aria-label="Map of the contiguous United States. Tap to place a pin, drag to pan, or pinch to zoom. Keyboard: arrows move the map, plus and minus zoom, Enter places a pin at the center." aria-describedby="map-help"><defs><pattern id="ocean-dots" width="24" height="24" patternUnits="userSpaceOnUse"><circle cx="1" cy="1" r="1" fill="#c1dadd"/></pattern></defs><rect width="1000" height="600" fill="#eaf3f3"/><rect width="1000" height="600" fill="url(#ocean-dots)"/><g id="map-world"><g id="state-paths"></g><g id="state-labels" aria-hidden="true"></g><g id="map-markers" aria-hidden="true"></g></g><g class="map-crosshair" aria-hidden="true"><path d="M489 300h22 M500 289v22"/><circle cx="500" cy="300" r="4"/></g></svg>
+                            <div class="map-controls"><button id="zoom-in" type="button" aria-label="Zoom in">+</button><button id="zoom-out" type="button" aria-label="Zoom out">−</button><button id="reset-map" type="button" aria-label="Reset map view">⌂</button></div><span class="map-region">CONTIGUOUS UNITED STATES</span><span class="compass" aria-hidden="true">N<br>↑</span>
+                        </div>
+                        <div class="map-bottom"><p id="map-help" role="status" aria-live="polite">Tap to drop a pin. Drag to explore. Zoom in for a closer look.</p><button id="land" class="primary-button small" type="button" disabled>Land here <span aria-hidden="true">↗</span></button></div>
+                    </div>
+                </div>
+            </div>
+            <div id="feedback" class="feedback" hidden role="status" aria-live="polite" aria-atomic="true"><div class="feedback-symbol" id="feedback-symbol" aria-hidden="true">★</div><div class="feedback-copy"><h2 id="feedback-title"></h2><p id="feedback-answer"></p><p id="feedback-clue"></p></div><button id="next" class="primary-button" type="button">Next stop <span aria-hidden="true">→</span></button></div>
+        </section>
+
+        <section id="results" class="results" hidden aria-labelledby="results-title"><div class="wings" aria-hidden="true">✦ ✈ ✦</div><p class="eyebrow">ADVENTURE COMPLETE</p><h1 id="results-title">You earned your wings!</h1><p id="results-description"></p><div class="result-score"><strong id="final-score">0</strong><span id="final-total">/ 10 landings</span></div><p id="best-result"></p><h2>Your travel journal</h2><div id="journal" class="journal"></div><div class="result-actions"><button id="play-again" class="primary-button" type="button">Fly again ↗</button><button id="practice" class="secondary-button" type="button">Practice missed codes</button><button id="choose-mode" class="quiet-button" type="button">Change mode</button></div></section>
+        <noscript><p class="noscript">Turn on JavaScript to take your airport adventure.</p></noscript>
+    </main>
+    <footer class="site-footer"><span>A little curiosity goes a long way.</span><span>Penny & Theo’s learning adventures <span aria-hidden="true">✦</span></span></footer>
+</body>
+</html>

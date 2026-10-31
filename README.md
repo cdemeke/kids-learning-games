@@ -20,6 +20,7 @@ This repo features interactive games created by my kids Penny and Theo. Every ga
 - **Turbo Karts** - 3D kart racing on 5 tracks with drifting, boosts, zaps and 2-player split screen
 - **Midnight Cookie Heist** - Sneak past flashlights, freeze on creaky floors and bring the cookie jar back to bed
 - **Super Tennis Stars** - 1 or 2 player tennis with power-ups: super speed, giant ball, mega racket and freeze
+- **Airport Explorer** - Learn 36 U.S. airport codes: pick from four cities in easy mode or pin the airport within 40 miles in hard mode. Ten-stop trips, a travel journal, and practice for missed codes.
 
 ## How to Play
 
