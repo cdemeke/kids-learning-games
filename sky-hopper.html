@@ -486,7 +486,6 @@
         </a>
 
         <button class="sound-toggle" id="soundToggle" aria-label="Sound on or off">🔊</button>
-        <button class="sound-toggle mode-toggle" id="modeToggle" aria-label="Letter keys mode on or off">⌨️</button>
 
         <div class="game-hud" id="hud" style="display:none">
             <div class="hud-item">
@@ -517,14 +516,6 @@
 
                 <div class="settings-row">
                 <div class="setting">
-                    <div class="setting-label">HOW TO STEER</div>
-                    <div class="seg" id="modeSeg">
-                        <button data-mode="touch">🫱 Slide</button>
-                        <button data-mode="letters">⌨️ Letter Keys</button>
-                    </div>
-                </div>
-
-                <div class="setting">
                     <div class="setting-label">HOW HARD</div>
                     <div class="seg small" id="diffSeg">
                         <button data-diff="easy">🐣 Easy</button>
@@ -533,16 +524,6 @@
                         <button data-diff="insane">🌑 Insane</button>
                     </div>
                 </div>
-                </div>
-
-                <div class="setting hidden" id="keySetWrap">
-                    <div class="setting-label">WHICH KEYS</div>
-                    <div class="seg small" id="keySeg">
-                        <button data-keys="home">Home row</button>
-                        <button data-keys="alpha">A – Z</button>
-                        <button data-keys="num">0 – 9</button>
-                    </div>
-                    <label class="chk"><input type="checkbox" id="oskChk"> Show keys on screen</label>
                 </div>
 
                 <button class="big-btn" id="playBtn" style="margin-top:14px">PLAY</button>
@@ -1246,9 +1227,6 @@
         };
 
         // --------------------------------------------------------- settings
-        // "Letter Keys" turns every touchable thing in the sky into a labelled
-        // target: press the letter you see and the hopper steers itself there.
-        // It is only ever an option — sliding still works exactly as before.
         // Each level keeps everything from the one before it:
         //   hard   — bigger gaps, smaller platforms, spike decoys
         //   extra  — + platforms crack and break after 3–4 bounces, + wind gusts
@@ -1258,7 +1236,7 @@
         const DIFF_NAMES = { hard: '🔥 Hard', extra: '💨 Extra', insane: '🌑 Insane' };
 
         const SET = {
-            mode: localStorage.getItem('skyHopperMode') === 'letters' ? 'letters' : 'touch',
+            mode: 'touch', // Ignore previously saved letter mode; use direct steering.
             keys: ['home', 'alpha', 'num'].includes(localStorage.getItem('skyHopperKeys') || '') ? localStorage.getItem('skyHopperKeys') : 'home',
             osk: localStorage.getItem('skyHopperOSK') !== null
                 ? localStorage.getItem('skyHopperOSK') === '1'
@@ -2367,15 +2345,8 @@
 
         // --------------------------------------------------- settings panel
         function syncSettingsUI() {
-            document.querySelectorAll('#modeSeg button').forEach(b =>
-                b.classList.toggle('on', b.dataset.mode === SET.mode));
-            document.querySelectorAll('#keySeg button').forEach(b =>
-                b.classList.toggle('on', b.dataset.keys === SET.keys));
             document.querySelectorAll('#diffSeg button').forEach(b =>
                 b.classList.toggle('on', b.dataset.diff === SET.diff));
-            document.getElementById('oskChk').checked = SET.osk;
-            document.getElementById('keySetWrap').classList.toggle('hidden', !letterMode());
-            document.getElementById('modeToggle').classList.toggle('on', letterMode());
             document.getElementById('howText').innerHTML = letterMode()
                 ? 'Press the <b>letter</b> you see 🔤<br>Your hopper flies to that spot! ⬆️<br>Letters are on <b>platforms</b> and <b>balloons</b> 🎈'
                 : '<b>Hold and slide</b> your finger to move 🫱<br>You bounce all by yourself! ⬆️<br>Grab <b>stars</b> ⭐ and <b>balloons</b> 🎈';
@@ -2487,38 +2458,13 @@
             if (soundOn) { ensureAudio(); SFX.hop(); }
         };
 
-        // settings: control mode, which keys, on-screen pad
-        document.getElementById('modeSeg').onclick = e => {
-            const b = e.target.closest('button');
-            if (!b) return;
-            ensureAudio(); SFX.hop();
-            setMode(b.dataset.mode);
-        };
+        // Difficulty settings
         document.getElementById('diffSeg').onclick = e => {
             const b = e.target.closest('button');
             if (!b) return;
             ensureAudio(); SFX.hop();
             setDiff(b.dataset.diff);
         };
-        document.getElementById('keySeg').onclick = e => {
-            const b = e.target.closest('button');
-            if (!b) return;
-            ensureAudio(); SFX.hop();
-            setKeySet(b.dataset.keys);
-        };
-        document.getElementById('oskChk').onchange = e => {
-            SET.osk = e.target.checked;
-            localStorage.setItem('skyHopperOSK', SET.osk ? '1' : '0');
-            syncKeyPad();
-        };
-        // the ⌨️ button flips modes without leaving the climb
-        document.getElementById('modeToggle').onclick = () => {
-            ensureAudio();
-            setMode(letterMode() ? 'touch' : 'letters');
-            SFX.lock();
-            if (state === 'playing') toast(letterMode() ? 'LETTER KEYS ON' : 'SLIDE TO MOVE', '');
-        };
-
         // menu backdrop: a few decorative platforms behind the panel
         (function menuScene() {
             platforms = [];
