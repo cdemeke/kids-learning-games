@@ -272,6 +272,11 @@
             max-width: 900px;
         }
 
+        .game-card:focus {
+            outline: 6px solid #feca57;
+            outline-offset: 6px;
+        }
+
         /* Game card */
         .game-card {
             background: white;
@@ -725,7 +730,7 @@
                 <span class="word"><span style="animation-delay: 0.2s">L</span><span style="animation-delay: 0.25s">e</span><span style="animation-delay: 0.3s">a</span><span style="animation-delay: 0.35s">r</span><span style="animation-delay: 0.4s">n</span><span style="animation-delay: 0.45s">i</span><span style="animation-delay: 0.5s">n</span><span style="animation-delay: 0.55s">g</span></span>
                 <span class="word"><span style="animation-delay: 0.65s">G</span><span style="animation-delay: 0.7s">a</span><span style="animation-delay: 0.75s">m</span><span style="animation-delay: 0.8s">e</span><span style="animation-delay: 0.85s">s</span><span style="animation-delay: 0.9s">!</span></span>
             </h1>
-            <p class="subtitle">Pick a game and start playing!</p>
+            <p class="subtitle">↑ ↓ Choose a game · Enter to play</p>
         </header>
 
         <div class="creator-badge">
@@ -919,6 +924,7 @@
         </footer>
     </div>
 
+    <script src="desktop/launcher.js"></script>
     <script>
         // Generate random stars
         const starsContainer = document.getElementById('stars');

@@ -1,0 +1,32 @@
+{
+  "name": "penny-theo-games",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Penny and Theo's learning games",
+  "main": "desktop/main.cjs",
+  "scripts": {
+    "start": "electron .",
+    "build:mac": "electron-builder --mac dir",
+    "test": "node --test tests/*.test.js"
+  },
+  "build": {
+    "appId": "com.pennyandtheo.games",
+    "productName": "Penny and Theo Games",
+    "files": [
+      "*.html",
+      "*.svg",
+      "assets/**/*",
+      "images/**/*",
+      "desktop/**/*",
+      "package.json"
+    ],
+    "mac": {
+      "category": "public.app-category.education",
+      "identity": null
+    }
+  },
+  "devDependencies": {
+    "electron": "45.2.3",
+    "electron-builder": "26.18.0"
+  }
+}
