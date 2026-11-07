@@ -26,3 +26,33 @@ This repo features interactive games created by my kids Penny and Theo. Every ga
 ## How to Play
 
 Visit **https://cdemeke.github.io/kids-learning-games/** and pick a game!
+
+## Mac desktop app
+
+Install Node.js, then run these commands in this folder:
+
+```sh
+npm ci
+npm start
+```
+
+To create a standalone Mac app:
+
+```sh
+npm run build:mac
+```
+
+Open **Penny and Theo Games.app** inside `dist/mac-arm64` (Apple Silicon)
+ or `dist/mac` (Intel). You can copy it to Applications and keep it in the Dock.
+The app bundles the games; you do not need a web server or Terminal to run the packaged app.
+This local build is not signed/notarized for distribution to other computers.
+
+- **Up/Down** (or Left/Right): select the previous/next game, wrapping at the ends.
+- **Enter**: open the selected game. Tab navigation also works.
+- **Escape** in the desktop app: return to the game chooser (ends the current game).
+- Use **Games → Toggle Full Screen** for full screen.
+
+The chooser remembers the last opened game during the session. Individual games
+retain their own controls; mouse/touch games still require pointing during play.
+Internet is still needed for games that load external libraries or map resources.
+Desktop progress is stored separately from progress in Chrome.
