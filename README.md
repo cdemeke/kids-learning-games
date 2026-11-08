@@ -22,6 +22,9 @@ This repo features interactive games created by my kids Penny and Theo. Every ga
 - **Super Tennis Stars** - 1 or 2 player tennis with power-ups: super speed, giant ball, mega racket and freeze
 - **Street Rush GT: Underground** - Comic-style 3D street racing with drifting, nitro, city traffic, a garage of unlockable cars and up to 4-player split screen (keyboard or gamepads)
 - **Airport Explorer** - Learn 36 U.S. airport codes: pick from four cities in easy mode or pin the airport within 40 miles in hard mode. Ten-stop trips, a travel journal, and practice for missed codes.
+- **Caterpillar Munch** - Steer a caterpillar to munch letters, numbers or skip counts in order, then hatch a collectible butterfly
+- **Froggy Crossing** - Hop across roads and rivers to the lily pad with the right answer to a math or letter question
+- **Penguin Ice Slide** - Calm sliding puzzles: plan moves so the penguin stops on the fish hole, with hints, undo and endless random puzzles
 - **Froggy Feast** - So many flies and one hungry frog! Tap (or aim with the arrow keys) to slurp flies, dragonflies and golden flies. Forever Feast never stops; Quick Snack is a one-minute challenge. Eat more flies to unlock six frog friends.
 
 ## How to Play
