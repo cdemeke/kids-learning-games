@@ -25,6 +25,7 @@ This repo features interactive games created by my kids Penny and Theo. Every ga
 - **Caterpillar Munch** - Steer a caterpillar to munch letters, numbers or skip counts in order, then hatch a collectible butterfly
 - **Froggy Crossing** - Hop across roads and rivers to the lily pad with the right answer to a math or letter question
 - **Penguin Ice Slide** - Calm sliding puzzles: plan moves so the penguin stops on the fish hole, with hints, undo and endless random puzzles
+- **Froggy Feast** - So many flies and one hungry frog! Tap (or aim with the arrow keys) to slurp flies, dragonflies and golden flies. Forever Feast never stops; Quick Snack is a one-minute challenge. Eat more flies to unlock six frog friends.
 
 ## How to Play
 

@@ -320,6 +320,7 @@
         .game-card:nth-child(23) { animation-delay: 3.5s; }
         .game-card:nth-child(24) { animation-delay: 3.65s; }
         .game-card:nth-child(25) { animation-delay: 3.8s; }
+        .game-card:nth-child(26) { animation-delay: 3.95s; }
 
         @keyframes cardIn {
             to {
@@ -369,6 +370,7 @@
         .game-card.penguin::before { background: linear-gradient(90deg, #4fd1c5, #8a7bff); }
         .game-card.tennis::before { background: linear-gradient(90deg, #1f7ae0, #c6e335); }
         .game-card.street::before { background: linear-gradient(90deg, #6c5fd6, #8ef58a); }
+        .game-card.feast::before { background: linear-gradient(90deg, #4cbb3f, #ff6f9a); }
 
         .game-icon {
             font-size: 4rem;
@@ -413,6 +415,7 @@
         .game-card.penguin .game-title { color: #1f6f9a; }
         .game-card.tennis .game-title { color: #1a6bc4; }
         .game-card.street .game-title { color: #5a4fc8; }
+        .game-card.feast .game-title { color: #2f8a2b; }
 
         .game-desc {
             color: #666;
@@ -459,6 +462,7 @@
         .game-card.penguin .play-btn { background: linear-gradient(135deg, #2bb3c0, #7a6cf0); }
         .game-card.tennis .play-btn { background: linear-gradient(135deg, #1f7ae0, #8cc63f); }
         .game-card.street .play-btn { background: linear-gradient(135deg, #6c5fd6, #ef6a5a); }
+        .game-card.feast .play-btn { background: linear-gradient(135deg, #4cbb3f, #ff6f9a); }
 
         .game-card:hover .play-btn {
             transform: scale(1.05);
@@ -953,6 +957,14 @@
                 <p class="game-desc">Slide across slippery ice and stop on the rocks! Plan your moves to reach the fish hole in 30 puzzles!</p>
                 <span class="play-btn">Play Now</span>
                 <span class="card-deco">🐟</span>
+            </a>
+
+            <a href="froggy-feast.html" class="game-card feast">
+                <span class="game-icon">🐸</span>
+                <h2 class="game-title">Froggy Feast</h2>
+                <p class="game-desc">So many flies and one hungry frog! Tap the flies to slurp them up, catch golden flies, and unlock new frog friends!</p>
+                <span class="play-btn">Slurp!</span>
+                <span class="card-deco">🪰</span>
             </a>
         </div>
 
