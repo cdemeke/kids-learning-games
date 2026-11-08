@@ -8,7 +8,7 @@ test('keyboard chooser restores selection, wraps, and leaves modified keys alone
     const saved = new Map([['selected-game', 'game-1.html']]);
     const cards = Array.from({ length: 3 }, (_, index) => ({
         listeners: {},
-        getAttribute: () => `game-${index}.html`,
+        getAttribute: name => name === 'href' ? `game-${index}.html` : null,
         addEventListener(name, callback) { this.listeners[name] = callback; },
         focus() { focused = index; this.listeners.focus(); },
         scrollIntoView() {}
@@ -24,4 +24,34 @@ test('keyboard chooser restores selection, wraps, and leaves modified keys alone
     press('ArrowUp'); assert.equal(focused, 2);
     press('ArrowDown', { metaKey: true }); assert.equal(focused, 2);
     cards[2].listeners.click(); assert.equal(saved.get('selected-game'), 'game-2.html');
+});
+
+test('tennis is skipped until its configured return time, including saved selection', () => {
+    const html = fs.readFileSync('index.html', 'utf8');
+    const deadline = html.match(/href="tennis.html"[^>]*data-hidden-until="([^"]+)"[^>]* hidden/)[1];
+    const returnTime = Date.parse(deadline);
+    assert.ok(Number.isFinite(returnTime));
+    for (const now of [returnTime - 1, returnTime, returnTime + 1]) {
+        let focused, keydown;
+        const cards = ['block-stacker.html', 'tennis.html', 'street-rush.html'].map((href, index) => ({
+            hidden: href === 'tennis.html',
+            listeners: {},
+            getAttribute(name) {
+                return name === 'href' ? href : (href === 'tennis.html' ? deadline : null);
+            },
+            addEventListener(name, callback) { this.listeners[name] = callback; },
+            focus() { focused = index; this.listeners.focus(); },
+            scrollIntoView() {}
+        }));
+        vm.runInNewContext(fs.readFileSync('desktop/launcher.js', 'utf8'), {
+            Date: class extends Date { static now() { return now; } },
+            document: { querySelectorAll: () => cards, addEventListener: (_, fn) => { keydown = fn; } },
+            sessionStorage: { getItem: () => 'tennis.html' }
+        });
+        const hidden = now < returnTime;
+        assert.equal(cards[1].hidden, hidden);
+        assert.equal(focused, hidden ? 0 : 1);
+        keydown({ key: 'ArrowDown', target: { matches: () => false }, preventDefault() {} });
+        assert.equal(focused, 2);
+    }
 });

@@ -1,5 +1,9 @@
 (() => {
-    const cards = [...document.querySelectorAll('.game-card')];
+    const cards = [...document.querySelectorAll('.game-card')].filter(card => {
+        const hiddenUntil = card.getAttribute('data-hidden-until');
+        if (hiddenUntil) card.hidden = Date.now() < Date.parse(hiddenUntil);
+        return !card.hidden;
+    });
     if (!cards.length) return;
     let selected = 0;
     try {
