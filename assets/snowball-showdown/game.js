@@ -25,7 +25,7 @@
 
     // ---------------------------------------------------------------- state
     let W = 0, H = 0, DPR = 1;
-    const view = { s: 1, ox: 0, oy: 0 };
+    const view = { s: 1, ox: 0, oy: 0, rot: false };
     let screen = 'menu';          // menu | levels | edit | predict | countdown | battle | cheer | results
     let mode = 'free';            // free | challenge
     let levelIndex = 0;
@@ -295,7 +295,8 @@
     const DRAW = { kid: drawKid, penguin: drawPenguin, bear: drawBear, cannon: drawCannon, cocoa: drawCocoa };
 
     // anim: { face, moving, walk, act, ready, hurt, heal, out, born, cheer }
-    const VIS = 1.3; // critters are drawn a bit bigger than their bump circles
+    // Critters are drawn a bit bigger than their bump circles, and bigger still on small fields so phones can see them.
+    let VIS = 1.3;
     function drawUnit(c, type, team, x, y, anim, vis = 1) {
         const s = UNITS[type].r / 11 * vis;
         const col = COLORS[team];
@@ -359,9 +360,18 @@
         const short = H < 500; // phones held sideways: let the field slide under the score bar
         const top = short ? 8 : 62, gutter = W < 640 ? 8 : 16;
         const availH = Math.max(120, H - top - bar - 10);
-        view.s = Math.min((W - gutter * 2) / WORLD.w, availH / WORLD.h);
-        view.ox = (W - WORLD.w * view.s) / 2;
-        view.oy = top + (availH - WORLD.h * view.s) / 2;
+        const flat = Math.min((W - gutter * 2) / WORLD.w, availH / WORLD.h);
+        // Tall screens (phones held upright, tablets in portrait) get the field turned on its side:
+        // Blue charges down from the top and Orange up from the bottom, so the critters come out much bigger.
+        const topTall = 100, availTall = Math.max(120, H - topTall - bar - 10);
+        const tall = Math.min((W - gutter * 2) / WORLD.h, availTall / WORLD.w);
+        const rot = tall > flat * 1.12;
+        if (rot !== view.rot) { view.rot = rot; particles.length = 0; updateSideWords(); }
+        view.s = rot ? tall : flat;
+        VIS = clamp(1.3 * Math.sqrt(0.6 / view.s), 1.3, 1.65);
+        const fw = rot ? WORLD.h : WORLD.w, fh = rot ? WORLD.w : WORLD.h, t = rot ? topTall : top, ah = rot ? availTall : availH;
+        view.ox = (W - fw * view.s) / 2;
+        view.oy = t + (ah - fh * view.s) / 2;
         const q = clamp(view.s * DPR, 0.75, 2);
         if (Math.abs(q - terrainQ) > 0.05 || !terrainCanvas.width) {
             terrainQ = q;
@@ -372,7 +382,18 @@
         drawMenuArt();
     }
 
-    const toWorld = e => ({ x: (e.clientX - view.ox) / view.s, y: (e.clientY - view.oy) / view.s });
+    // The battle always happens in a wide world (Orange on the left). On tall screens the world is shown
+    // turned a quarter turn, so Orange is at the bottom; "display" coordinates are that upright picture.
+    const disp = (x, y) => view.rot ? { x: y, y: WORLD.w - x } : { x, y };
+    const toWorld = e => {
+        const dx = (e.clientX - view.ox) / view.s, dy = (e.clientY - view.oy) / view.s;
+        return view.rot ? { x: WORLD.w - dy, y: dx } : { x: dx, y: dy };
+    };
+    const side = team => view.rot ? (team ? 'at the top' : 'at the bottom') : (team ? 'on the right' : 'on the left');
+    function updateSideWords() {
+        const el = $('sidesHint');
+        if (el) el.textContent = view.rot ? '🧡 Orange at the bottom · Blue at the top 💙' : '🧡 left side · right side 💙';
+    }
     const inField = p => p.x >= 0 && p.y >= 0 && p.x <= WORLD.w && p.y <= WORLD.h;
 
     // ---------------------------------------------------------------- drawing
@@ -415,54 +436,60 @@
 
     function drawField(editing) {
         const c = ctx;
+        const fw = view.rot ? WORLD.h : WORLD.w, fh = view.rot ? WORLD.w : WORLD.h;
         c.save();
         c.shadowColor = 'rgba(29,58,99,0.25)'; c.shadowBlur = 24 * view.s; c.shadowOffsetY = 8 * view.s;
-        rrect(c, 0, 0, WORLD.w, WORLD.h, 26);
-        const g = c.createLinearGradient(0, 0, 0, WORLD.h);
+        rrect(c, 0, 0, fw, fh, 26);
+        const g = c.createLinearGradient(0, 0, 0, fh);
         g.addColorStop(0, '#fbfdff'); g.addColorStop(1, '#e3f0fb');
         c.fillStyle = g; c.fill();
         c.restore();
         c.save();
-        rrect(c, 0, 0, WORLD.w, WORLD.h, 26); c.clip();
+        rrect(c, 0, 0, fw, fh, 26); c.clip();
         if (editing) {
-            c.fillStyle = COLORS[0].tint; c.fillRect(0, 0, MID, WORLD.h);
-            c.fillStyle = COLORS[1].tint; c.fillRect(MID, 0, MID, WORLD.h);
+            c.fillStyle = COLORS[0].tint;
+            if (view.rot) c.fillRect(0, fh / 2, fw, fh / 2); else c.fillRect(0, 0, MID, fh);
+            c.fillStyle = COLORS[1].tint;
+            if (view.rot) c.fillRect(0, 0, fw, fh / 2); else c.fillRect(MID, 0, MID, fh);
         }
         for (const s of sparkles) {
             c.globalAlpha = 0.35 + 0.35 * Math.sin(time * 1.6 + s.p);
-            circle(c, s.x, s.y, s.r, '#b8d6f2');
+            const d = disp(s.x, s.y);
+            circle(c, d.x, d.y, s.r, '#b8d6f2');
         }
         c.globalAlpha = 1;
         if (editing) {
             c.setLineDash([14, 12]);
             c.lineWidth = 4; c.strokeStyle = 'rgba(29,58,99,0.18)';
-            c.beginPath(); c.moveTo(MID, 14); c.lineTo(MID, WORLD.h - 14); c.stroke();
+            c.beginPath();
+            if (view.rot) { c.moveTo(14, fh / 2); c.lineTo(fw - 14, fh / 2); } else { c.moveTo(MID, 14); c.lineTo(MID, fh - 14); }
+            c.stroke();
             c.setLineDash([]);
             c.font = '800 30px "Baloo 2", cursive';
             c.textAlign = 'center';
-            c.fillStyle = 'rgba(217,96,15,0.22)'; c.fillText('ORANGE', MID / 2, 44);
-            c.fillStyle = 'rgba(31,95,208,0.22)'; c.fillText('BLUE', MID * 1.5, 44);
+            c.fillStyle = 'rgba(217,96,15,0.22)'; c.fillText('ORANGE', view.rot ? fw / 2 : MID / 2, view.rot ? fh / 2 + 44 : 44);
+            c.fillStyle = 'rgba(31,95,208,0.22)'; c.fillText('BLUE', view.rot ? fw / 2 : MID * 1.5, 44);
         }
         c.restore();
         c.lineWidth = 5; c.strokeStyle = '#ffffff';
-        rrect(c, 0, 0, WORLD.w, WORLD.h, 26); c.stroke();
+        rrect(c, 0, 0, fw, fh, 26); c.stroke();
     }
 
     function drawShadows(units) {
         ctx.fillStyle = 'rgba(40,80,130,0.13)';
         for (const u of units) {
-            const r = UNITS[u.type].r * VIS;
-            ctx.beginPath(); ctx.ellipse(u.x, u.y + r * 0.85, r * 0.95, r * 0.36, 0, 0, TAU); ctx.fill();
+            const r = UNITS[u.type].r * VIS, d = disp(u.x, u.y);
+            ctx.beginPath(); ctx.ellipse(d.x, d.y + r * 0.85, r * 0.95, r * 0.36, 0, 0, TAU); ctx.fill();
         }
     }
 
     function drawShots(shots) {
         for (const s of shots) {
             const big = s.kind === 'lob';
-            const sh = big ? 6 * (1 - s.h / 220) : 2.6;
+            const sh = big ? 6 * (1 - s.h / 220) : 2.6, d = disp(s.x, s.y);
             ctx.fillStyle = 'rgba(40,80,130,0.16)';
-            ctx.beginPath(); ctx.ellipse(s.x, s.y + (big ? 6 : 10), sh * 1.4, sh * 0.55, 0, 0, TAU); ctx.fill();
-            circle(ctx, s.x, s.y - s.h, big ? 7 : 3.6, '#ffffff');
+            ctx.beginPath(); ctx.ellipse(d.x, d.y + (big ? 6 : 10), sh * 1.4, sh * 0.55, 0, 0, TAU); ctx.fill();
+            circle(ctx, d.x, d.y - s.h, big ? 7 : 3.6, '#ffffff');
             ctx.strokeStyle = '#b5cbe4'; ctx.lineWidth = 1; ctx.stroke();
         }
     }
@@ -492,9 +519,9 @@
 
     function drawBrush() {
         if (screen !== 'edit' || !hover.on || !hover.mouse && !stroke) return;
-        const p = hover;
-        if (!inField(p)) return;
-        const team = L.teamForX(p.x);
+        if (!inField(hover)) return;
+        const team = L.teamForX(hover.x);
+        const p = disp(hover.x, hover.y);
         ctx.save();
         if (UNITS[tool]) {
             const blocked = mode === 'challenge' && team === 1;
@@ -552,21 +579,26 @@
         if (terrainDirty) renderTerrain(terrain);
         ctx.setTransform(DPR * view.s, 0, 0, DPR * view.s, DPR * view.ox, DPR * view.oy);
         drawField(editing);
+        ctx.save();
+        if (view.rot) ctx.transform(0, -1, 1, 0, 0, WORLD.w);
         ctx.drawImage(terrainCanvas, 0, 0, WORLD.w, WORLD.h);
+        ctx.restore();
         const units = shown ? shown.units : setup.units;
-        const sorted = units.slice().sort((a, b) => (a.alive === false) - (b.alive === false) || a.y - b.y);
+        const depth = u => view.rot ? -u.x : u.y; // lower on screen = drawn in front
+        const sorted = units.slice().sort((a, b) => (a.alive === false) - (b.alive === false) || depth(a) - depth(b));
         drawShadows(sorted.filter(u => u.alive !== false));
         const frozen = [], awake = [];
         for (const u of sorted) (u.alive === false ? frozen : awake).push(u);
-        for (const u of frozen) drawUnit(ctx, u.type, u.team, u.x, u.y, unitAnim(u), VIS);
+        for (const u of frozen) { const d = disp(u.x, u.y); drawUnit(ctx, u.type, u.team, d.x, d.y, unitAnim(u), VIS); }
         for (const u of awake) {
-            drawUnit(ctx, u.type, u.team, u.x, u.y, unitAnim(u), VIS);
+            const d = disp(u.x, u.y);
+            drawUnit(ctx, u.type, u.team, d.x, d.y, unitAnim(u), VIS);
             if (shown && u.hp < u.maxHp) {
                 const r = UNITS[u.type].r * VIS, w = 10 + r;
                 ctx.fillStyle = 'rgba(29,58,99,0.25)';
-                rrect(ctx, u.x - w / 2, u.y - r - 15, w, 4, 2); ctx.fill();
+                rrect(ctx, d.x - w / 2, d.y - r - 15, w, 4, 2); ctx.fill();
                 ctx.fillStyle = u.healT > 0 ? '#ff7aa8' : COLORS[u.team].main;
-                rrect(ctx, u.x - w / 2, u.y - r - 15, w * u.hp / u.maxHp, 4, 2); ctx.fill();
+                rrect(ctx, d.x - w / 2, d.y - r - 15, w * u.hp / u.maxHp, 4, 2); ctx.fill();
             }
         }
         if (shown) drawShots(shown.shots);
@@ -578,15 +610,17 @@
 
     // ---------------------------------------------------------------- particles + events
     function spawn(p) {
+        const d = disp(p.x, p.y);
+        p.x = d.x; p.y = d.y - (p.lift || 0);
         if (particles.length > 700) particles.shift();
         particles.push(Object.assign({ vx: 0, vy: 0, g: 0, life: 0.6, max: 0.6, size: 4, color: '#fff', kind: 'puff' }, p));
         const last = particles[particles.length - 1];
         last.max = last.life;
     }
-    function puffs(x, y, n, size = 3.5, speed = 60, color = '#ffffff') {
+    function puffs(x, y, n, size = 3.5, speed = 60, color = '#ffffff', lift = 0) {
         for (let i = 0; i < n; i++) {
             const a = rand(0, TAU), v = rand(speed * 0.4, speed);
-            spawn({ x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 20, life: rand(0.3, 0.6), size: rand(size * 0.6, size), color });
+            spawn({ x, y, lift, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 20, life: rand(0.3, 0.6), size: rand(size * 0.6, size), color });
         }
     }
     function updateParticles(dt) {
@@ -605,19 +639,19 @@
         for (const e of b.events) {
             switch (e.type) {
                 case 'throw': if (!quiet) Sound.fx('throw'); break;
-                case 'boom': puffs(e.x, e.y - 10, 5, 5, 70); if (!quiet) Sound.fx('boom'); break;
-                case 'hit': puffs(e.x, e.y - 4, 4, 3.2, 70); if (!quiet) Sound.fx('hit'); break;
+                case 'boom': puffs(e.x, e.y, 5, 5, 70, undefined, 10); if (!quiet) Sound.fx('boom'); break;
+                case 'hit': puffs(e.x, e.y, 4, 3.2, 70, undefined, 4); if (!quiet) Sound.fx('hit'); break;
                 case 'bump': case 'hug': puffs(e.x, e.y, 3, 3, 50); if (!quiet) Sound.fx('bump'); break;
                 case 'poof': puffs(e.x, e.y, 3, 2.5, 30); break;
                 case 'freeze':
                     for (let i = 0; i < 6; i++) {
                         const a = i / 6 * TAU;
-                        spawn({ kind: 'star', text: '✦', x: e.x, y: e.y - 4, vx: Math.cos(a) * 80, vy: Math.sin(a) * 80, life: 0.6, size: 12, color: '#7cc8ff' });
+                        spawn({ kind: 'star', text: '✦', x: e.x, y: e.y, lift: 4, vx: Math.cos(a) * 80, vy: Math.sin(a) * 80, life: 0.6, size: 12, color: '#7cc8ff' });
                     }
                     if (!quiet) Sound.fx('freeze');
                     break;
                 case 'heal':
-                    spawn({ kind: 'heart', text: '♥', x: e.x + rand(-4, 4), y: e.y - 16, vy: -40, life: 0.8, size: 14, color: '#ff6f9a' });
+                    spawn({ kind: 'heart', text: '♥', x: e.x, y: e.y + rand(-4, 4), lift: 16, vy: -40, life: 0.8, size: 14, color: '#ff6f9a' });
                     if (!quiet) Sound.fx('heal');
                     break;
                 case 'splash':
@@ -840,7 +874,7 @@
 
     function tryPlace(x, y) {
         const team = L.teamForX(x);
-        if (mode === 'challenge' && team === 1) { warn('That side is for the Blue team. Paint on the left!'); return false; }
+        if (mode === 'challenge' && team === 1) { warn(`That side is for the Blue team. Paint ${side(0)}!`); return false; }
         if (mode === 'challenge' && UNITS[tool].cost > budgetLeft()) {
             warn(budgetLeft() > 0 ? `A ${UNITS[tool].name} costs ${UNITS[tool].cost} ❄️. You have ${budgetLeft()} left.` : 'Out of snowflakes! Erase some friends or press GO.');
             bump($('budgetPill'), 'shake');
@@ -1035,8 +1069,7 @@
         undoStack = [];
         if (!UNITS[tool] && !['wall', 'ice', 'erase'].includes(tool)) tool = 'kid';
         enterEdit();
-        const portrait = W < H && W < 700;
-        showTip(portrait ? 'Turn your device sideways for a bigger snowy field!' : 'Paint 🧡 Orange friends on the left and 💙 Blue friends on the right!', 3200);
+        showTip(`Paint 🧡 Orange friends ${side(0)} and 💙 Blue friends ${side(1)}!`, 3200);
     }
 
     function startLevel(i, keepArmy) {
@@ -1059,8 +1092,8 @@
         Sound.ensure();
         if (screen !== 'edit') return;
         const a = L.countTeam(setup.units, 0), b = L.countTeam(setup.units, 1);
-        if (!a) { warn('Paint some 🧡 Orange friends on the left side first!'); return; }
-        if (!b) { warn('The 💙 Blue team needs friends! Paint on the right, or tap 🎲 Surprise.'); return; }
+        if (!a) { warn(`Paint some 🧡 Orange friends ${side(0)} first!`); return; }
+        if (!b) { warn(`The 💙 Blue team needs friends! Paint ${side(1)}, or tap 🎲 Surprise.`); return; }
         if (mode === 'free') {
             screen = 'predict';
             $('predictCounts').innerHTML = `<span style="color:#d9600f">🧡 ${a}</span> ${L.compareSymbol(a, b)} <span style="color:#1f5fd0">${b} 💙</span>`;
@@ -1111,7 +1144,7 @@
             const col = COLORS[o.winner];
             for (const u of battle.units) {
                 if (!u.alive || u.team !== o.winner) continue;
-                for (let i = 0; i < 3; i++) spawn({ kind: 'confetti', x: u.x, y: u.y - 10, vx: rand(-80, 80), vy: rand(-260, -120), g: 380, life: rand(1, 1.8), size: rand(5, 9), spin: rand(-3, 3), color: [col.main, col.light, '#ffcd3c', '#ffffff'][i % 4] });
+                for (let i = 0; i < 3; i++) spawn({ kind: 'confetti', x: u.x, y: u.y, lift: 10, vx: rand(-80, 80), vy: rand(-260, -120), g: 380, life: rand(1, 1.8), size: rand(5, 9), spin: rand(-3, 3), color: [col.main, col.light, '#ffcd3c', '#ffffff'][i % 4] });
             }
         }
         updateHud();
