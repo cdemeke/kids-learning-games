@@ -321,6 +321,7 @@
         .game-card:nth-child(24) { animation-delay: 3.65s; }
         .game-card:nth-child(25) { animation-delay: 3.8s; }
         .game-card:nth-child(26) { animation-delay: 3.95s; }
+        .game-card:nth-child(27) { animation-delay: 4.1s; }
 
         @keyframes cardIn {
             to {
@@ -371,6 +372,7 @@
         .game-card.tennis::before { background: linear-gradient(90deg, #1f7ae0, #c6e335); }
         .game-card.street::before { background: linear-gradient(90deg, #6c5fd6, #8ef58a); }
         .game-card.feast::before { background: linear-gradient(90deg, #4cbb3f, #ff6f9a); }
+        .game-card.snowball::before { background: linear-gradient(90deg, #ff8a2a, #3d8bff); }
 
         .game-icon {
             font-size: 4rem;
@@ -416,6 +418,7 @@
         .game-card.tennis .game-title { color: #1a6bc4; }
         .game-card.street .game-title { color: #5a4fc8; }
         .game-card.feast .game-title { color: #2f8a2b; }
+        .game-card.snowball .game-title { color: #2f6fd6; }
 
         .game-desc {
             color: #666;
@@ -463,6 +466,7 @@
         .game-card.tennis .play-btn { background: linear-gradient(135deg, #1f7ae0, #8cc63f); }
         .game-card.street .play-btn { background: linear-gradient(135deg, #6c5fd6, #ef6a5a); }
         .game-card.feast .play-btn { background: linear-gradient(135deg, #4cbb3f, #ff6f9a); }
+        .game-card.snowball .play-btn { background: linear-gradient(135deg, #ff8a2a, #3d8bff); }
 
         .game-card:hover .play-btn {
             transform: scale(1.05);
@@ -965,6 +969,14 @@
                 <p class="game-desc">So many flies and one hungry frog! Tap the flies to slurp them up, catch golden flies, and unlock new frog friends!</p>
                 <span class="play-btn">Slurp!</span>
                 <span class="card-deco">🪰</span>
+            </a>
+
+            <a href="snowball-showdown.html" class="game-card snowball">
+                <span class="game-icon">⛄</span>
+                <h2 class="game-title">Snowball Showdown</h2>
+                <p class="game-desc">Paint an Orange team and a Blue team of snow kids, penguins and polar bears, then press GO and watch the snowball fight!</p>
+                <span class="play-btn">Let it snow!</span>
+                <span class="card-deco">❄️</span>
             </a>
         </div>
 
