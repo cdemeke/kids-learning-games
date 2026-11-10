@@ -5,7 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Froggy Feast - Slurp the Flies!</title>
     <meta name="description" content="So many flies, one very hungry frog! Tap the flies to slurp them up, unlock frog friends and play from sunny morning to firefly night.">
-    <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@700;800;900&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <!-- fonts load in the background so a slow connection never holds up the game -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@700;800;900&display=swap" media="print" onload="this.media='all'">
+    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@700;800;900&display=swap"></noscript>
     <script defer src="assets/froggy-feast/logic.js"></script>
     <script defer src="assets/froggy-feast/game.js"></script>
     <style>
@@ -33,9 +37,10 @@
             touch-action: none;
             user-select: none;
             -webkit-user-select: none;
+            -webkit-touch-callout: none;
         }
 
-        #pond { position: fixed; inset: 0; display: block; cursor: crosshair; }
+        #pond { position: fixed; inset: 0; width: 100%; height: 100%; display: block; cursor: crosshair; touch-action: none; }
 
         /* ---------- top bar ---------- */
         .chip {
@@ -358,6 +363,37 @@
             .overlay { padding-top: calc(max(12px, env(safe-area-inset-top)) + 54px); }
         }
 
+        /* phones and tablets: no keyboard tips */
+        @media (hover: none) and (pointer: coarse) {
+            .keys-hint { display: none; }
+        }
+
+        /* short screens, e.g. a phone turned sideways */
+        @media (max-height: 520px) {
+            .overlay { padding-top: calc(max(8px, env(safe-area-inset-top)) + 56px); padding-bottom: 8px; }
+            .card { padding: 12px 18px 12px; border-radius: 24px; width: min(640px, 100%); }
+            .logo { font-size: 2.3rem; }
+            .logo .ch { -webkit-text-stroke-width: 8px; }
+            .tagline, .how, .unlock-bar { display: none; }
+            .modes { margin-top: 10px; }
+            .mode-btn { flex-direction: row; justify-content: center; gap: 8px; padding: 8px 10px; flex-wrap: wrap; }
+            .mode-emoji { font-size: 1.4rem; }
+            .mode-name { font-size: 1.2rem; }
+            .mode-sub { width: 100%; font-size: 0.78rem; }
+            .section-title { margin: 10px 0 6px; font-size: 1rem; }
+            .frog-list { grid-template-columns: repeat(6, 1fr); }
+            .frog-btn canvas { max-width: 52px; }
+            .unlock-hint { margin-top: 6px; font-size: 0.8rem; }
+            .results-card { padding-top: 14px; }
+            .result-stars { font-size: 2.2rem; }
+            .result-stars span:nth-child(2) { font-size: 2.6rem; }
+            .result-title { font-size: 1.6rem; margin-top: 2px; }
+            .result-score { font-size: 2.8rem; margin: 4px 0 0; }
+            .actions { margin-top: 10px; }
+            .btn { padding: 8px 22px; font-size: 1.1rem; }
+            .banner { top: 34%; }
+        }
+
         @media (prefers-reduced-motion: reduce) {
             .logo .ch, .timer-pill.hurry { animation: none; }
         }
@@ -404,7 +440,7 @@
             <div id="unlockBar" class="unlock-bar"><div></div></div>
             <div class="how">
                 <span>👆 Tap a fly to slurp it!</span>
-                <span><kbd>←</kbd> <kbd>→</kbd> aim · <kbd>Space</kbd> slurp</span>
+                <span class="keys-hint"><kbd>←</kbd> <kbd>→</kbd> aim · <kbd>Space</kbd> slurp</span>
             </div>
         </div>
     </div>

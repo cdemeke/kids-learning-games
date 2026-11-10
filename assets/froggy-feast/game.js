@@ -91,7 +91,8 @@
                     musicTimer = setInterval(scheduleMusic, 120);
                 } catch { ac = null; return false; }
             }
-            if (ac.state === 'suspended') ac.resume().catch(() => {});
+            // iOS can leave audio 'interrupted' after a call or app switch
+            if (ac.state !== 'running' && !document.hidden) ac.resume().catch(() => {});
             return true;
         }
         function tone({ f = 440, f2 = 0, type = 'sine', dur = 0.15, vol = 0.3, delay = 0, attack = 0.005, dest = null, q = 0, filter = 0 }) {
@@ -136,6 +137,12 @@
             g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
             o.connect(g); g.connect(music); o.start(t); o.stop(t + dur + 0.05);
         }
+        // stop the music when the tab or app is hidden (phones keep playing otherwise)
+        document.addEventListener('visibilitychange', () => {
+            if (!ac) return;
+            if (document.hidden) ac.suspend().catch(() => {});
+            else if (on) ac.resume().catch(() => {});
+        });
         return {
             ensure,
             get on() { return on; },
@@ -171,16 +178,19 @@
     // --------------------------------------------------------------- layout
     function resize() {
         DPR = Math.min(2, window.devicePixelRatio || 1);
-        W = window.innerWidth; H = window.innerHeight;
+        // measure the canvas itself: iOS Safari can report a stale innerWidth after rotating
+        W = canvas.clientWidth || window.innerWidth;
+        H = canvas.clientHeight || window.innerHeight;
         canvas.width = Math.round(W * DPR); canvas.height = Math.round(H * DPR);
-        canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
-        S = clamp(Math.min(W / 1000, H / 720), 0.6, 1.45);
+        S = clamp(Math.min(W / 1000, H / 720), H < 520 ? 0.42 : 0.6, 1.45);
         BS = clamp(S * 1.05, 0.78, 1.45); // bugs stay big enough to tap on small screens
         waterY = H * (W < H ? 0.56 : 0.6);
         frog.x = W / 2;
         frog.y = H - 46 * S;
         buildScenery();
-        for (const b of bugs) { b.x = clamp(b.x, -40, W + 40); b.y = clamp(b.y, 0, H); }
+        // after a rotation, bring flies back where the tongue can reach them
+        const area = bugArea();
+        for (const b of bugs) { b.x = clamp(b.x, -40, W + 40); b.y = clamp(b.y, area.top, area.bottom); }
     }
 
     function bumps(baseY, amp, count, seed) {
@@ -226,7 +236,8 @@
 
     function bugArea() {
         const top = (W < 560 ? 120 : 80) + 10 * S;
-        const bottom = Math.min(H - 40 * S, waterY + (H - waterY) * 0.45);
+        // never below the frog's mouth: the tongue only reaches upward
+        const bottom = Math.min(H - 40 * S, waterY + (H - waterY) * 0.45, frog.y - 140 * S);
         return { left: 30, right: W - 30, top, bottom };
     }
     const mouth = () => ({ x: frog.x, y: frog.y - frog.hop - 98 * S * frog.sy });
@@ -1142,6 +1153,7 @@
     function frame(now) {
         const dt = Math.min(0.05, (now - last) / 1000);
         last = now;
+        if (canvas.clientWidth !== W || canvas.clientHeight !== H) resize();
         update(dt);
         render();
         requestAnimationFrame(frame);
@@ -1349,9 +1361,11 @@
     const paintSound = () => { soundBtn.textContent = Sound.on ? '🔊' : '🔇'; soundBtn.setAttribute('aria-label', Sound.on ? 'Sound on' : 'Sound off'); };
     soundBtn.addEventListener('click', () => { Sound.toggle(); paintSound(); soundBtn.blur(); });
     paintSound();
-    document.addEventListener('pointerdown', () => Sound.ensure(), { once: true });
+    // iOS only unlocks audio on some gestures, so try on each kind of tap
+    for (const type of ['pointerdown', 'touchend', 'click']) document.addEventListener(type, () => Sound.ensure(), { passive: true });
 
     window.addEventListener('resize', resize);
+    window.addEventListener('orientationchange', () => setTimeout(resize, 250));
     resize();
     for (let i = 0; i < L.targetFlyCount(1, W, H) - 2; i++) {
         const area = bugArea();
