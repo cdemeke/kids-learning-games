@@ -27,6 +27,7 @@ This repo features interactive games created by my kids Penny and Theo. Every ga
 - **Penguin Ice Slide** - Calm sliding puzzles: plan moves so the penguin stops on the fish hole, with hints, undo and endless random puzzles
 - **Froggy Feast** - So many flies and one hungry frog! Tap (or aim with the arrow keys) to slurp flies, dragonflies and golden flies. Forever Feast never stops; Quick Snack is a one-minute challenge. Eat more flies to unlock six frog friends.
 - **Snowball Showdown** - Paint two teams of snow kids, penguins, polar bears, snow cannons and cocoa pals, build snow walls and ice, then press GO and watch the snowball fight. Compare team sizes with >, < and =, guess the winner, and see how many are left (12 − 5 = 7). Snow Challenges give you a snowflake budget to beat 12 ready-made Blue teams.
+- **Unicorn Number Magic** - Two unicorns each hold a number: are they the same or different? Count stars (1–5), match stars to numbers (1–10), check sums with Plus Magic (2 + 3 = 5?) and, in the Rainbow Challenge, pick who has more. Seven right answers paint a rainbow, and rainbows bring new unicorn friends. Questions are read aloud for little ones who can't read yet.
 
 ## How to Play
 
