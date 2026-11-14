@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Ptero Dash - Dodge the Birds and Wrecking Balls!</title>
+    <meta name="description" content="Fly a little pterodactyl through the sky! Dodge flapping birds and the swinging wrecking balls of crane trucks, and grab golden eggs.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@700;800;900&display=swap" media="print" onload="this.media='all'">
+    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@700;800;900&display=swap"></noscript>
+    <script defer src="assets/ptero-dash/logic.js"></script>
+    <script defer src="assets/ptero-dash/game.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+        :root {
+            --sky: #7cc8ff;
+            --ink: #3a2a14;
+            --deep: #b4570f;
+            --gold: #ffc83d;
+            --orange: #ff9a3c;
+            --cream: #fffaf0;
+        }
+
+        [hidden] { display: none !important; }
+        html, body { height: 100%; overflow: hidden; overscroll-behavior: none; }
+
+        body {
+            font-family: 'Nunito', sans-serif;
+            background: var(--sky);
+            color: var(--ink);
+            touch-action: none;
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-touch-callout: none;
+        }
+
+        #sky { position: fixed; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; }
+
+        /* ---------- top bar ---------- */
+        .chip {
+            position: fixed;
+            top: max(12px, env(safe-area-inset-top));
+            z-index: 60;
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            height: 48px;
+            padding: 0 17px;
+            border: 3px solid #fff;
+            border-radius: 26px;
+            background: linear-gradient(180deg, #ffffff, #fff1dc);
+            color: var(--deep);
+            font: 900 0.95rem 'Nunito', sans-serif;
+            text-decoration: none;
+            box-shadow: 0 5px 0 rgba(180, 87, 15, 0.25), 0 10px 22px rgba(0, 0, 0, 0.16);
+            cursor: pointer;
+        }
+        .chip:active { transform: translateY(3px); box-shadow: 0 2px 0 rgba(180, 87, 15, 0.25); }
+        .chip:focus-visible, button:focus-visible { outline: 4px solid var(--gold); outline-offset: 3px; }
+        .home-btn { left: max(12px, env(safe-area-inset-left)); }
+        .round-btn { width: 48px; padding: 0; justify-content: center; font-size: 1.25rem; }
+        .sound-btn { right: max(12px, env(safe-area-inset-right)); }
+        .pause-btn { right: calc(max(12px, env(safe-area-inset-right)) + 58px); }
+
+        .hud {
+            position: fixed;
+            top: max(12px, env(safe-area-inset-top));
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 25;
+            display: flex;
+            gap: 8px;
+            pointer-events: none;
+            transition: opacity 0.3s, transform 0.3s;
+        }
+        .hud.hidden { opacity: 0; transform: translate(-50%, -20px); }
+        .pill {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            height: 48px;
+            padding: 0 16px;
+            border: 3px solid #fff;
+            border-radius: 26px;
+            background: linear-gradient(180deg, rgba(255,255,255,0.97), rgba(255,241,220,0.95));
+            color: var(--deep);
+            font: 800 1.4rem 'Baloo 2', cursive;
+            box-shadow: 0 5px 0 rgba(180, 87, 15, 0.22), 0 10px 22px rgba(0, 0, 0, 0.14);
+            white-space: nowrap;
+        }
+        .pill .icon { font-size: 1.15rem; }
+        .pill.bump { animation: bump 0.32s ease; }
+        @keyframes bump { 40% { transform: scale(1.18); } }
+        .hearts { letter-spacing: -2px; font-size: 1.2rem; }
+        .hearts .gone { filter: grayscale(1); opacity: 0.35; }
+        .pill.ouch { animation: ouch 0.4s ease; }
+        @keyframes ouch { 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
+
+        /* ---------- banner ---------- */
+        .banner {
+            position: fixed;
+            left: 50%;
+            top: 30%;
+            z-index: 20;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            pointer-events: none;
+            opacity: 0;
+        }
+        .banner.show { animation: banner 2.2s cubic-bezier(.2,1.4,.4,1) forwards; }
+        @keyframes banner {
+            0% { opacity: 0; transform: translate(-50%, -50%) scale(0.4) rotate(-6deg); }
+            14% { opacity: 1; transform: translate(-50%, -50%) scale(1.08) rotate(2deg); }
+            24% { transform: translate(-50%, -50%) scale(1) rotate(0); }
+            80% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+            100% { opacity: 0; transform: translate(-50%, -62%) scale(0.92); }
+        }
+        .banner-main {
+            font: 800 clamp(2.3rem, 7vw, 4.4rem)/1 'Baloo 2', cursive;
+            color: #fff;
+            -webkit-text-stroke: 10px var(--deep);
+            paint-order: stroke fill;
+            text-shadow: 0 7px 0 rgba(0,0,0,0.2);
+            white-space: nowrap;
+        }
+        .banner-sub {
+            display: inline-block;
+            margin-top: 10px;
+            padding: 5px 18px;
+            border-radius: 20px;
+            background: rgba(255,255,255,0.92);
+            color: var(--deep);
+            font: 800 clamp(1rem, 2.6vw, 1.35rem) 'Baloo 2', cursive;
+            box-shadow: 0 4px 0 rgba(0,0,0,0.12);
+        }
+
+        /* ---------- menu, pause + results ---------- */
+        .overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 50;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: calc(max(12px, env(safe-area-inset-top)) + 60px) 16px max(16px, env(safe-area-inset-bottom));
+            background: radial-gradient(ellipse at center, rgba(60, 30, 0, 0.06), rgba(60, 30, 0, 0.3));
+        }
+        .card {
+            position: relative;
+            width: min(560px, 100%);
+            max-height: 100%;
+            overflow-y: auto;
+            padding: 24px 24px 20px;
+            border: 5px solid #fff;
+            border-radius: 34px;
+            background: linear-gradient(180deg, rgba(255,252,242,0.97), rgba(255,240,218,0.97));
+            box-shadow: 0 10px 0 rgba(180, 87, 15, 0.25), 0 24px 60px rgba(0,0,0,0.28);
+            text-align: center;
+            animation: cardIn 0.5s cubic-bezier(.2,1.4,.4,1);
+            touch-action: pan-y;
+            scrollbar-width: none;
+        }
+        .card::-webkit-scrollbar { display: none; }
+        @keyframes cardIn { from { opacity: 0; transform: translateY(30px) scale(0.92); } }
+
+        .logo {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 0 14px;
+            font: 800 clamp(2.8rem, 10vw, 4.3rem)/0.95 'Baloo 2', cursive;
+        }
+        .logo .ch {
+            display: inline-block;
+            -webkit-text-stroke: 10px #fff;
+            paint-order: stroke fill;
+            text-shadow: 0 6px 0 rgba(180, 87, 15, 0.25);
+            animation: wiggle 2.4s ease-in-out infinite;
+        }
+        .logo .ptero .ch { color: #3fa04f; }
+        .logo .dash .ch { color: #ff8a2a; }
+        .logo .ch:nth-child(2n) { animation-delay: -0.6s; }
+        .logo .ch:nth-child(3n) { animation-delay: -1.2s; }
+        @keyframes wiggle { 50% { transform: translateY(-5px) rotate(-3deg); } }
+        .tagline { margin-top: 8px; font-weight: 900; font-size: 1.02rem; color: #8a5a2a; }
+
+        .section-title { margin: 16px 0 8px; font: 800 1.15rem 'Baloo 2', cursive; color: var(--deep); }
+        .ptero-list { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+        .ptero-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 6px 4px 6px;
+            border: 4px solid #fff;
+            border-radius: 20px;
+            background: #fff;
+            color: var(--ink);
+            font: 800 0.95rem 'Baloo 2', cursive;
+            box-shadow: 0 4px 0 rgba(180, 87, 15, 0.18);
+            cursor: pointer;
+        }
+        .ptero-btn canvas { width: 100%; max-width: 84px; aspect-ratio: 84 / 64; }
+        .ptero-btn[aria-pressed="true"] { border-color: var(--gold); background: #fff7d6; box-shadow: 0 4px 0 #e0a414; }
+
+        .modes { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+        .mode-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+            padding: 12px 6px 10px;
+            border: 4px solid #fff;
+            border-radius: 22px;
+            color: #fff;
+            font-family: 'Baloo 2', cursive;
+            cursor: pointer;
+            text-shadow: 0 2px 0 rgba(0,0,0,0.18);
+            transition: transform 0.15s;
+        }
+        .mode-btn:active { transform: translateY(4px); }
+        .mode-btn.easy { background: linear-gradient(180deg, #7fd68a, #3fa04f); box-shadow: 0 6px 0 #2a7a38; }
+        .mode-btn.normal { background: linear-gradient(180deg, #ffb35c, #ff8a2a); box-shadow: 0 6px 0 #c4621a; }
+        .mode-btn.fast { background: linear-gradient(180deg, #b796ff, #7c52e0); box-shadow: 0 6px 0 #5534a8; }
+        .mode-emoji { font-size: 1.7rem; line-height: 1.1; }
+        .mode-name { font-size: 1.15rem; font-weight: 800; line-height: 1.1; }
+        .mode-sub { font: 800 0.74rem 'Nunito', sans-serif; opacity: 0.95; }
+        .best-line { margin-top: 12px; font-weight: 900; color: #8a5a2a; min-height: 1.3em; }
+
+        .how {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 6px;
+            margin-top: 12px;
+            font-size: 0.84rem;
+            font-weight: 800;
+            color: #8a5a2a;
+        }
+        .how span { padding: 5px 11px; border-radius: 14px; background: rgba(255, 154, 60, 0.14); }
+        kbd {
+            display: inline-block; min-width: 22px; padding: 0 5px; border-radius: 6px;
+            background: #fff; border: 2px solid #f2d3ae; border-bottom-width: 3px;
+            font: 900 0.78rem 'Nunito', sans-serif; color: var(--deep);
+        }
+
+        .results-card { width: min(440px, 100%); }
+        .result-art { font-size: 3rem; line-height: 1; }
+        .result-title { margin-top: 6px; font: 800 2.1rem/1.1 'Baloo 2', cursive; color: var(--deep); }
+        .result-row { display: flex; justify-content: center; gap: 12px; margin-top: 12px; }
+        .stat { flex: 1; max-width: 170px; padding: 10px 8px; border-radius: 20px; background: #fff; box-shadow: 0 4px 0 rgba(180, 87, 15, 0.15); }
+        .stat b { display: block; font: 800 2.4rem/1 'Baloo 2', cursive; color: #e0622a; }
+        .stat small { font-weight: 900; color: #8a5a2a; }
+        .egg-row { margin-top: 10px; font-size: 1.35rem; letter-spacing: 1px; min-height: 1.4em; word-break: break-all; }
+        .result-best { min-height: 1.4em; margin-top: 6px; font-weight: 900; color: #8a6a4a; }
+        .result-best.new { color: #e0821a; animation: bump 0.6s ease 0.4s 2; }
+        .actions { display: flex; gap: 10px; justify-content: center; margin-top: 16px; flex-wrap: wrap; }
+        .btn {
+            padding: 12px 26px;
+            border: 4px solid #fff;
+            border-radius: 26px;
+            font: 800 1.25rem 'Baloo 2', cursive;
+            cursor: pointer;
+            transition: transform 0.15s;
+        }
+        .btn:active { transform: translateY(4px); }
+        .btn.primary { background: linear-gradient(180deg, #ffb35c, #ff8a2a); color: #fff; box-shadow: 0 6px 0 #c4621a; text-shadow: 0 2px 0 rgba(0,0,0,0.15); }
+        .btn.secondary { background: #fff; color: var(--deep); box-shadow: 0 6px 0 rgba(180, 87, 15, 0.25); }
+
+        @media (max-width: 560px) {
+            .chip { height: 42px; padding: 0 13px; font-size: 0.85rem; }
+            .round-btn { width: 42px; }
+            .pause-btn { right: calc(max(12px, env(safe-area-inset-right)) + 50px); }
+            .home-btn .label { display: none; }
+            .pill { height: 40px; padding: 0 11px; font-size: 1.15rem; }
+            .hearts { font-size: 1rem; }
+            .hud { top: calc(max(12px, env(safe-area-inset-top)) + 50px); }
+            .card { padding: 18px 14px 16px; border-radius: 28px; }
+            .mode-name { font-size: 1rem; }
+            .mode-sub { font-size: 0.68rem; }
+            .ptero-btn { font-size: 0.82rem; }
+        }
+        @media (hover: none) and (pointer: coarse) { .keys-hint { display: none; } }
+        @media (max-height: 520px) {
+            .overlay { padding-top: calc(max(8px, env(safe-area-inset-top)) + 56px); padding-bottom: 8px; }
+            .card { padding: 10px 16px 12px; border-radius: 24px; width: min(640px, 100%); }
+            .logo { font-size: 2.2rem; }
+            .logo .ch { -webkit-text-stroke-width: 7px; }
+            .tagline, .how { display: none; }
+            .section-title { margin: 6px 0 4px; font-size: 0.95rem; }
+            .ptero-btn canvas { max-width: 54px; }
+            .mode-btn { padding: 6px 6px; }
+            .mode-emoji { font-size: 1.2rem; }
+            .best-line { margin-top: 6px; }
+            .result-art { font-size: 2rem; }
+            .result-title { font-size: 1.5rem; }
+            .stat b { font-size: 1.8rem; }
+            .actions { margin-top: 10px; }
+            .btn { padding: 8px 22px; font-size: 1.1rem; }
+        }
+        @media (prefers-reduced-motion: reduce) { .logo .ch { animation: none; } }
+    </style>
+</head>
+<body>
+    <canvas id="sky" aria-label="A pterodactyl flying past birds and crane trucks"></canvas>
+
+    <a href="index.html" class="chip home-btn" aria-label="Back to all games">🏠 <span class="label">Games</span></a>
+    <button id="pauseBtn" class="chip round-btn pause-btn" type="button" aria-label="Pause" hidden>⏸</button>
+    <button id="soundBtn" class="chip round-btn sound-btn" type="button" aria-label="Sound on">🔊</button>
+
+    <div id="hud" class="hud hidden" aria-live="polite">
+        <div id="heartPill" class="pill hearts" aria-label="Hearts"></div>
+        <div id="eggPill" class="pill"><span class="icon">🥚</span><span id="eggs">0</span></div>
+        <div id="distPill" class="pill"><span id="dist">0</span>&nbsp;m</div>
+    </div>
+
+    <div id="banner" class="banner" aria-live="polite"><div id="bannerMain" class="banner-main"></div><div id="bannerSub" class="banner-sub"></div></div>
+
+    <div id="menu" class="overlay">
+        <div class="card">
+            <h1 class="logo" aria-label="Ptero Dash">
+                <span class="word ptero"><span class="ch">P</span><span class="ch">t</span><span class="ch">e</span><span class="ch">r</span><span class="ch">o</span></span>
+                <span class="word dash"><span class="ch">D</span><span class="ch">a</span><span class="ch">s</span><span class="ch">h</span></span>
+            </h1>
+            <p class="tagline">Dodge the birds and the swinging wrecking balls!</p>
+            <h2 class="section-title">Pick your pterodactyl</h2>
+            <div id="pteroList" class="ptero-list"></div>
+            <h2 class="section-title">How fast?</h2>
+            <div class="modes">
+                <button class="mode-btn easy" type="button" data-mode="easy"><span class="mode-emoji">🌤️</span><span class="mode-name">Easy Breezy</span><span class="mode-sub">5 hearts · slow</span></button>
+                <button class="mode-btn normal" type="button" data-mode="normal"><span class="mode-emoji">🦖</span><span class="mode-name">Sky Zoom</span><span class="mode-sub">3 hearts</span></button>
+                <button class="mode-btn fast" type="button" data-mode="fast"><span class="mode-emoji">⚡</span><span class="mode-name">Super Swoop</span><span class="mode-sub">3 hearts · fast!</span></button>
+            </div>
+            <p id="bestLine" class="best-line"></p>
+            <div class="how">
+                <span>👆 Drag anywhere to fly</span>
+                <span class="keys-hint"><kbd>↑</kbd> <kbd>↓</kbd> <kbd>←</kbd> <kbd>→</kbd> fly · <kbd>P</kbd> pause</span>
+                <span>🥚 Grab golden eggs</span>
+            </div>
+        </div>
+    </div>
+
+    <div id="paused" class="overlay" hidden>
+        <div class="card results-card">
+            <div class="result-art">😴</div>
+            <h2 class="result-title">Taking a rest</h2>
+            <div class="actions">
+                <button id="resumeBtn" class="btn primary" type="button">Keep flying</button>
+                <button id="quitBtn" class="btn secondary" type="button">Menu</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="results" class="overlay" hidden>
+        <div class="card results-card">
+            <div class="result-art">🦖💫</div>
+            <h2 id="resultTitle" class="result-title">Great flying!</h2>
+            <div class="result-row">
+                <div class="stat"><b id="resultDist">0</b><small>meters flown</small></div>
+                <div class="stat"><b id="resultEggs">0</b><small>golden eggs</small></div>
+            </div>
+            <p id="eggRow" class="egg-row" aria-hidden="true"></p>
+            <p id="resultBest" class="result-best"></p>
+            <div class="actions">
+                <button id="againBtn" class="btn primary" type="button">Fly again</button>
+                <button id="menuBtn" class="btn secondary" type="button">Menu</button>
+            </div>
+        </div>
+    </div>
+
+    <noscript><p style="position:fixed;inset:auto 0 40%;text-align:center;font-weight:900">Turn on JavaScript to fly the pterodactyl!</p></noscript>
+</body>
+</html>
