@@ -54,7 +54,7 @@ Open **Penny and Theo Games.app** inside `dist/mac-arm64` (Apple Silicon)
 The app bundles the games; you do not need a web server or Terminal to run the packaged app.
 This local build is not signed/notarized for distribution to other computers.
 
-- **Up/Down** (or Left/Right): select the previous/next game, wrapping at the ends.
+- **Left/Right**: select the previous/next game. **Up/Down**: jump to the game in the row above/below. Both wrap at the ends and skip games hidden by the category filter.
 - **Enter**: open the selected game. Tab navigation also works.
 - **Escape** in the desktop app: return to the game chooser (ends the current game).
 - Use **Games → Toggle Full Screen** for full screen.

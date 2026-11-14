@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Penny and Theo's Fun Learning Games!</title>
-    <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@700;800&family=Nunito:wght@600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@700;800&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -14,6 +14,7 @@
 
         html {
             overflow-x: hidden;
+            -webkit-text-size-adjust: 100%;
         }
 
         :root {
@@ -23,23 +24,24 @@
             --green: #5cd85c;
             --blue: #54a0ff;
             --purple: #a55eea;
+            --gap: 20px;
+            --side: max(20px, env(safe-area-inset-left), env(safe-area-inset-right));
         }
 
         body {
-            font-family: 'Nunito', sans-serif;
+            font-family: 'Nunito', system-ui, sans-serif;
             min-height: 100vh;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
-            overflow-x: hidden;
+            background: #7a5bd0 linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            /* No overflow on body: it would stop the sticky filter bar sticking (html clips instead) */
             position: relative;
+            -webkit-tap-highlight-color: transparent;
         }
 
-        /* Animated background shapes */
-        .bg-shapes {
+        /* ---------- Background: soft floating bubbles and twinkly stars ---------- */
+        .bg-shapes,
+        .stars {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            inset: 0;
             pointer-events: none;
             overflow: hidden;
             z-index: 0;
@@ -48,75 +50,20 @@
         .shape {
             position: absolute;
             border-radius: 50%;
-            opacity: 0.15;
-            animation: float 20s infinite ease-in-out;
+            opacity: 0.12;
         }
 
-        .shape:nth-child(1) {
-            width: 300px;
-            height: 300px;
-            background: var(--yellow);
-            top: -100px;
-            left: -100px;
-            animation-delay: 0s;
-        }
-
-        .shape:nth-child(2) {
-            width: 200px;
-            height: 200px;
-            background: var(--pink);
-            top: 50%;
-            right: -50px;
-            animation-delay: -5s;
-            animation-duration: 25s;
-        }
-
-        .shape:nth-child(3) {
-            width: 150px;
-            height: 150px;
-            background: var(--green);
-            bottom: 10%;
-            left: 10%;
-            animation-delay: -10s;
-            animation-duration: 18s;
-        }
-
-        .shape:nth-child(4) {
-            width: 250px;
-            height: 250px;
-            background: var(--blue);
-            top: 30%;
-            left: 50%;
-            animation-delay: -7s;
-            animation-duration: 22s;
-        }
-
-        .shape:nth-child(5) {
-            width: 180px;
-            height: 180px;
-            background: var(--orange);
-            bottom: -50px;
-            right: 20%;
-            animation-delay: -3s;
-            animation-duration: 28s;
-        }
+        .shape:nth-child(1) { width: 300px; height: 300px; background: var(--yellow); top: -100px; left: -100px; }
+        .shape:nth-child(2) { width: 200px; height: 200px; background: var(--pink); top: 50%; right: -50px; animation-delay: -5s; animation-duration: 28s; }
+        .shape:nth-child(3) { width: 150px; height: 150px; background: var(--green); bottom: 10%; left: 10%; animation-delay: -10s; animation-duration: 22s; }
+        .shape:nth-child(4) { width: 250px; height: 250px; background: var(--blue); top: 30%; left: 50%; animation-delay: -7s; animation-duration: 26s; }
+        .shape:nth-child(5) { width: 180px; height: 180px; background: var(--orange); bottom: -50px; right: 20%; animation-delay: -3s; animation-duration: 30s; }
 
         @keyframes float {
-            0%, 100% { transform: translate(0, 0) rotate(0deg) scale(1); }
-            25% { transform: translate(30px, -30px) rotate(90deg) scale(1.1); }
-            50% { transform: translate(-20px, 20px) rotate(180deg) scale(0.9); }
-            75% { transform: translate(40px, 10px) rotate(270deg) scale(1.05); }
-        }
-
-        /* Stars */
-        .stars {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 0;
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            25% { transform: translate(30px, -30px) scale(1.1); }
+            50% { transform: translate(-20px, 20px) scale(0.9); }
+            75% { transform: translate(40px, 10px) scale(1.05); }
         }
 
         .star {
@@ -125,75 +72,74 @@
             height: 8px;
             background: white;
             clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
-            animation: twinkle 2s infinite ease-in-out;
+            opacity: 0.4;
+        }
+
+        /* Floating and twinkling only on computers; phones and iPads stay still to save battery */
+        @media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+            .shape { animation: float 24s infinite ease-in-out; }
+            .star { animation: twinkle 2.4s infinite ease-in-out; }
         }
 
         @keyframes twinkle {
-            0%, 100% { opacity: 0.3; transform: scale(1); }
-            50% { opacity: 1; transform: scale(1.2); }
+            0%, 100% { opacity: 0.25; }
+            50% { opacity: 0.9; }
         }
 
-        /* Main content */
+        /* ---------- Page ---------- */
         .container {
             position: relative;
             z-index: 1;
-            max-width: 1200px;
+            max-width: 1240px;
             margin: 0 auto;
-            padding: 40px 20px;
+            padding: max(20px, env(safe-area-inset-top)) var(--side) max(24px, env(safe-area-inset-bottom));
             min-height: 100vh;
             display: flex;
             flex-direction: column;
-            align-items: center;
         }
 
-        /* Header */
+        /* ---------- Compact header ---------- */
         .header {
-            text-align: center;
-            margin-bottom: 30px;
-            animation: dropIn 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-            opacity: 0;
-            transform: translateY(-50px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            margin-bottom: 14px;
+            text-align: left;
+            animation: dropIn 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) backwards;
         }
 
         @keyframes dropIn {
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0; transform: translateY(-30px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .site-logo {
-            width: 180px;
+            width: 96px;
             height: auto;
-            margin-bottom: 20px;
+            flex: none;
+            filter: drop-shadow(0 4px 10px rgba(0,0,0,0.18));
         }
 
         .title-header {
-            font-family: 'Baloo 2', cursive;
-            font-size: clamp(1.2rem, 4vw, 2rem);
+            font-family: 'Baloo 2', 'Arial Rounded MT Bold', system-ui, sans-serif;
+            font-size: clamp(0.95rem, 2.2vw, 1.25rem);
             font-weight: 700;
             color: white;
-            text-shadow: 2px 2px 0 var(--purple), 4px 4px 0 rgba(0,0,0,0.15);
-            letter-spacing: 1px;
-            margin-bottom: 5px;
+            text-shadow: 2px 2px 0 var(--purple);
+            letter-spacing: 0.5px;
             display: block;
+            line-height: 1.1;
         }
 
         .title {
-            font-family: 'Baloo 2', cursive;
-            font-size: clamp(2rem, 7vw, 4rem);
+            font-family: 'Baloo 2', 'Arial Rounded MT Bold', system-ui, sans-serif;
+            font-size: clamp(1.9rem, 5vw, 3rem);
             font-weight: 800;
+            line-height: 1.05;
             color: white;
-            text-shadow:
-                4px 4px 0 var(--pink),
-                8px 8px 0 rgba(0,0,0,0.15);
-            letter-spacing: 2px;
-            margin-bottom: 10px;
-        }
-
-        .title span {
-            display: inline-block;
-            animation: wave 2s ease-in-out infinite;
+            text-shadow: 3px 3px 0 var(--pink), 6px 6px 0 rgba(0,0,0,0.12);
+            letter-spacing: 1px;
         }
 
         .title .word {
@@ -201,545 +147,504 @@
             white-space: nowrap;
         }
 
+        .title .word span {
+            display: inline-block;
+            animation: wave 2.4s ease-in-out 3;
+        }
+
         @keyframes wave {
             0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-12px); }
+            50% { transform: translateY(-6px); }
         }
 
-        .subtitle {
-            font-size: clamp(1rem, 3vw, 1.4rem);
-            color: rgba(255,255,255,0.9);
-            font-weight: 600;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        .kbd-hint {
+            display: none;
+            margin-top: 4px;
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: rgba(255,255,255,0.85);
         }
 
-        /* Creator badge */
-        .creator-badge {
-            background: linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.85) 100%);
-            border: 3px solid var(--yellow);
-            border-radius: 100px;
-            padding: 15px 30px;
-            margin: 20px 0 40px;
-            display: inline-flex;
-            align-items: center;
-            gap: 12px;
-            box-shadow:
-                0 8px 25px rgba(0, 0, 0, 0.2),
-                inset 0 2px 0 rgba(255,255,255,0.5);
-            animation: floatBadge 1s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-            animation-delay: 0.3s;
-            opacity: 0;
-            transform: translateY(20px);
-        }
-
-        @keyframes floatBadge {
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .creator-badge .badge-icon {
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            object-fit: cover;
-        }
-
-        .creator-badge .text {
+        .kbd-hint kbd {
+            font-family: inherit;
+            display: inline-block;
+            min-width: 1.6em;
+            padding: 0 6px;
+            border-radius: 6px;
+            background: rgba(255,255,255,0.22);
+            border-bottom: 2px solid rgba(0,0,0,0.15);
             text-align: center;
         }
 
-        .creator-badge .main-text {
-            font-family: 'Baloo 2', cursive;
-            font-size: 1.1rem;
+        /* Only show the keyboard hint where there is a mouse (and so likely a keyboard) */
+        @media (hover: hover) and (pointer: fine) {
+            .kbd-hint { display: block; }
+        }
+
+        /* ---------- Category filter chips ---------- */
+        .filters {
+            position: sticky;
+            top: max(8px, env(safe-area-inset-top));
+            z-index: 5;
+            margin: 0 auto 20px;
+            max-width: 100%;
+            border-radius: 28px;
+            background: rgba(72, 44, 140, 0.92);
+            box-shadow: 0 6px 20px rgba(40, 20, 90, 0.25);
+        }
+
+        /* Frosted glass only on big screens with a mouse (blur is costly on phones) */
+        @media (hover: hover) and (pointer: fine) and (min-width: 901px) {
+            .filters {
+                background: rgba(72, 44, 140, 0.55);
+                -webkit-backdrop-filter: blur(12px);
+                backdrop-filter: blur(12px);
+            }
+        }
+
+        .chips {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 8px;
+            padding: 8px;
+            list-style: none;
+        }
+
+        .chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            min-height: 48px;
+            padding: 0 16px 0 12px;
+            border: 0;
+            border-radius: 999px;
+            background: rgba(255,255,255,0.16);
+            color: white;
+            font-family: 'Baloo 2', 'Arial Rounded MT Bold', system-ui, sans-serif;
+            font-size: 1.05rem;
             font-weight: 700;
-            color: var(--purple);
+            white-space: nowrap;
+            cursor: pointer;
+            transition: background 0.2s ease, color 0.2s ease, transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+            touch-action: manipulation;
         }
 
-        .creator-badge .sub-text {
-            font-size: 0.85rem;
-            color: #666;
-            font-weight: 600;
+        .chip .chip-emoji { font-size: 1.3rem; line-height: 1; }
+
+        /* Only the chosen chip shows how many games it has, to keep the bar slim */
+        .chip .chip-count {
+            display: none;
+            min-width: 24px;
+            padding: 0 6px;
+            border-radius: 999px;
+            background: rgba(255,255,255,0.22);
+            font-family: 'Nunito', system-ui, sans-serif;
+            font-size: 0.8rem;
+            font-weight: 800;
+            line-height: 22px;
+            text-align: center;
         }
 
-        /* Games grid */
+        .chip[aria-pressed="true"] {
+            background: white;
+            color: #6a3fc8;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.18);
+            transform: scale(1.04);
+        }
+
+        .chip[aria-pressed="true"] .chip-count {
+            display: inline-block;
+            background: #6a3fc8;
+            color: white;
+        }
+
+        .chip:active { transform: scale(0.95); }
+
+        .chip:focus { outline: none; }
+        .chip:focus-visible {
+            outline: 4px solid var(--yellow);
+            outline-offset: 2px;
+        }
+
+        @media (hover: hover) {
+            .chip:not([aria-pressed="true"]):hover { background: rgba(255,255,255,0.3); }
+        }
+
+        /* ---------- Games grid ---------- */
         .games-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 30px;
+            grid-template-columns: repeat(auto-fill, minmax(min(100%, 210px), 1fr));
+            gap: var(--gap);
             width: 100%;
-            max-width: 900px;
         }
 
-        .game-card:focus {
-            outline: 6px solid #feca57;
-            outline-offset: 6px;
-        }
-
-        /* Game card */
+        /* ---------- Game card ---------- */
         .game-card {
+            /* Each game sets its own colours below: --c1/--c2 (art), --ink (title), --b1/--b2 (button) */
+            --c1: var(--purple);
+            --c2: var(--pink);
+            --ink: var(--purple);
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
             background: white;
             border-radius: 24px;
-            padding: 30px;
             text-decoration: none;
             color: inherit;
             position: relative;
             overflow: hidden;
-            box-shadow:
-                0 10px 30px rgba(0,0,0,0.2),
-                0 0 0 4px rgba(255,255,255,0.3);
-            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-            opacity: 0;
-            transform: translateY(40px) scale(0.9);
-            animation: cardIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+            box-shadow: 0 10px 26px rgba(40, 20, 90, 0.22), 0 0 0 4px rgba(255,255,255,0.3);
+            transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease;
+            animation: cardIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) backwards;
+            animation-delay: calc(min(var(--i, 0), 12) * 40ms);
+            touch-action: manipulation;
+            /* Arrow keys scroll the chosen card into view clear of the sticky chip bar
+               (--bar is the bar's measured height, set by desktop/gallery.js) */
+            scroll-margin-top: calc(var(--bar, 64px) + 28px);
+            scroll-margin-bottom: 16px;
         }
 
-        .game-card:nth-child(1) { animation-delay: 0.2s; }
-        .game-card:nth-child(2) { animation-delay: 0.35s; }
-        .game-card:nth-child(3) { animation-delay: 0.5s; }
-        .game-card:nth-child(4) { animation-delay: 0.65s; }
-        .game-card:nth-child(5) { animation-delay: 0.8s; }
-        .game-card:nth-child(6) { animation-delay: 0.95s; }
-        .game-card:nth-child(7) { animation-delay: 1.1s; }
-        .game-card:nth-child(8) { animation-delay: 1.25s; }
-        .game-card:nth-child(9) { animation-delay: 1.4s; }
-        .game-card:nth-child(10) { animation-delay: 1.55s; }
-        .game-card:nth-child(11) { animation-delay: 1.7s; }
-        .game-card:nth-child(12) { animation-delay: 1.85s; }
-        .game-card:nth-child(13) { animation-delay: 2s; }
-        .game-card:nth-child(14) { animation-delay: 2.15s; }
-        .game-card:nth-child(15) { animation-delay: 2.3s; }
-        .game-card:nth-child(16) { animation-delay: 2.45s; }
-        .game-card:nth-child(17) { animation-delay: 2.6s; }
-        .game-card:nth-child(18) { animation-delay: 2.75s; }
-        .game-card:nth-child(19) { animation-delay: 2.9s; }
-        .game-card:nth-child(20) { animation-delay: 3.05s; }
-        .game-card:nth-child(21) { animation-delay: 3.2s; }
-        .game-card:nth-child(22) { animation-delay: 3.35s; }
-        .game-card:nth-child(23) { animation-delay: 3.5s; }
-        .game-card:nth-child(24) { animation-delay: 3.65s; }
-        .game-card:nth-child(25) { animation-delay: 3.8s; }
-        .game-card:nth-child(26) { animation-delay: 3.95s; }
-        .game-card:nth-child(27) { animation-delay: 4.1s; }
+        /* Changing the filter swaps between two identical animations, which replays the pop-in */
+        .games-grid[data-pop="b"] .game-card { animation-name: cardInAgain; }
+
+        .game-card[hidden],
+        .game-card.is-filtered-out {
+            display: none !important;
+        }
 
         @keyframes cardIn {
-            to {
-                opacity: 1;
-                transform: translateY(0) scale(1);
+            from { opacity: 0; transform: translateY(24px) scale(0.94); }
+            to { opacity: 1; transform: none; }
+        }
+
+        @keyframes cardInAgain {
+            from { opacity: 0; transform: translateY(24px) scale(0.94); }
+            to { opacity: 1; transform: none; }
+        }
+
+        .game-card:focus {
+            outline: 6px solid var(--yellow);
+            outline-offset: 4px;
+            box-shadow: 0 0 0 10px rgba(60, 30, 120, 0.55), 0 14px 34px rgba(40, 20, 90, 0.35);
+        }
+
+        .game-card:active { transform: scale(0.97); }
+
+        @media (hover: hover) {
+            .game-card:hover {
+                transform: translateY(-6px) scale(1.02);
+                box-shadow: 0 18px 40px rgba(40, 20, 90, 0.3), 0 0 0 4px rgba(255,255,255,0.55);
             }
+            .game-card:hover .game-icon { transform: scale(1.15) rotate(-6deg); }
+            .game-card:hover .play-btn::after { transform: translateX(4px); }
         }
 
-        .game-card:hover {
-            transform: translateY(-10px) scale(1.03);
-            box-shadow:
-                0 20px 50px rgba(0,0,0,0.3),
-                0 0 0 4px rgba(255,255,255,0.5);
+        /* Colourful art panel with the big game emoji */
+        .game-art {
+            position: relative;
+            display: grid;
+            place-items: center;
+            aspect-ratio: 16 / 10;
+            min-height: 108px;
+            background: linear-gradient(135deg, var(--c1), var(--c2));
+            overflow: hidden;
+            container-type: inline-size;
         }
-
-        .game-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 8px;
-        }
-
-        .game-card.blocks::before { background: linear-gradient(90deg, var(--purple), var(--pink)); }
-        .game-card.cars::before { background: linear-gradient(90deg, var(--blue), var(--green)); }
-        .game-card.emergency::before { background: linear-gradient(90deg, var(--orange), var(--yellow)); }
-        .game-card.water::before { background: linear-gradient(90deg, var(--blue), #00d2d3); }
-        .game-card.mountain::before { background: linear-gradient(90deg, var(--green), #00b894); }
-        .game-card.helpers::before { background: linear-gradient(90deg, #0984e3, #00cec9); }
-        .game-card.farm::before { background: linear-gradient(90deg, #8BC34A, #FF9800); }
-        .game-card.animals::before { background: linear-gradient(90deg, #667eea, #764ba2); }
-        .game-card.runner::before { background: linear-gradient(90deg, #FF6B6B, #4ECDC4); }
-        .game-card.lego::before { background: linear-gradient(90deg, #d42828, #f5cd2f); }
-        .game-card.shapes::before { background: linear-gradient(90deg, #6C5CE7, #74ebd5); }
-        .game-card.fishing::before { background: linear-gradient(90deg, #0288D1, #4FC3F7); }
-        .game-card.letters::before { background: linear-gradient(90deg, #7E57C2, #EC407A); }
-        .game-card.patterns::before { background: linear-gradient(90deg, #2E8B57, #A8E6CF); }
-        .game-card.match::before { background: linear-gradient(90deg, #FF6A88, #FFB88C); }
-        .game-card.hopper::before { background: linear-gradient(90deg, #63c74d, #8fd8f2); }
-        .game-card.bakery::before { background: linear-gradient(90deg, #ff8fb8, #ffc94d); }
-        .game-card.karts::before { background: linear-gradient(90deg, #ff3d4d, #ffcb2e); }
-        .game-card.heist::before { background: linear-gradient(90deg, #2b3175, #f4a623); }
-        .game-card.airports::before { background: linear-gradient(90deg, #557653, #d56e4f); }
-        .game-card.munch::before { background: linear-gradient(90deg, #6fcf3a, #ffcf3a); }
-        .game-card.froggy::before { background: linear-gradient(90deg, #2fa84f, #3fb6e0); }
-        .game-card.penguin::before { background: linear-gradient(90deg, #4fd1c5, #8a7bff); }
-        .game-card.tennis::before { background: linear-gradient(90deg, #1f7ae0, #c6e335); }
-        .game-card.street::before { background: linear-gradient(90deg, #6c5fd6, #8ef58a); }
-        .game-card.feast::before { background: linear-gradient(90deg, #4cbb3f, #ff6f9a); }
-        .game-card.snowball::before { background: linear-gradient(90deg, #ff8a2a, #3d8bff); }
-        .game-card.unicorn::before { background: linear-gradient(90deg, #ff6fb1, #8a5cff); }
-        .game-card.ptero::before { background: linear-gradient(90deg, #3fa04f, #ff8a2a); }
 
         .game-icon {
-            font-size: 4rem;
-            margin-bottom: 15px;
-            display: block;
+            position: relative;
+            z-index: 1;
+            font-size: clamp(3.2rem, 9vw, 4.6rem);
+            font-size: 42cqi; /* grows with the art panel where supported */
+            line-height: 1;
+            filter: drop-shadow(0 6px 8px rgba(0,0,0,0.22));
             transition: transform 0.3s ease;
         }
 
-        .game-card:hover .game-icon {
-            transform: scale(1.2) rotate(-5deg);
-        }
-
-        .game-title {
-            font-family: 'Baloo 2', cursive;
-            font-size: 1.6rem;
-            font-weight: 700;
-            margin-bottom: 8px;
-        }
-
-        .game-card.blocks .game-title { color: var(--purple); }
-        .game-card.cars .game-title { color: var(--blue); }
-        .game-card.emergency .game-title { color: var(--orange); }
-        .game-card.water .game-title { color: #0abde3; }
-        .game-card.mountain .game-title { color: #00b894; }
-        .game-card.helpers .game-title { color: #0984e3; }
-        .game-card.farm .game-title { color: #689F38; }
-        .game-card.animals .game-title { color: #667eea; }
-        .game-card.runner .game-title { color: #FF6B6B; }
-        .game-card.lego .game-title { color: #d42828; }
-        .game-card.shapes .game-title { color: #6C5CE7; }
-        .game-card.fishing .game-title { color: #0288D1; }
-        .game-card.letters .game-title { color: #7E57C2; }
-        .game-card.patterns .game-title { color: #2E8B57; }
-        .game-card.match .game-title { color: #FF6A88; }
-        .game-card.hopper .game-title { color: #45a832; }
-        .game-card.bakery .game-title { color: #d4436f; }
-        .game-card.karts .game-title { color: #e8442e; }
-        .game-card.heist .game-title { color: #3d44a3; }
-        .game-card.airports .game-title { color: #426d62; }
-        .game-card.munch .game-title { color: #3f8f22; }
-        .game-card.froggy .game-title { color: #1f8a44; }
-        .game-card.penguin .game-title { color: #1f6f9a; }
-        .game-card.tennis .game-title { color: #1a6bc4; }
-        .game-card.street .game-title { color: #5a4fc8; }
-        .game-card.feast .game-title { color: #2f8a2b; }
-        .game-card.snowball .game-title { color: #2f6fd6; }
-        .game-card.unicorn .game-title { color: #b03f9a; }
-        .game-card.ptero .game-title { color: #2f8a3f; }
-
-        .game-desc {
-            color: #666;
-            font-size: 0.95rem;
-            line-height: 1.5;
-            margin-bottom: 20px;
-        }
-
-        .play-btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 12px 24px;
-            border-radius: 50px;
-            font-weight: 700;
-            font-size: 1rem;
-            color: white;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-        }
-
-        .game-card.blocks .play-btn { background: linear-gradient(135deg, var(--purple), var(--pink)); }
-        .game-card.cars .play-btn { background: linear-gradient(135deg, var(--blue), var(--green)); }
-        .game-card.emergency .play-btn { background: linear-gradient(135deg, var(--orange), var(--yellow)); }
-        .game-card.water .play-btn { background: linear-gradient(135deg, var(--blue), #00d2d3); }
-        .game-card.mountain .play-btn { background: linear-gradient(135deg, var(--green), #00b894); }
-        .game-card.helpers .play-btn { background: linear-gradient(135deg, #0984e3, #00cec9); }
-        .game-card.farm .play-btn { background: linear-gradient(135deg, #8BC34A, #FF9800); }
-        .game-card.animals .play-btn { background: linear-gradient(135deg, #667eea, #764ba2); }
-        .game-card.runner .play-btn { background: linear-gradient(135deg, #FF6B6B, #4ECDC4); }
-        .game-card.lego .play-btn { background: linear-gradient(135deg, #d42828, #f5cd2f); }
-        .game-card.shapes .play-btn { background: linear-gradient(135deg, #6C5CE7, #74ebd5); }
-        .game-card.fishing .play-btn { background: linear-gradient(135deg, #0288D1, #4FC3F7); }
-        .game-card.letters .play-btn { background: linear-gradient(135deg, #7E57C2, #EC407A); }
-        .game-card.patterns .play-btn { background: linear-gradient(135deg, #2E8B57, #A8E6CF); }
-        .game-card.match .play-btn { background: linear-gradient(135deg, #FF6A88, #FFB88C); }
-        .game-card.hopper .play-btn { background: linear-gradient(135deg, #63c74d, #4aa8d8); }
-        .game-card.bakery .play-btn { background: linear-gradient(135deg, #ff8fb8, #ffc94d); }
-        .game-card.karts .play-btn { background: linear-gradient(135deg, #ff3d4d, #ff8a3d); }
-        .game-card.heist .play-btn { background: linear-gradient(135deg, #3d44a3, #f4a623); }
-        .game-card.airports .play-btn { background: linear-gradient(135deg, #557653, #488ca0); }
-        .game-card.munch .play-btn { background: linear-gradient(135deg, #5dbb2e, #f2b81f); }
-        .game-card.froggy .play-btn { background: linear-gradient(135deg, #2fa84f, #2c9bd1); }
-        .game-card.penguin .play-btn { background: linear-gradient(135deg, #2bb3c0, #7a6cf0); }
-        .game-card.tennis .play-btn { background: linear-gradient(135deg, #1f7ae0, #8cc63f); }
-        .game-card.street .play-btn { background: linear-gradient(135deg, #6c5fd6, #ef6a5a); }
-        .game-card.feast .play-btn { background: linear-gradient(135deg, #4cbb3f, #ff6f9a); }
-        .game-card.snowball .play-btn { background: linear-gradient(135deg, #ff8a2a, #3d8bff); }
-        .game-card.unicorn .play-btn { background: linear-gradient(135deg, #ff6fb1, #8a5cff); }
-        .game-card.ptero .play-btn { background: linear-gradient(135deg, #3fa04f, #ff8a2a); }
-
-        .game-card:hover .play-btn {
-            transform: scale(1.05);
-            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
-        }
-
-        .play-btn::after {
-            content: '→';
-            transition: transform 0.3s ease;
-        }
-
-        .game-card:hover .play-btn::after {
-            transform: translateX(5px);
-        }
-
-        /* Decorative elements on cards */
         .card-deco {
             position: absolute;
-            opacity: 0.1;
-            font-size: 8rem;
-            right: -20px;
-            bottom: -20px;
+            right: -14px;
+            bottom: -18px;
+            font-size: 5.5rem;
+            font-size: 44cqi;
+            line-height: 1;
+            opacity: 0.22;
             transform: rotate(-15deg);
             pointer-events: none;
         }
 
-        /* Footer */
-        .footer {
-            margin-top: 60px;
-            text-align: center;
-            color: rgba(255,255,255,0.7);
-            font-size: 0.9rem;
-            animation: fadeIn 1s ease forwards;
-            animation-delay: 1s;
-            opacity: 0;
+        /* Flair stickers (added by the script from data-added) */
+        .flair {
+            position: absolute;
+            z-index: 2;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 3px 9px;
+            border-radius: 999px;
+            font-size: 0.74rem;
+            font-weight: 800;
+            line-height: 1.3;
+            white-space: nowrap;
         }
 
-        @keyframes fadeIn {
-            to { opacity: 1; }
+        .flair-date {
+            left: 8px;
+            bottom: 8px;
+            background: rgba(255,255,255,0.9);
+            color: #4b3a6e;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+        }
+
+        .flair-new {
+            top: 8px;
+            left: 8px;
+            background: var(--yellow);
+            color: #4a1800;
+            letter-spacing: 0.5px;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.25);
+            transform: rotate(-4deg);
+        }
+
+        .game-body {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            gap: 6px;
+            padding: 12px 16px 16px;
+        }
+
+        .game-title {
+            font-family: 'Baloo 2', 'Arial Rounded MT Bold', system-ui, sans-serif;
+            font-size: 1.35rem;
+            font-weight: 700;
+            line-height: 1.15;
+            color: var(--ink);
+            /* Pushes the by-line and Play button to the bottom, so they line up across a row
+               even when one title wraps onto two lines */
+            margin-bottom: auto;
+        }
+
+        /* Descriptions stay in the HTML for grown-ups (shown as the card's tooltip) but
+           aren't drawn: little ones go by the picture and the title. */
+        .game-desc { display: none; }
+
+        /* "by Penny & Theo" line with little initial bubbles */
+        .made-by {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            min-width: 0;
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: #7a6f8f;
+        }
+
+        .avatars { display: inline-flex; flex: none; }
+
+        .avatar {
+            display: inline-grid;
+            place-items: center;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            border: 2px solid white;
+            background: var(--avatar, #a55eea);
+            color: white;
+            font-size: 0.68rem;
+            font-weight: 800;
+            line-height: 1;
+        }
+
+        .avatar + .avatar { margin-left: -7px; }
+
+        /* "🤖 Claude Opus 5.5" line under the makers */
+        .made-with {
+            margin-top: 3px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            line-height: 1.2;
+            color: #9a90ad;
+            overflow-wrap: anywhere;
+        }
+
+        .by-name {
+            min-width: 0;
+            line-height: 1.2;
+            overflow-wrap: anywhere;
+        }
+
+        .play-btn {
+            margin-top: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            min-height: 44px;
+            padding: 8px 16px;
+            border-radius: 999px;
+            font-weight: 800;
+            font-size: 1rem;
+            color: white;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+            background: linear-gradient(135deg, var(--b1, var(--c1)), var(--b2, var(--c2)));
+            box-shadow: 0 4px 12px rgba(0,0,0,0.18);
+        }
+
+        .play-btn::after {
+            content: '→';
+            content: '→' / '';
+            transition: transform 0.3s ease;
+        }
+
+        /* ---------- Per-game colours ---------- */
+        .game-card.blocks    { --c1: var(--purple); --c2: var(--pink); --ink: var(--purple); }
+        .game-card.cars      { --c1: var(--blue); --c2: var(--green); --ink: var(--blue); }
+        .game-card.emergency { --c1: var(--orange); --c2: var(--yellow); --ink: var(--orange); }
+        .game-card.water     { --c1: var(--blue); --c2: #00d2d3; --ink: #0abde3; }
+        .game-card.mountain  { --c1: var(--green); --c2: #00b894; --ink: #00b894; }
+        .game-card.helpers   { --c1: #0984e3; --c2: #00cec9; --ink: #0984e3; }
+        .game-card.farm      { --c1: #8BC34A; --c2: #FF9800; --ink: #689F38; }
+        .game-card.animals   { --c1: #667eea; --c2: #764ba2; --ink: #667eea; }
+        .game-card.runner    { --c1: #FF6B6B; --c2: #4ECDC4; --ink: #FF6B6B; }
+        .game-card.lego      { --c1: #d42828; --c2: #f5cd2f; --ink: #d42828; }
+        .game-card.shapes    { --c1: #6C5CE7; --c2: #74ebd5; --ink: #6C5CE7; }
+        .game-card.fishing   { --c1: #0288D1; --c2: #4FC3F7; --ink: #0288D1; }
+        .game-card.letters   { --c1: #7E57C2; --c2: #EC407A; --ink: #7E57C2; }
+        .game-card.patterns  { --c1: #2E8B57; --c2: #A8E6CF; --ink: #2E8B57; }
+        .game-card.match     { --c1: #FF6A88; --c2: #FFB88C; --ink: #FF6A88; }
+        .game-card.hopper    { --c1: #63c74d; --c2: #8fd8f2; --ink: #45a832; --b2: #4aa8d8; }
+        .game-card.bakery    { --c1: #ff8fb8; --c2: #ffc94d; --ink: #d4436f; }
+        .game-card.karts     { --c1: #ff3d4d; --c2: #ffcb2e; --ink: #e8442e; --b2: #ff8a3d; }
+        .game-card.heist     { --c1: #2b3175; --c2: #f4a623; --ink: #3d44a3; --b1: #3d44a3; }
+        .game-card.airports  { --c1: #557653; --c2: #d56e4f; --ink: #426d62; --b2: #488ca0; }
+        .game-card.munch     { --c1: #6fcf3a; --c2: #ffcf3a; --ink: #3f8f22; --b1: #5dbb2e; --b2: #f2b81f; }
+        .game-card.froggy    { --c1: #2fa84f; --c2: #3fb6e0; --ink: #1f8a44; --b2: #2c9bd1; }
+        .game-card.penguin   { --c1: #4fd1c5; --c2: #8a7bff; --ink: #1f6f9a; --b1: #2bb3c0; --b2: #7a6cf0; }
+        .game-card.tennis    { --c1: #1f7ae0; --c2: #c6e335; --ink: #1a6bc4; --b2: #8cc63f; }
+        .game-card.street    { --c1: #6c5fd6; --c2: #8ef58a; --ink: #5a4fc8; --b2: #ef6a5a; }
+        .game-card.feast     { --c1: #4cbb3f; --c2: #ff6f9a; --ink: #2f8a2b; }
+        .game-card.snowball  { --c1: #ff8a2a; --c2: #3d8bff; --ink: #2f6fd6; }
+        .game-card.unicorn   { --c1: #ff6fb1; --c2: #8a5cff; --ink: #b03f9a; }
+        .game-card.ptero     { --c1: #3fa04f; --c2: #ff8a2a; --ink: #2f8a3f; }
+
+        /* ---------- Footer ---------- */
+        .footer {
+            margin-top: 40px;
+            text-align: center;
+            color: rgba(255,255,255,0.8);
+            font-size: 0.9rem;
+            font-weight: 700;
+            line-height: 1.6;
         }
 
         .footer-hearts {
-            font-size: 1.5rem;
-            margin-bottom: 10px;
+            font-size: 1.3rem;
+            margin-bottom: 4px;
         }
 
-        /* Tablet adjustments */
-        @media (max-width: 768px) {
-            .games-grid {
-                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-                gap: 20px;
-            }
+        .footer .made-with-ai {
+            font-size: 0.78rem;
+            color: rgba(255,255,255,0.65);
         }
 
-        /* Mobile adjustments */
-        @media (max-width: 600px) {
-            .container {
-                padding: 30px 15px;
-                padding-top: max(30px, env(safe-area-inset-top));
-                padding-bottom: max(30px, env(safe-area-inset-bottom));
-                padding-left: max(15px, env(safe-area-inset-left));
-                padding-right: max(15px, env(safe-area-inset-right));
-            }
-
-            .site-logo {
-                width: 140px;
-            }
-
-            .games-grid {
-                grid-template-columns: 1fr;
-                gap: 16px;
-            }
-
-            .game-card {
-                padding: 20px 18px;
-            }
-
-            .game-icon {
-                font-size: 3rem;
-            }
-
-            .game-title {
-                font-size: 1.4rem;
-            }
-
-            .game-desc {
-                font-size: 0.9rem;
-                margin-bottom: 15px;
-            }
-
-            .play-btn {
-                padding: 10px 20px;
-                font-size: 0.95rem;
-            }
-
-            .title {
-                letter-spacing: 0;
-            }
-
-            .creator-badge {
-                padding: 12px 16px;
-                flex-direction: column;
-                text-align: center;
-                gap: 8px;
-                margin: 15px 10px 30px;
-                max-width: calc(100% - 20px);
-            }
-
-            .creator-badge .text {
-                text-align: center;
-            }
-
-            .creator-badge .main-text {
-                font-size: 1rem;
-            }
-
-            .creator-badge .sub-text {
-                font-size: 0.8rem;
-            }
-
-            .header {
-                margin-bottom: 20px;
-            }
-
-            .footer {
-                margin-top: 40px;
-            }
-
-            .card-deco {
-                font-size: 5rem;
-                right: -15px;
-                bottom: -15px;
-            }
-        }
-
-        /* Extra small screens (iPhone SE, older devices) */
-        @media (max-width: 380px) {
-            .container {
-                padding: 20px 12px;
-            }
-
-            .site-logo {
-                width: 120px;
-            }
-
-            .game-card {
-                padding: 18px 15px;
-                border-radius: 18px;
-            }
-
-            .game-icon {
-                font-size: 2.5rem;
-                margin-bottom: 10px;
-            }
-
-            .game-title {
-                font-size: 1.25rem;
-            }
-
-            .creator-badge {
-                padding: 10px 14px;
-                border-radius: 20px;
-            }
-
-            .creator-badge .badge-icon {
-                width: 40px;
-                height: 40px;
-            }
-
-            .subtitle {
-                font-size: 0.95rem;
-            }
-
-            .shape {
-                opacity: 0.08;
-            }
-
-            .shape:nth-child(1) {
-                width: 150px;
-                height: 150px;
-            }
-
-            .shape:nth-child(2) {
-                width: 100px;
-                height: 100px;
-            }
-
-            .shape:nth-child(4) {
-                width: 120px;
-                height: 120px;
-            }
-        }
-
-        /* Landscape mobile */
-        @media (max-height: 500px) and (orientation: landscape) {
-            .container {
-                padding: 15px;
-            }
-
-            .header {
-                margin-bottom: 15px;
-            }
-
-            .site-logo {
-                width: 80px;
-                margin-bottom: 10px;
-            }
-
-            .title {
-                font-size: 1.8rem;
-            }
-
-            .title-header {
-                font-size: 1rem;
-            }
-
-            .creator-badge {
-                margin: 10px 0 20px;
-                padding: 10px 20px;
-                flex-direction: row;
-            }
-
-            .games-grid {
-                grid-template-columns: repeat(2, 1fr);
-                gap: 12px;
-            }
-
-            .game-card {
-                padding: 15px;
-            }
-
-            .game-icon {
-                font-size: 2rem;
-                margin-bottom: 8px;
-            }
-
-            .game-title {
-                font-size: 1.1rem;
-            }
-
-            .game-desc {
-                display: none;
-            }
-
-            .footer {
-                margin-top: 20px;
-            }
-        }
-
-        /* Hover sound effect indicator */
-        .game-card::after {
-            content: '🔊';
+        .sr-only {
             position: absolute;
-            top: 20px;
-            right: 20px;
-            font-size: 1.2rem;
-            opacity: 0;
-            transition: opacity 0.3s ease;
+            width: 1px;
+            height: 1px;
+            overflow: hidden;
+            clip: rect(0 0 0 0);
+            white-space: nowrap;
         }
 
-        .game-card:hover::after {
-            opacity: 0.5;
+        /* ---------- Tablets ---------- */
+        @media (max-width: 900px), (max-height: 500px) {
+            /* Chips become one swipeable row so the filter bar stays slim */
+            .filters { margin-left: 0; margin-right: 0; }
+            .chips {
+                flex-wrap: nowrap;
+                justify-content: flex-start;
+                overflow-x: auto;
+                overscroll-behavior-x: contain;
+                scroll-snap-type: x proximity;
+                scrollbar-width: none;
+                -webkit-overflow-scrolling: touch;
+                -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 10px, #000 calc(100% - 28px), transparent);
+                mask-image: linear-gradient(90deg, transparent 0, #000 10px, #000 calc(100% - 28px), transparent);
+                padding-right: 28px;
+            }
+            .chips::-webkit-scrollbar { display: none; }
+            .chip { flex: none; scroll-snap-align: start; scroll-margin-left: 10px; }
+        }
+
+        /* ---------- Phones ---------- */
+        @media (max-width: 600px) {
+            :root { --gap: 12px; --side: max(14px, env(safe-area-inset-left), env(safe-area-inset-right)); }
+
+            .header { gap: 10px; margin-bottom: 10px; }
+            .site-logo { width: 64px; }
+            .title { font-size: clamp(1.6rem, 8vw, 2.1rem); letter-spacing: 0; }
+
+            .games-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
+            .game-card { border-radius: 20px; box-shadow: 0 8px 20px rgba(40, 20, 90, 0.22), 0 0 0 3px rgba(255,255,255,0.3); }
+            .game-art { aspect-ratio: 4 / 3; min-height: 0; }
+            .game-icon { font-size: 3.2rem; font-size: 44cqi; }
+            .card-deco { font-size: 4.2rem; font-size: 46cqi; }
+            .game-body { padding: 10px 10px 12px; gap: 5px; }
+            .game-title { font-size: 1.08rem; }
+            .made-by { font-size: 0.75rem; gap: 4px; }
+            .made-word { display: none; }
+            .game-card:focus { outline-width: 4px; outline-offset: 2px; box-shadow: 0 0 0 6px rgba(60, 30, 120, 0.55); }
+            .avatar { width: 20px; height: 20px; font-size: 0.62rem; }
+            .play-btn { font-size: 0.95rem; padding: 6px 10px; }
+            .flair { font-size: 0.68rem; padding: 2px 7px; }
+            .flair-date { left: 6px; bottom: 6px; }
+            .flair-new { left: 6px; top: 6px; }
+            .chip { min-height: 46px; font-size: 1rem; padding: 0 14px 0 10px; }
+        }
+
+        /* Narrow phones (iPhone SE and smaller): still two per row, just snugger */
+        @media (max-width: 360px) {
+            :root { --gap: 10px; --side: max(10px, env(safe-area-inset-left), env(safe-area-inset-right)); }
+            .game-body { padding: 8px 8px 10px; }
+            .game-title { font-size: 1rem; }
+            .play-btn { font-size: 0.85rem; padding: 6px 6px; gap: 4px; }
+            .avatar { width: 18px; height: 18px; }
+        }
+
+        /* Phones on their side: short screen, so keep the header tiny */
+        @media (max-height: 500px) and (orientation: landscape) {
+            .container { padding-top: max(10px, env(safe-area-inset-top)); }
+            .header { margin-bottom: 8px; }
+            .site-logo { width: 44px; }
+            .title-header, .kbd-hint { display: none; }
+            .title { font-size: 1.5rem; }
+            .filters { margin-bottom: 12px; }
+            .chips { padding: 5px 28px 5px 5px; gap: 6px; }
+            .chip { min-height: 40px; font-size: 0.95rem; }
+            .games-grid { grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 12px; }
+            .game-art { aspect-ratio: 16 / 9; min-height: 0; }
+            .game-icon { font-size: 2.8rem; font-size: 40cqi; }
+            .game-body { padding: 8px 12px 10px; gap: 4px; }
+            .play-btn { min-height: 40px; padding: 6px 12px; }
+            .footer { margin-top: 20px; }
+        }
+
+        /* Calm mode: no floating, waving or bouncing */
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation: none !important;
+                transition: none !important;
+                scroll-behavior: auto !important;
+            }
+            .star { opacity: 0.35; }
         }
     </style>
 </head>
 <body>
-    <div class="bg-shapes">
+    <div class="bg-shapes" aria-hidden="true">
         <div class="shape"></div>
         <div class="shape"></div>
         <div class="shape"></div>
@@ -747,334 +652,362 @@
         <div class="shape"></div>
     </div>
 
-    <div class="stars" id="stars"></div>
+    <div class="stars" id="stars" aria-hidden="true"></div>
 
     <div class="container">
         <header class="header">
-            <img src="images/logo.png" alt="Penny and Theo" class="site-logo">
-            <span class="title-header">Penny and Theo's</span>
-            <h1 class="title">
-                <span class="word"><span style="animation-delay: 0s">F</span><span style="animation-delay: 0.05s">u</span><span style="animation-delay: 0.1s">n</span></span>
-                <span class="word"><span style="animation-delay: 0.2s">L</span><span style="animation-delay: 0.25s">e</span><span style="animation-delay: 0.3s">a</span><span style="animation-delay: 0.35s">r</span><span style="animation-delay: 0.4s">n</span><span style="animation-delay: 0.45s">i</span><span style="animation-delay: 0.5s">n</span><span style="animation-delay: 0.55s">g</span></span>
-                <span class="word"><span style="animation-delay: 0.65s">G</span><span style="animation-delay: 0.7s">a</span><span style="animation-delay: 0.75s">m</span><span style="animation-delay: 0.8s">e</span><span style="animation-delay: 0.85s">s</span><span style="animation-delay: 0.9s">!</span></span>
-            </h1>
-            <p class="subtitle">↑ ↓ Choose a game · Enter to play</p>
+            <img src="images/logo.png" alt="Penny and Theo" class="site-logo" width="585" height="427">
+            <div class="header-text">
+                <span class="title-header">Penny and Theo's</span>
+                <h1 class="title" aria-label="Fun Learning Games!">
+                    <span class="word" aria-hidden="true"><span style="animation-delay: 0s">F</span><span style="animation-delay: 0.05s">u</span><span style="animation-delay: 0.1s">n</span></span>
+                    <span class="word" aria-hidden="true"><span style="animation-delay: 0.2s">L</span><span style="animation-delay: 0.25s">e</span><span style="animation-delay: 0.3s">a</span><span style="animation-delay: 0.35s">r</span><span style="animation-delay: 0.4s">n</span><span style="animation-delay: 0.45s">i</span><span style="animation-delay: 0.5s">n</span><span style="animation-delay: 0.55s">g</span></span>
+                    <span class="word" aria-hidden="true"><span style="animation-delay: 0.65s">G</span><span style="animation-delay: 0.7s">a</span><span style="animation-delay: 0.75s">m</span><span style="animation-delay: 0.8s">e</span><span style="animation-delay: 0.85s">s</span><span style="animation-delay: 0.9s">!</span></span>
+                </h1>
+                <p class="kbd-hint"><kbd>↑</kbd> <kbd>↓</kbd> choose a game · <kbd>Enter</kbd> to play</p>
+            </div>
         </header>
 
-        <div class="creator-badge">
-            <div class="text">
-                <div class="main-text">Created by Kids, Powered by AI</div>
-                <div class="sub-text">No manual code written — just ideas brought to life!</div>
-            </div>
-        </div>
+        <!-- Category buttons are built by the script below from CATEGORIES. -->
+        <nav class="filters" id="filters" aria-label="Kinds of games" hidden>
+            <div class="chips" id="chips"></div>
+        </nav>
+        <p class="sr-only" id="filter-status" aria-live="polite"></p>
 
-        <div class="games-grid">
-            <a href="block-stacker.html" class="game-card blocks">
-                <span class="game-icon">🧱</span>
-                <h2 class="game-title">Block Stacker</h2>
-                <p class="game-desc">Stack colorful blocks and build the tallest tower! How high can you go?</p>
-                <span class="play-btn">Play Now</span>
-                <span class="card-deco">🧱</span>
+        <div class="games-grid" id="games">
+            <!--
+                HOW TO ADD A NEW GAME
+                Copy a card and paste it right here, at the TOP (newest games go first).
+                Then fill in:
+                  href="my-game.html"           the game file
+                  class="game-card <colour>"    add a colour rule under "Per-game colours" in the CSS
+                  data-added="YYYY-MM-DD"       the day the game was made (shows "Made Nov 14"; the 3 newest games from the last 7 days get a NEW! sticker)
+                  data-by="Penny, Lily & Dad"   who made it (any names, joined with & or commas)
+                  data-model="Claude Opus 5.5"  the AI model it was built with ("unknown" if not sure)
+                  data-categories="numbers animals"   one or more of: numbers letters science action puzzles make animals
+            -->
+            <a href="ptero-dash.html" class="game-card ptero" data-added="2026-11-14" data-by="Penny, Theo & Dad" data-categories="action animals" data-model="Claude Opus 5.5">
+                <div class="game-art"><span class="game-icon" aria-hidden="true">🦖</span><span class="card-deco" aria-hidden="true">🏗️</span></div>
+                <div class="game-body">
+                    <h2 class="game-title">Ptero Dash</h2>
+                    <p class="game-desc">Fly a little pterodactyl through the sky! Dodge flapping birds and the swinging wrecking balls of crane trucks, and grab golden eggs!</p>
+                    <span class="play-btn">Fly!</span>
+                </div>
             </a>
 
-            <a href="car-garage.html" class="game-card cars">
-                <span class="game-icon">🚗</span>
-                <h2 class="game-title">Car Garage</h2>
-                <p class="game-desc">Match cars to their colorful garages! Learn colors while having fun!</p>
-                <span class="play-btn">Play Now</span>
-                <span class="card-deco">🚗</span>
+            <a href="unicorn-numbers.html" class="game-card unicorn" data-added="2026-11-14" data-by="Penny, Theo & Dad" data-categories="numbers animals" data-model="Claude Opus 5.5">
+                <div class="game-art"><span class="game-icon" aria-hidden="true">🦄</span><span class="card-deco" aria-hidden="true">🌈</span></div>
+                <div class="game-body">
+                    <h2 class="game-title">Unicorn Number Magic</h2>
+                    <p class="game-desc">Two unicorns, two numbers. Are they the same or different? Count stars, add with plus magic and paint a rainbow to meet new unicorn friends!</p>
+                    <span class="play-btn">Magic!</span>
+                </div>
             </a>
 
-            <a href="emergency-helpers.html" class="game-card emergency">
-                <span class="game-icon">🚒</span>
-                <h2 class="game-title">Emergency Helpers</h2>
-                <p class="game-desc">Learn about firefighters and police! Help the heroes save the day!</p>
-                <span class="play-btn">Play Now</span>
-                <span class="card-deco">🚑</span>
+            <a href="snowball-showdown.html" class="game-card snowball" data-added="2026-11-09" data-by="Penny, Theo & Dad" data-categories="numbers make" data-model="Claude Opus 5.5">
+                <div class="game-art"><span class="game-icon" aria-hidden="true">⛄</span><span class="card-deco" aria-hidden="true">❄️</span></div>
+                <div class="game-body">
+                    <h2 class="game-title">Snowball Showdown</h2>
+                    <p class="game-desc">Paint an Orange team and a Blue team of snow kids, penguins and polar bears, then press GO and watch the snowball fight!</p>
+                    <span class="play-btn">Let it snow!</span>
+                </div>
             </a>
 
-            <a href="water-maker.html" class="game-card water">
-                <span class="game-icon">💧</span>
-                <h2 class="game-title">Water Maker</h2>
-                <p class="game-desc">Mix hydrogen and oxygen to make water! Learn science through play!</p>
-                <span class="play-btn">Play Now</span>
-                <span class="card-deco">💧</span>
+            <a href="froggy-feast.html" class="game-card feast" data-added="2026-11-08" data-by="Theo & Dad" data-categories="action animals" data-model="Claude Opus 5.5">
+                <div class="game-art"><span class="game-icon" aria-hidden="true">🐸</span><span class="card-deco" aria-hidden="true">🪰</span></div>
+                <div class="game-body">
+                    <h2 class="game-title">Froggy Feast</h2>
+                    <p class="game-desc">So many flies and one hungry frog! Tap the flies to slurp them up, catch golden flies, and unlock new frog friends!</p>
+                    <span class="play-btn">Slurp!</span>
+                </div>
             </a>
 
-            <a href="mountain-climber.html" class="game-card mountain">
-                <span class="game-icon">🚚</span>
-                <h2 class="game-title">Mountain Climber</h2>
-                <p class="game-desc">Drive a happy monster truck up the mountain! Collect stars and unlock silly hats!</p>
-                <span class="play-btn">Play Now</span>
-                <span class="card-deco">🏔️</span>
+            <a href="penguin-slide.html" class="game-card penguin" data-added="2026-11-08" data-by="Penny, Theo & Dad" data-categories="puzzles animals" data-model="Claude Opus 5.5">
+                <div class="game-art"><span class="game-icon" aria-hidden="true">🐧</span><span class="card-deco" aria-hidden="true">🐟</span></div>
+                <div class="game-body">
+                    <h2 class="game-title">Penguin Ice Slide</h2>
+                    <p class="game-desc">Slide across slippery ice and stop on the rocks! Plan your moves to reach the fish hole in 30 puzzles!</p>
+                    <span class="play-btn">Play Now</span>
+                </div>
             </a>
 
-            <a href="community-helpers.html" class="game-card helpers">
-                <span class="game-icon">🚑</span>
-                <h2 class="game-title">Community Helpers</h2>
-                <p class="game-desc">Help your neighbors with police, fire, and ambulance! Find lost puppies and care for friends!</p>
-                <span class="play-btn">Play Now</span>
-                <span class="card-deco">🚓</span>
+            <a href="froggy-crossing.html" class="game-card froggy" data-added="2026-11-08" data-by="Penny, Theo & Dad" data-categories="numbers letters action animals" data-model="Claude Opus 5.5">
+                <div class="game-art"><span class="game-icon" aria-hidden="true">🐸</span><span class="card-deco" aria-hidden="true">🪷</span></div>
+                <div class="game-body">
+                    <h2 class="game-title">Froggy Crossing</h2>
+                    <p class="game-desc">Hop across busy roads and ride logs over the river! Land on the lily pad with the right answer!</p>
+                    <span class="play-btn">Play Now</span>
+                </div>
             </a>
 
-            <a href="farm-garden.html" class="game-card farm">
-                <span class="game-icon">🌱</span>
-                <h2 class="game-title">Farm Garden</h2>
-                <p class="game-desc">Plant seeds in the right garden! Grow tomatoes, carrots, corn and lettuce on your farm!</p>
-                <span class="play-btn">Play Now</span>
-                <span class="card-deco">🍅</span>
+            <a href="caterpillar-munch.html" class="game-card munch" data-added="2026-11-08" data-by="Penny, Theo & Dad" data-categories="letters numbers action animals" data-model="Claude Opus 5.5">
+                <div class="game-art"><span class="game-icon" aria-hidden="true">🐛</span><span class="card-deco" aria-hidden="true">🦋</span></div>
+                <div class="game-body">
+                    <h2 class="game-title">Caterpillar Munch</h2>
+                    <p class="game-desc">Steer a hungry caterpillar with the arrow keys! Munch letters and numbers in order, then turn into a butterfly!</p>
+                    <span class="play-btn">Play Now</span>
+                </div>
             </a>
 
-            <a href="animal-world.html" class="game-card animals">
-                <span class="game-icon">🌍</span>
-                <h2 class="game-title">Animal World</h2>
-                <p class="game-desc">Where do animals live? Click the right continent, learn fun facts, and unlock achievements!</p>
-                <span class="play-btn">Play Now</span>
-                <span class="card-deco">🦁</span>
+            <a href="street-rush.html" class="game-card street" data-added="2026-10-26" data-by="Penny, Theo & Dad" data-categories="action" data-model="Claude Opus 5.5">
+                <div class="game-art"><span class="game-icon" aria-hidden="true">🚗</span><span class="card-deco" aria-hidden="true">⭐</span></div>
+                <div class="game-body">
+                    <h2 class="game-title">Street Rush GT</h2>
+                    <p class="game-desc">Comic-style city street racing! Drift, hit the nitro and race up to 4 friends in split screen with keyboards or gamepads!</p>
+                    <span class="play-btn">Play Now</span>
+                </div>
             </a>
 
-            <a href="track-runner.html" class="game-card runner">
-                <span class="game-icon">🏃</span>
-                <h2 class="game-title">Track Runner</h2>
-                <p class="game-desc">Run along the train tracks! Dodge obstacles, collect stars, and see how far you can go!</p>
-                <span class="play-btn">Play Now</span>
-                <span class="card-deco">🚂</span>
+            <a href="airport-explorer.html" class="game-card airports" data-added="2026-10-26" data-by="Penny, Theo & Dad" data-categories="science" data-model="unknown">
+                <div class="game-art"><span class="game-icon" aria-hidden="true">✈️</span><span class="card-deco" aria-hidden="true">🌎</span></div>
+                <div class="game-body">
+                    <h2 class="game-title">Airport Explorer</h2>
+                    <p class="game-desc">Little codes, big adventures! Match airports to cities or land a pin on the map. Can you earn your wings?</p>
+                    <span class="play-btn">Let’s Fly</span>
+                </div>
             </a>
 
-            <a href="lego-heroes.html" class="game-card lego">
-                <span class="game-icon">🧩</span>
-                <h2 class="game-title">Lego Hero Builder</h2>
-                <p class="game-desc">Build with Lego bricks and team up with Captain America, Iron Man, and Hulk! Earn points and unlock powers!</p>
-                <span class="play-btn">Play Now</span>
-                <span class="card-deco">🦸</span>
+            <a href="tennis.html" class="game-card tennis" data-added="2026-10-11" data-by="Penny, Theo & Dad" data-categories="action" data-model="Claude Opus 5.5" data-hidden-until="2026-11-13T04:52:34Z" hidden>
+                <div class="game-art"><span class="game-icon" aria-hidden="true">🎾</span><span class="card-deco" aria-hidden="true">🏆</span></div>
+                <div class="game-body">
+                    <h2 class="game-title">Super Tennis Stars</h2>
+                    <p class="game-desc">Smash the ball with WASD or the arrows! Grab power-ups for super speed, a giant ball or a mega racket. 1 or 2 players!</p>
+                    <span class="play-btn">Play Now</span>
+                </div>
             </a>
 
-            <a href="shape-party.html" class="game-card shapes">
-                <span class="game-icon">🔷</span>
-                <h2 class="game-title">Shape Party</h2>
-                <p class="game-desc">Find circles, stars, hearts and more! Tap the right shape to join the party!</p>
-                <span class="play-btn">Play Now</span>
-                <span class="card-deco">⭐</span>
+            <a href="cookie-heist.html" class="game-card heist" data-added="2026-10-11" data-by="Penny, Theo & Dad" data-categories="action puzzles" data-model="Claude Opus 5.5">
+                <div class="game-art"><span class="game-icon" aria-hidden="true">🔦</span><span class="card-deco" aria-hidden="true">🍪</span></div>
+                <div class="game-body">
+                    <h2 class="game-title">Midnight Cookie Heist</h2>
+                    <p class="game-desc">Tiptoe past Mom and Dad's flashlights, hide from the puppy, and sneak the cookie jar back to bed!</p>
+                    <span class="play-btn">Play Now</span>
+                </div>
             </a>
 
-            <a href="number-fishing.html" class="game-card fishing">
-                <span class="game-icon">🎣</span>
-                <h2 class="game-title">Number Fishing</h2>
-                <p class="game-desc">Count the fish in the pond and pick the right number! Tap each fish to count out loud!</p>
-                <span class="play-btn">Play Now</span>
-                <span class="card-deco">🐠</span>
+            <a href="kart-racer.html" class="game-card karts" data-added="2026-10-11" data-by="Penny, Theo & Dad" data-categories="action" data-model="Claude Opus 5.5">
+                <div class="game-art"><span class="game-icon" aria-hidden="true">🏎️</span><span class="card-deco" aria-hidden="true">🏁</span></div>
+                <div class="game-body">
+                    <h2 class="game-title">Turbo Karts</h2>
+                    <p class="game-desc">Race on 5 wild tracks! Drift, boost and zap your friends in 2-player split screen!</p>
+                    <span class="play-btn">Play Now</span>
+                </div>
             </a>
 
-            <a href="letter-rocket.html" class="game-card letters">
-                <span class="game-icon">🚀</span>
-                <h2 class="game-title">Letter Rocket</h2>
-                <p class="game-desc">Find the right letter to launch your rocket to the moon! Learn your ABCs in space!</p>
-                <span class="play-btn">Play Now</span>
-                <span class="card-deco">🌕</span>
+            <a href="kitty-bakery.html" class="game-card bakery" data-added="2026-10-11" data-by="Penny, Theo & Dad" data-categories="numbers animals" data-model="Claude Opus 5.5">
+                <div class="game-art"><span class="game-icon" aria-hidden="true">😻</span><span class="card-deco" aria-hidden="true">🍪</span></div>
+                <div class="game-body">
+                    <h2 class="game-title">Kitty Bakery</h2>
+                    <p class="game-desc">Hungry kitties order treats! Add, subtract and count to fill each plate before they nap!</p>
+                    <span class="play-btn">Play Now</span>
+                </div>
             </a>
 
-            <a href="pattern-train.html" class="game-card patterns">
-                <span class="game-icon">🚂</span>
-                <h2 class="game-title">Pattern Train</h2>
-                <p class="game-desc">What comes next? Finish the pattern to make the train go! Choo choo!</p>
-                <span class="play-btn">Play Now</span>
-                <span class="card-deco">🌈</span>
+            <a href="sky-hopper.html" class="game-card hopper" data-added="2026-08-09" data-by="Penny, Theo & Dad" data-categories="action" data-model="Claude Opus 5">
+                <div class="game-art"><span class="game-icon" aria-hidden="true">☁️</span><span class="card-deco" aria-hidden="true">⭐</span></div>
+                <div class="game-body">
+                    <h2 class="game-title">Sky Hopper</h2>
+                    <p class="game-desc">Bounce up and up on grassy platforms! Grab stars, ride balloons, and climb past the clouds!</p>
+                    <span class="play-btn">Play Now</span>
+                </div>
             </a>
 
-            <a href="animal-match.html" class="game-card match">
-                <span class="game-icon">🐾</span>
-                <h2 class="game-title">Animal Match</h2>
-                <p class="game-desc">Flip the cards and find the matching animal pairs! Train your memory with cute critters!</p>
-                <span class="play-btn">Play Now</span>
-                <span class="card-deco">🐼</span>
+            <a href="animal-match.html" class="game-card match" data-added="2026-08-09" data-by="Penny, Theo & Dad" data-categories="puzzles animals" data-model="Claude Opus 5">
+                <div class="game-art"><span class="game-icon" aria-hidden="true">🐾</span><span class="card-deco" aria-hidden="true">🐼</span></div>
+                <div class="game-body">
+                    <h2 class="game-title">Animal Match</h2>
+                    <p class="game-desc">Flip the cards and find the matching animal pairs! Train your memory with cute critters!</p>
+                    <span class="play-btn">Play Now</span>
+                </div>
             </a>
 
-            <a href="sky-hopper.html" class="game-card hopper">
-                <span class="game-icon">☁️</span>
-                <h2 class="game-title">Sky Hopper</h2>
-                <p class="game-desc">Bounce up and up on grassy platforms! Grab stars, ride balloons, and climb past the clouds!</p>
-                <span class="play-btn">Play Now</span>
-                <span class="card-deco">⭐</span>
+            <a href="pattern-train.html" class="game-card patterns" data-added="2026-08-09" data-by="Penny, Theo & Dad" data-categories="puzzles" data-model="Claude Opus 5">
+                <div class="game-art"><span class="game-icon" aria-hidden="true">🚂</span><span class="card-deco" aria-hidden="true">🌈</span></div>
+                <div class="game-body">
+                    <h2 class="game-title">Pattern Train</h2>
+                    <p class="game-desc">What comes next? Finish the pattern to make the train go! Choo choo!</p>
+                    <span class="play-btn">Play Now</span>
+                </div>
             </a>
 
-            <a href="kitty-bakery.html" class="game-card bakery">
-                <span class="game-icon">😻</span>
-                <h2 class="game-title">Kitty Bakery</h2>
-                <p class="game-desc">Hungry kitties order treats! Add, subtract and count to fill each plate before they nap!</p>
-                <span class="play-btn">Play Now</span>
-                <span class="card-deco">🍪</span>
+            <a href="letter-rocket.html" class="game-card letters" data-added="2026-08-09" data-by="Penny, Theo & Dad" data-categories="letters" data-model="Claude Opus 5">
+                <div class="game-art"><span class="game-icon" aria-hidden="true">🚀</span><span class="card-deco" aria-hidden="true">🌕</span></div>
+                <div class="game-body">
+                    <h2 class="game-title">Letter Rocket</h2>
+                    <p class="game-desc">Find the right letter to launch your rocket to the moon! Learn your ABCs in space!</p>
+                    <span class="play-btn">Play Now</span>
+                </div>
             </a>
 
-            <a href="kart-racer.html" class="game-card karts">
-                <span class="game-icon">🏎️</span>
-                <h2 class="game-title">Turbo Karts</h2>
-                <p class="game-desc">Race on 5 wild tracks! Drift, boost and zap your friends in 2-player split screen!</p>
-                <span class="play-btn">Play Now</span>
-                <span class="card-deco">🏁</span>
+            <a href="number-fishing.html" class="game-card fishing" data-added="2026-08-09" data-by="Penny, Theo & Dad" data-categories="numbers" data-model="Claude Opus 5">
+                <div class="game-art"><span class="game-icon" aria-hidden="true">🎣</span><span class="card-deco" aria-hidden="true">🐠</span></div>
+                <div class="game-body">
+                    <h2 class="game-title">Number Fishing</h2>
+                    <p class="game-desc">Count the fish in the pond and pick the right number! Tap each fish to count out loud!</p>
+                    <span class="play-btn">Play Now</span>
+                </div>
             </a>
 
-            <a href="cookie-heist.html" class="game-card heist">
-                <span class="game-icon">🔦</span>
-                <h2 class="game-title">Midnight Cookie Heist</h2>
-                <p class="game-desc">Tiptoe past Mom and Dad's flashlights, hide from the puppy, and sneak the cookie jar back to bed!</p>
-                <span class="play-btn">Play Now</span>
-                <span class="card-deco">🍪</span>
+            <a href="shape-party.html" class="game-card shapes" data-added="2026-08-09" data-by="Penny, Theo & Dad" data-categories="puzzles" data-model="Claude Opus 5">
+                <div class="game-art"><span class="game-icon" aria-hidden="true">🔷</span><span class="card-deco" aria-hidden="true">⭐</span></div>
+                <div class="game-body">
+                    <h2 class="game-title">Shape Party</h2>
+                    <p class="game-desc">Find circles, stars, hearts and more! Tap the right shape to join the party!</p>
+                    <span class="play-btn">Play Now</span>
+                </div>
             </a>
 
-            <a href="tennis.html" class="game-card tennis" data-hidden-until="2026-11-13T04:52:34Z" hidden>
-                <span class="game-icon">🎾</span>
-                <h2 class="game-title">Super Tennis Stars</h2>
-                <p class="game-desc">Smash the ball with WASD or the arrows! Grab power-ups for super speed, a giant ball or a mega racket. 1 or 2 players!</p>
-                <span class="play-btn">Play Now</span>
-                <span class="card-deco">🏆</span>
+            <a href="track-runner.html" class="game-card runner" data-added="2026-02-01" data-by="Penny, Theo & Dad" data-categories="action" data-model="unknown">
+                <div class="game-art"><span class="game-icon" aria-hidden="true">🏃</span><span class="card-deco" aria-hidden="true">🚂</span></div>
+                <div class="game-body">
+                    <h2 class="game-title">Track Runner</h2>
+                    <p class="game-desc">Run along the train tracks! Dodge obstacles, collect stars, and see how far you can go!</p>
+                    <span class="play-btn">Play Now</span>
+                </div>
             </a>
 
-            <a href="street-rush.html" class="game-card street">
-                <span class="game-icon">🚗</span>
-                <h2 class="game-title">Street Rush GT</h2>
-                <p class="game-desc">Comic-style city street racing! Drift, hit the nitro and race up to 4 friends in split screen with keyboards or gamepads!</p>
-                <span class="play-btn">Play Now</span>
-                <span class="card-deco">⭐</span>
+            <a href="lego-heroes.html" class="game-card lego" data-added="2026-01-31" data-by="Penny, Theo & Dad" data-categories="make" data-model="Claude Opus 4.5">
+                <div class="game-art"><span class="game-icon" aria-hidden="true">🧩</span><span class="card-deco" aria-hidden="true">🦸</span></div>
+                <div class="game-body">
+                    <h2 class="game-title">Lego Hero Builder</h2>
+                    <p class="game-desc">Build with Lego bricks and team up with Captain America, Iron Man, and Hulk! Earn points and unlock powers!</p>
+                    <span class="play-btn">Play Now</span>
+                </div>
             </a>
 
-            <a href="airport-explorer.html" class="game-card airports">
-                <span class="game-icon">✈️</span>
-                <h2 class="game-title">Airport Explorer</h2>
-                <p class="game-desc">Little codes, big adventures! Match airports to cities or land a pin on the map. Can you earn your wings?</p>
-                <span class="play-btn">Let’s Fly</span>
-                <span class="card-deco">🌎</span>
+            <a href="animal-world.html" class="game-card animals" data-added="2026-01-04" data-by="Penny, Theo & Dad" data-categories="science animals" data-model="unknown">
+                <div class="game-art"><span class="game-icon" aria-hidden="true">🌍</span><span class="card-deco" aria-hidden="true">🦁</span></div>
+                <div class="game-body">
+                    <h2 class="game-title">Animal World</h2>
+                    <p class="game-desc">Where do animals live? Click the right continent, learn fun facts, and unlock achievements!</p>
+                    <span class="play-btn">Play Now</span>
+                </div>
             </a>
 
-            <a href="caterpillar-munch.html" class="game-card munch">
-                <span class="game-icon">🐛</span>
-                <h2 class="game-title">Caterpillar Munch</h2>
-                <p class="game-desc">Steer a hungry caterpillar with the arrow keys! Munch letters and numbers in order, then turn into a butterfly!</p>
-                <span class="play-btn">Play Now</span>
-                <span class="card-deco">🦋</span>
+            <a href="farm-garden.html" class="game-card farm" data-added="2026-01-04" data-by="Penny, Theo & Dad" data-categories="science" data-model="unknown">
+                <div class="game-art"><span class="game-icon" aria-hidden="true">🌱</span><span class="card-deco" aria-hidden="true">🍅</span></div>
+                <div class="game-body">
+                    <h2 class="game-title">Farm Garden</h2>
+                    <p class="game-desc">Plant seeds in the right garden! Grow tomatoes, carrots, corn and lettuce on your farm!</p>
+                    <span class="play-btn">Play Now</span>
+                </div>
             </a>
 
-            <a href="froggy-crossing.html" class="game-card froggy">
-                <span class="game-icon">🐸</span>
-                <h2 class="game-title">Froggy Crossing</h2>
-                <p class="game-desc">Hop across busy roads and ride logs over the river! Land on the lily pad with the right answer!</p>
-                <span class="play-btn">Play Now</span>
-                <span class="card-deco">🪷</span>
+            <a href="community-helpers.html" class="game-card helpers" data-added="2026-01-04" data-by="Penny, Theo & Dad" data-categories="science" data-model="unknown">
+                <div class="game-art"><span class="game-icon" aria-hidden="true">🚑</span><span class="card-deco" aria-hidden="true">🚓</span></div>
+                <div class="game-body">
+                    <h2 class="game-title">Community Helpers</h2>
+                    <p class="game-desc">Help your neighbors with police, fire, and ambulance! Find lost puppies and care for friends!</p>
+                    <span class="play-btn">Play Now</span>
+                </div>
             </a>
 
-            <a href="penguin-slide.html" class="game-card penguin">
-                <span class="game-icon">🐧</span>
-                <h2 class="game-title">Penguin Ice Slide</h2>
-                <p class="game-desc">Slide across slippery ice and stop on the rocks! Plan your moves to reach the fish hole in 30 puzzles!</p>
-                <span class="play-btn">Play Now</span>
-                <span class="card-deco">🐟</span>
+            <a href="mountain-climber.html" class="game-card mountain" data-added="2026-01-04" data-by="Penny, Theo & Dad" data-categories="action" data-model="unknown">
+                <div class="game-art"><span class="game-icon" aria-hidden="true">🚚</span><span class="card-deco" aria-hidden="true">🏔️</span></div>
+                <div class="game-body">
+                    <h2 class="game-title">Mountain Climber</h2>
+                    <p class="game-desc">Drive a happy monster truck up the mountain! Collect stars and unlock silly hats!</p>
+                    <span class="play-btn">Play Now</span>
+                </div>
             </a>
 
-            <a href="froggy-feast.html" class="game-card feast">
-                <span class="game-icon">🐸</span>
-                <h2 class="game-title">Froggy Feast</h2>
-                <p class="game-desc">So many flies and one hungry frog! Tap the flies to slurp them up, catch golden flies, and unlock new frog friends!</p>
-                <span class="play-btn">Slurp!</span>
-                <span class="card-deco">🪰</span>
+            <a href="water-maker.html" class="game-card water" data-added="2026-01-01" data-by="Penny, Theo & Dad" data-categories="science make" data-model="Claude Opus 4.5">
+                <div class="game-art"><span class="game-icon" aria-hidden="true">💧</span><span class="card-deco" aria-hidden="true">💧</span></div>
+                <div class="game-body">
+                    <h2 class="game-title">Water Maker</h2>
+                    <p class="game-desc">Mix hydrogen and oxygen to make water! Learn science through play!</p>
+                    <span class="play-btn">Play Now</span>
+                </div>
             </a>
 
-            <a href="snowball-showdown.html" class="game-card snowball">
-                <span class="game-icon">⛄</span>
-                <h2 class="game-title">Snowball Showdown</h2>
-                <p class="game-desc">Paint an Orange team and a Blue team of snow kids, penguins and polar bears, then press GO and watch the snowball fight!</p>
-                <span class="play-btn">Let it snow!</span>
-                <span class="card-deco">❄️</span>
+            <a href="emergency-helpers.html" class="game-card emergency" data-added="2026-01-01" data-by="Penny, Theo & Dad" data-categories="science" data-model="Claude Opus 4.5">
+                <div class="game-art"><span class="game-icon" aria-hidden="true">🚒</span><span class="card-deco" aria-hidden="true">🚑</span></div>
+                <div class="game-body">
+                    <h2 class="game-title">Emergency Helpers</h2>
+                    <p class="game-desc">Learn about firefighters and police! Help the heroes save the day!</p>
+                    <span class="play-btn">Play Now</span>
+                </div>
             </a>
 
-            <a href="unicorn-numbers.html" class="game-card unicorn">
-                <span class="game-icon">🦄</span>
-                <h2 class="game-title">Unicorn Number Magic</h2>
-                <p class="game-desc">Two unicorns, two numbers. Are they the same or different? Count stars, add with plus magic and paint a rainbow to meet new unicorn friends!</p>
-                <span class="play-btn">Magic!</span>
-                <span class="card-deco">🌈</span>
+            <a href="car-garage.html" class="game-card cars" data-added="2026-01-01" data-by="Penny, Theo & Dad" data-categories="puzzles" data-model="Claude Opus 4.5">
+                <div class="game-art"><span class="game-icon" aria-hidden="true">🚗</span><span class="card-deco" aria-hidden="true">🚗</span></div>
+                <div class="game-body">
+                    <h2 class="game-title">Car Garage</h2>
+                    <p class="game-desc">Match cars to their colorful garages! Learn colors while having fun!</p>
+                    <span class="play-btn">Play Now</span>
+                </div>
             </a>
 
-            <a href="ptero-dash.html" class="game-card ptero">
-                <span class="game-icon">🦖</span>
-                <h2 class="game-title">Ptero Dash</h2>
-                <p class="game-desc">Fly a little pterodactyl through the sky! Dodge flapping birds and the swinging wrecking balls of crane trucks, and grab golden eggs!</p>
-                <span class="play-btn">Fly!</span>
-                <span class="card-deco">🏗️</span>
+            <a href="block-stacker.html" class="game-card blocks" data-added="2026-01-01" data-by="Penny, Theo & Dad" data-categories="make" data-model="Claude Opus 4.5">
+                <div class="game-art"><span class="game-icon" aria-hidden="true">🧱</span><span class="card-deco" aria-hidden="true">🧱</span></div>
+                <div class="game-body">
+                    <h2 class="game-title">Block Stacker</h2>
+                    <p class="game-desc">Stack colorful blocks and build the tallest tower! How high can you go?</p>
+                    <span class="play-btn">Play Now</span>
+                </div>
             </a>
         </div>
 
         <footer class="footer">
-            <div class="footer-hearts">💜 🧡 💛 💚 💙</div>
+            <div class="footer-hearts" aria-hidden="true">💜 🧡 💛 💚 💙</div>
             <p>Made with love for little learners</p>
+            <p class="made-with-ai">✨ Created by kids, powered by AI</p>
         </footer>
     </div>
 
+    <script src="desktop/gallery.js"></script>
     <script src="desktop/launcher.js"></script>
     <script>
-        // Generate random stars
+        // Twinkly stars
         const starsContainer = document.getElementById('stars');
-        const starCount = 30;
-
-        for (let i = 0; i < starCount; i++) {
+        for (let i = 0; i < 18; i++) {
             const star = document.createElement('div');
             star.className = 'star';
             star.style.left = Math.random() * 100 + '%';
             star.style.top = Math.random() * 100 + '%';
-            star.style.animationDelay = Math.random() * 2 + 's';
+            star.style.animationDelay = Math.random() * 2.4 + 's';
             star.style.transform = `scale(${0.5 + Math.random() * 0.8})`;
             starsContainer.appendChild(star);
         }
 
-        // Add hover sound effect
-        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-
-        function playHoverSound() {
-            const oscillator = audioContext.createOscillator();
-            const gainNode = audioContext.createGain();
-
-            oscillator.connect(gainNode);
-            gainNode.connect(audioContext.destination);
-
-            oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
-            oscillator.frequency.exponentialRampToValueAtTime(1200, audioContext.currentTime + 0.1);
-
-            gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
-            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
-
-            oscillator.start(audioContext.currentTime);
-            oscillator.stop(audioContext.currentTime + 0.1);
+        // Little bleeps. The audio context is only made after the first tap,
+        // click or key press, which keeps iOS and Chrome's autoplay rules happy.
+        let audioContext = null;
+        function audio() {
+            const AudioCtor = window.AudioContext || window.webkitAudioContext;
+            if (!audioContext && AudioCtor) {
+                try { audioContext = new AudioCtor(); } catch { return null; }
+            }
+            if (audioContext && audioContext.state === 'suspended') audioContext.resume();
+            return audioContext;
         }
+        ['pointerdown', 'keydown'].forEach(type => window.addEventListener(type, audio, { once: true, capture: true }));
 
-        function playClickSound() {
-            const oscillator = audioContext.createOscillator();
-            const gainNode = audioContext.createGain();
-
+        function bleep(points, volume, length) {
+            const ctx = audioContext;
+            if (!ctx || ctx.state !== 'running') return;
+            const oscillator = ctx.createOscillator();
+            const gainNode = ctx.createGain();
             oscillator.connect(gainNode);
-            gainNode.connect(audioContext.destination);
-
-            oscillator.frequency.setValueAtTime(600, audioContext.currentTime);
-            oscillator.frequency.exponentialRampToValueAtTime(900, audioContext.currentTime + 0.05);
-            oscillator.frequency.exponentialRampToValueAtTime(1400, audioContext.currentTime + 0.15);
-
-            gainNode.gain.setValueAtTime(0.15, audioContext.currentTime);
-            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.15);
-
-            oscillator.start(audioContext.currentTime);
-            oscillator.stop(audioContext.currentTime + 0.15);
+            gainNode.connect(ctx.destination);
+            const t = ctx.currentTime;
+            oscillator.frequency.setValueAtTime(points[0][1], t);
+            points.slice(1).forEach(([at, hz]) => oscillator.frequency.exponentialRampToValueAtTime(hz, t + at));
+            gainNode.gain.setValueAtTime(volume, t);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, t + length);
+            oscillator.start(t);
+            oscillator.stop(t + length);
         }
+        const playHoverSound = () => bleep([[0, 800], [0.1, 1200]], 0.1, 0.1);
+        const playClickSound = () => bleep([[0, 600], [0.05, 900], [0.15, 1400]], 0.15, 0.15);
+        const playChipSound = () => bleep([[0, 500], [0.08, 1000]], 0.12, 0.1);
 
-        // Attach sounds to cards
+        const canHover = window.matchMedia && matchMedia('(hover: hover)').matches;
         document.querySelectorAll('.game-card').forEach(card => {
-            card.addEventListener('mouseenter', () => {
-                if (audioContext.state === 'suspended') {
-                    audioContext.resume();
-                }
-                playHoverSound();
-            });
-
-            card.addEventListener('click', () => {
-                playClickSound();
-            });
+            if (canHover) card.addEventListener('mouseenter', playHoverSound);
+            card.addEventListener('click', () => { audio(); playClickSound(); });
         });
+        document.querySelectorAll('.chip').forEach(chip => chip.addEventListener('click', () => { audio(); playChipSound(); }));
     </script>
 </body>
 </html>
