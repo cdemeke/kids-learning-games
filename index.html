@@ -213,6 +213,21 @@
             text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
         }
 
+        .grownups-btn {
+            margin-top: 14px;
+            padding: 8px 18px;
+            border: 2px solid rgba(255,255,255,0.7);
+            border-radius: 999px;
+            background: rgba(255,255,255,0.18);
+            color: #fff;
+            font: 700 0.95rem 'Nunito', sans-serif;
+            cursor: pointer;
+        }
+
+        .grownups-btn:hover, .grownups-btn:focus-visible {
+            background: rgba(255,255,255,0.3);
+        }
+
         /* Creator badge */
         .creator-badge {
             background: linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.85) 100%);
@@ -737,6 +752,7 @@
             opacity: 0.5;
         }
     </style>
+    <script src="assets/parental-lock/parental-lock.js"></script>
 </head>
 <body>
     <div class="bg-shapes">
@@ -759,6 +775,7 @@
                 <span class="word"><span style="animation-delay: 0.65s">G</span><span style="animation-delay: 0.7s">a</span><span style="animation-delay: 0.75s">m</span><span style="animation-delay: 0.8s">e</span><span style="animation-delay: 0.85s">s</span><span style="animation-delay: 0.9s">!</span></span>
             </h1>
             <p class="subtitle">↑ ↓ Choose a game · Enter to play</p>
+            <button type="button" class="grownups-btn" data-parental-settings>🔒 Grown-ups: play time limit</button>
         </header>
 
         <div class="creator-badge">
