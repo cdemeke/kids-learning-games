@@ -165,6 +165,24 @@
             color: rgba(255,255,255,0.85);
         }
 
+        /* Small, out-of-the-way button for the grown-up play time lock */
+        .grownups-btn {
+            align-self: flex-start;
+            margin-top: 6px;
+            min-height: 32px;
+            padding: 4px 12px;
+            border: 2px solid rgba(255,255,255,0.6);
+            border-radius: 999px;
+            background: rgba(255,255,255,0.15);
+            color: #fff;
+            font: 700 0.78rem 'Nunito', system-ui, sans-serif;
+            cursor: pointer;
+        }
+
+        .grownups-btn:hover, .grownups-btn:focus-visible {
+            background: rgba(255,255,255,0.3);
+        }
+
         .kbd-hint kbd {
             font-family: inherit;
             display: inline-block;
@@ -642,6 +660,7 @@
             .star { opacity: 0.35; }
         }
     </style>
+    <script src="assets/parental-lock/parental-lock.js"></script>
 </head>
 <body>
     <div class="bg-shapes" aria-hidden="true">
@@ -665,6 +684,7 @@
                     <span class="word" aria-hidden="true"><span style="animation-delay: 0.65s">G</span><span style="animation-delay: 0.7s">a</span><span style="animation-delay: 0.75s">m</span><span style="animation-delay: 0.8s">e</span><span style="animation-delay: 0.85s">s</span><span style="animation-delay: 0.9s">!</span></span>
                 </h1>
                 <p class="kbd-hint"><kbd>↑</kbd> <kbd>↓</kbd> choose a game · <kbd>Enter</kbd> to play</p>
+                <button type="button" class="grownups-btn" data-parental-settings>🔒 Grown-ups: play time limit</button>
             </div>
         </header>
 
