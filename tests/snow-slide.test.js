@@ -35,7 +35,37 @@ test('the open lane really is clear of everything', () => {
         const row = L.makeRow(rng, 3);
         if (row.openLane < 0) continue;
         const x = L.LANES[row.openLane];
-        for (const it of row.items) if (!it.vx) assert.equal(L.collides(x, 0, it), false);
+        for (const it of row.items) assert.equal(L.collides(x, 0, it), false);
+    }
+});
+
+test('seals slide in from the side and stop on a lane, and the open lane (where fish go) is clear of them', () => {
+    const rng = seeded(33);
+    let seen = 0;
+    for (let i = 0; i < 4000; i++) {
+        const row = L.makeRow(rng, 5);
+        if (row.pattern !== 'seal') continue;
+        seen++;
+        const seal = row.items[0];
+        assert.ok(Math.abs(L.itemX(seal, L.SEAL_LEAD + 1) - seal.fromX) < 1e-9, 'waits at the side far away');
+        assert.ok(Math.abs(L.itemX(seal, 0) - seal.x) < 1e-9, 'ends where it was placed');
+        assert.ok(L.LANES.some(x => Math.abs(x - seal.x) < 1e-9), 'ends on a lane');
+        assert.ok(Math.abs(seal.fromX) > 1, 'starts off the slide');
+        assert.ok(row.openLane >= 0);
+        assert.equal(L.collides(L.LANES[row.openLane], 0, seal), false);
+    }
+    assert.ok(seen > 100);
+});
+
+test('rows are spaced for the speed you will have when you reach them, so they never bunch up', () => {
+    for (const mode of Object.keys(L.MODES)) {
+        for (let z = 0; z < 3e6; z += 50000) {
+            const level = L.levelFor(L.metersFor(z));
+            const gap = L.rowGapUnits(z, level, mode);
+            // time between rows at the arrival speed (speed only grows, so use the faster, later one)
+            const seconds = gap / L.speedFor(L.metersFor(z + gap), mode);
+            assert.ok(seconds >= 0.78, `${mode} at ${z}: ${seconds.toFixed(2)}s`);
+        }
     }
 });
 
@@ -100,7 +130,7 @@ test('speed grows with distance but stops at each mode cap; easy is always gentl
 test('rows come faster each level but always leave time to react', () => {
     for (const mode of Object.keys(L.MODES)) {
         assert.ok(L.gapSecondsFor(1, mode) > L.gapSecondsFor(6, mode));
-        assert.ok(L.gapSecondsFor(50, mode) * 1 >= 0.8);
+        assert.ok(L.gapSecondsFor(50, mode) >= 0.8);
     }
     assert.ok(L.gapSecondsFor(1, 'easy') > L.gapSecondsFor(1, 'fast'));
 });

@@ -14,6 +14,7 @@
     const GRAVITY = 4800;
     const CLEAR_HEIGHT = 90;   // higher than this and you sail over the low things
     const PLAYER_HALF_W = 0.17;
+    const SEAL_LEAD = 1.6;     // a seal starts sliding across this many seconds before it reaches you
 
     const MODES = {
         easy: { name: 'Gentle Glide', hearts: 5, speed: 2600, maxSpeed: 5000, gap: 1.35 },
@@ -75,20 +76,26 @@
         return Math.max(0.95, 2 - 0.13 * (Math.max(1, level) - 1)) * m.gap;
     }
 
+    // World units from one row to the next, using the speed the slider will have when it gets there
+    // (never the slowed-down speed right after a bump), so rows always arrive gapSecondsFor apart or more.
+    function rowGapUnits(rowZ, level, modeKey) {
+        return speedFor(metersFor(rowZ), modeKey) * gapSecondsFor(level, modeKey);
+    }
+
     // One stretch of slide: it bends (curve) and drops or rises (hill, in world units).
     function makeSection(rng, level) {
         const bend = Math.min(5.5, 2.5 + level * 0.5);
         const curveRoll = rng();
         const curve = curveRoll < 0.25 ? 0 : (rng() < 0.5 ? -1 : 1) * (1 + rng() * (bend - 1));
         const hillRoll = rng();
-        const hill = hillRoll < 0.6 ? -(1500 + rng() * 4000)   // mostly downhill: it's a slide!
-            : hillRoll < 0.85 ? 0
-                : 800 + rng() * 1600;
+        const hill = hillRoll < 0.65 ? -(1500 + rng() * 4000)   // mostly downhill: it's a slide!
+            : hillRoll < 0.9 ? 0
+                : 600 + rng() * 800;  // small bumps up, so nothing hides behind a big crest
         const enter = 15 + Math.floor(rng() * 20);
         const hold = 20 + Math.floor(rng() * 40);
         const leave = 15 + Math.floor(rng() * 20);
         // keep the steepest part of a hill gentle enough to see what's coming over the top
-        const maxHill = 0.28 * (enter + hold + leave) * SEG;
+        const maxHill = 0.24 * (enter + hold + leave) * SEG;
         return { enter, hold, leave, curve, hill: clamp(hill, -maxHill, maxHill) };
     }
 
@@ -146,16 +153,27 @@
                 items.push({ kind: i === lane ? pick(rng, LOW_KINDS) : pick(rng, TALL_KINDS), x: LANES[i] });
             }
         } else {
+            // a seal slides in from one side and stops in the middle lane or the far lane
             const dir = rng() < 0.5 ? -1 : 1;
-            items.push({ kind: 'seal', x: -dir * 1.25, vx: dir * (0.7 + rng() * 0.4) });
+            const toX = rng() < 0.5 ? 0 : dir * LANES[2];
+            items.push({ kind: 'seal', x: toX, fromX: -dir * 1.25, vx: dir });
         }
         return { pattern, items, openLane: rowOpenLane(items) };
     }
 
+    // Where a sliding seal is when it's `ahead` seconds away from the slider. Items without fromX stay put;
+    // a seal's x is where it ends up, right as it reaches you.
+    function itemX(item, ahead) {
+        if (item.fromX === undefined) return item.x;
+        const p = clamp(1 - ahead / SEAL_LEAD, 0, 1);
+        return item.fromX + (item.x - item.fromX) * easeInOut(0, 1, p);
+    }
+
     // The lane you can get through without jumping, or -1 when every lane needs a jump.
+    // Fish and hearts go here, so it must be clear of where seals finish too.
     function rowOpenLane(items) {
         for (let i = 0; i < 3; i++) {
-            if (!items.some(it => !it.vx && overlaps(LANES[i], it))) return i;
+            if (!items.some(it => overlaps(LANES[i], it))) return i;
         }
         return -1;
     }
@@ -209,10 +227,10 @@
     }
 
     return {
-        SEG, UNITS_PER_METER, LEVEL_METERS, LANES, JUMP_SPEED, GRAVITY, CLEAR_HEIGHT, PLAYER_HALF_W,
+        SEG, UNITS_PER_METER, LEVEL_METERS, LANES, JUMP_SPEED, GRAVITY, CLEAR_HEIGHT, PLAYER_HALF_W, SEAL_LEAD,
         MODES, SCENES, OBSTACLES, LOW_KINDS, TALL_KINDS, ANIMALS,
         clamp, easeIn, easeInOut, metersFor, levelFor, sceneFor, speedFor, gapSecondsFor,
-        makeSection, sectionProfile, makeRow, rowOpenLane, rowIsPassable, overlaps, collides, catches,
+        rowGapUnits, itemX, makeSection, sectionProfile, makeRow, rowOpenLane, rowIsPassable, overlaps, collides, catches,
         jumpHeight, jumpAirTime, hitPlayer, nextLane, resultTitle
     };
 });

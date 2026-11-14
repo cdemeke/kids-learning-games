@@ -77,7 +77,7 @@
         HOR = H * 0.36;
         Fy = H * 0.48;
         Fx = Math.min(W, H * 1.25) / 2;
-        buildSky();
+        if (!mountainsFar.length) buildSky();
     }
 
     // ---------- state ----------
@@ -86,7 +86,7 @@
     let animalId = Store.get('animal', 'pebble');
     if (!L.ANIMALS.some(a => a.id === animalId)) animalId = 'pebble';
     let player = null;
-    let segs = [];
+    let segs = [], segBase = 0; // segs[0] is segment number segBase; older ones are dropped
     let things = [], fishes = [], particles = [], floaters = [], flakes = [];
     let camZ = 0, speed = 0, speedMul = 1, meters = 0, fishCount = 0, level = 1, nextRowZ = 0;
     let clock = 0, skyShift = 0, shake = 0, overTimer = 0;
@@ -99,20 +99,25 @@
     }
 
     // ---------- the slide itself ----------
+    function seg(i) { return segs[i - segBase]; }
+    function resetSlide() { segs = []; segBase = 0; }
     function addSection() {
         const prev = segs[segs.length - 1];
         let y = prev ? prev.y2 : 0;
-        const section = segs.length < 40
+        const section = segBase + segs.length < 40
             ? { enter: 10, hold: 20, leave: 10, curve: 0, hill: -1200 } // a calm, straight start
             : L.makeSection(Math.random, level);
         for (const step of L.sectionProfile(section)) {
-            const i = segs.length;
+            const i = segBase + segs.length;
             const s = { i, y1: y, y2: y + step.dy, curve: step.curve, deco: makeDeco(i) };
             y = s.y2;
             segs.push(s);
         }
     }
-    function ensureSegments(upTo) { while (segs.length <= upTo) addSection(); }
+    function ensureSegments(upTo) { while (segBase + segs.length <= upTo) addSection(); }
+    function dropSegmentsBefore(i) {
+        if (i - segBase > 300) { segs.splice(0, i - segBase); segBase = i; }
+    }
 
     function makeDeco(i) {
         const deco = [];
@@ -131,9 +136,10 @@
     // ---------- obstacles + fish ----------
     function spawnRow(z) {
         const row = L.makeRow(Math.random, level);
-        for (const it of row.items) things.push({ kind: it.kind, x: it.x, vx: it.vx || 0, z, hit: false, seed: Math.random() * TAU });
+        for (const it of row.items) things.push({ ...it, z, hit: false, seed: Math.random() * TAU });
 
-        const gapUnits = speed * L.gapSecondsFor(level, mode);
+        const gapUnits = L.rowGapUnits(z, level, mode);
+        const arriveSpeed = L.speedFor(L.metersFor(z), mode);
         const air = L.jumpAirTime();
         const lows = row.items.filter(it => L.OBSTACLES[it.kind].low && !it.vx);
         if (row.openLane < 0 || (lows.length && Math.random() < 0.45)) {
@@ -141,7 +147,7 @@
             const target = lows[Math.floor(Math.random() * lows.length)] || { x: L.LANES[1] };
             const x = target.kind === 'drift' ? L.LANES[Math.floor(Math.random() * 3)] : target.x;
             for (const t of [0.2, 0.35, 0.5, 0.65, 0.8]) {
-                fishes.push({ x, z: z + (t - 0.5) * air * speed, y: L.jumpHeight(t * air), type: t === 0.5 && Math.random() < 0.3 ? 'gold' : 'fish' });
+                fishes.push({ x, z: z + (t - 0.5) * air * arriveSpeed, y: L.jumpHeight(t * air), type: t === 0.5 && Math.random() < 0.3 ? 'gold' : 'fish' });
             }
         } else if (Math.random() < 0.8) {
             // a trail of fish on the snow in the open lane, before the row
@@ -276,19 +282,20 @@
     let view = null;
     function buildView() {
         const baseIdx = Math.floor(camZ / SEG);
+        dropSegmentsBefore(baseIdx - 20);
         ensureSegments(baseIdx + DRAW + 4);
         const basePct = (camZ % SEG) / SEG;
         const playerZ = camZ + PLAYER_Z;
         const pIdx = Math.floor(playerZ / SEG);
         const pPct = (playerZ % SEG) / SEG;
-        const ps = segs[pIdx];
+        const ps = seg(pIdx);
         const groundY = lerp(ps.y1, ps.y2, pPct);
         const camY = groundY + CAM_H;
         const camX = (player ? player.x : 0) * ROAD_W * 0.7;
-        let x = 0, dx = -(segs[baseIdx].curve * basePct);
+        let x = 0, dx = -(seg(baseIdx).curve * basePct);
         const rows = [];
         for (let n = 0; n < DRAW; n++) {
-            const s = segs[baseIdx + n];
+            const s = seg(baseIdx + n);
             const z1 = s.i * SEG - camZ;
             const a = project(x, s.y1, z1, camX, camY);
             const b = project(x + dx, s.y2, z1 + SEG, camX, camY);
@@ -361,7 +368,10 @@
                 if (u * 10 < 0.012) continue;
                 const cx = lerp(a.X, b.X, f), cy = lerp(a.Y, b.Y, f);
                 if (sp.deco) drawDeco(sp.deco, cx + sp.deco.x * ROAD_W * u, cy, u, pal);
-                else if (sp.thing) drawThing(sp.thing, cx + sp.thing.x * ROAD_W * u, cy, u);
+                else if (sp.thing) {
+                    const ahead = (sp.thing.z - v.playerZ) / Math.max(1000, L.speedFor(meters, mode));
+                    drawThing(sp.thing, cx + L.itemX(sp.thing, ahead) * ROAD_W * u, cy, u);
+                }
                 else drawFish(sp.fish, cx + sp.fish.x * ROAD_W * u, cy - sp.fish.y * u, u);
             }
         }
@@ -703,11 +713,12 @@
     function startGame(m) {
         mode = m;
         state = 'playing';
-        segs = []; things = []; fishes = []; particles = []; floaters = [];
+        resetSlide(); things = []; fishes = []; particles = []; floaters = [];
+        shownHearts = -1;
         camZ = 0; meters = 0; fishCount = 0; level = 1; speedMul = 1; overTimer = 0;
         speed = L.speedFor(0, mode);
         player = freshPlayer(L.MODES[mode].hearts);
-        nextRowZ = PLAYER_Z + speed * 2.6;
+        nextRowZ = PLAYER_Z + speed * 2.8;
         $('menu').hidden = true;
         $('results').hidden = true;
         $('paused').hidden = true;
@@ -744,15 +755,19 @@
             line.classList.remove('new');
         }
         $('results').hidden = false;
+        resultsAt = performance.now();
         $('hud').classList.add('hidden');
         refreshBest();
         setTimeout(() => { if (!$('results').hidden) $('againBtn').focus({ preventScroll: true }); }, 50);
     }
 
+    let resultsAt = 0;
+    const resultsJustOpened = () => performance.now() - resultsAt < 900;
+
     function showMenu() {
         state = 'menu';
         player = freshPlayer(3);
-        segs = []; things = []; fishes = []; camZ = 0;
+        resetSlide(); things = []; fishes = []; camZ = 0;
         $('menu').hidden = false;
         $('results').hidden = true;
         $('paused').hidden = true;
@@ -767,6 +782,7 @@
         state = 'paused';
         $('paused').hidden = false;
         $('pad').hidden = true;
+        $('resumeBtn').focus({ preventScroll: true });
     }
     function resume() {
         if (state !== 'paused') return;
@@ -862,7 +878,7 @@
             }
             while (nextRowZ < camZ + DRAW * SEG * 0.85) {
                 spawnRow(nextRowZ);
-                nextRowZ += speed * L.gapSecondsFor(level, mode);
+                nextRowZ += L.rowGapUnits(nextRowZ, level, mode);
             }
         }
 
@@ -870,7 +886,7 @@
         const target = L.LANES[p.lane];
         const before = p.x;
         p.x += (target - p.x) * Math.min(1, dt * 13);
-        const curve = segs.length ? segs[Math.floor(curZ / SEG)]?.curve || 0 : 0;
+        const curve = seg(Math.floor(curZ / SEG))?.curve || 0;
         const leanTarget = -(p.x - before) / Math.max(dt, 1e-3) * 0.14 + curve * 0.03;
         p.lean += (L.clamp(leanTarget, -0.45, 0.45) - p.lean) * Math.min(1, dt * 10);
         skyShift += curve * speed * dt * 0.0016;
@@ -890,11 +906,6 @@
         }
         p.invuln = Math.max(0, p.invuln - dt);
         p.hurt = Math.max(0, p.hurt - dt);
-
-        // seals slide across when they get near
-        for (const t of things) {
-            if (t.vx && t.z - curZ < speed * 1.6) t.x += t.vx * dt;
-        }
 
         if (state === 'playing') {
             for (const t of things) {
@@ -1052,17 +1063,17 @@
     }
 
     // ---------- input ----------
-    const swipe = { id: null, x: 0, y: 0, used: false };
+    const swipe = { id: null, x: 0, y: 0, x0: 0, y0: 0, used: false };
     canvas.addEventListener('pointerdown', e => {
         Sound.ensure();
         if (state !== 'playing') return;
-        swipe.id = e.pointerId; swipe.x = e.clientX; swipe.y = e.clientY; swipe.used = false;
+        swipe.id = e.pointerId; swipe.x = swipe.x0 = e.clientX; swipe.y = swipe.y0 = e.clientY; swipe.used = false;
         try { canvas.setPointerCapture(e.pointerId); } catch {}
     });
     canvas.addEventListener('pointermove', e => {
         if (e.pointerId !== swipe.id || state !== 'playing') return;
         const dx = e.clientX - swipe.x, dy = e.clientY - swipe.y;
-        if (Math.abs(dx) > 34 && Math.abs(dx) > Math.abs(dy)) {
+        if (Math.abs(dx) > 26 && Math.abs(dx) > Math.abs(dy)) {
             steer(Math.sign(dx));
             swipe.x = e.clientX; swipe.y = e.clientY; swipe.used = true;
         } else if (dy < -34 && Math.abs(dy) > Math.abs(dx)) {
@@ -1072,8 +1083,13 @@
     });
     const endSwipe = e => {
         if (e.pointerId !== swipe.id) return;
-        // a quick tap on the slide is a jump
-        if (!swipe.used && e.type === 'pointerup') jump();
+        // a tap on the slide is a jump; a short sideways nudge steers
+        if (!swipe.used && e.type === 'pointerup') {
+            const dx = e.clientX - swipe.x0, dy = e.clientY - swipe.y0;
+            if (Math.hypot(dx, dy) < 12) jump();
+            else if (Math.abs(dx) > Math.abs(dy)) steer(Math.sign(dx));
+            else if (dy < 0) jump();
+        }
         swipe.id = null;
     };
     canvas.addEventListener('pointerup', endSwipe);
@@ -1106,10 +1122,17 @@
             if (k === 'ArrowUp' || k === 'w' || k === ' ') { if (!e.repeat) jump(); e.preventDefault(); return; }
             if (k === 'ArrowDown') { e.preventDefault(); return; }
         }
+        if (state === 'over' && (k === ' ' || k === 'Enter') && ($('results').hidden || resultsJustOpened())) { e.preventDefault(); return; }
         if ((k === 'p' || k === 'Escape') && state === 'playing') { pause(); e.preventDefault(); return; }
         if ((k === 'p' || k === 'Escape') && state === 'paused') { resume(); e.preventDefault(); }
     });
     window.addEventListener('blur', pause);
+    // The grown-up play-time lock covers the page when time is up; stop sliding underneath it.
+    setInterval(() => {
+        if (state !== 'playing') return;
+        const el = document.elementFromPoint(W / 2, H / 2);
+        if (el && el !== canvas && !el.closest('.banner, .hud')) pause();
+    }, 500);
     document.addEventListener('visibilitychange', () => { if (document.hidden) pause(); });
 
     // ---------- menu wiring ----------
@@ -1145,8 +1168,9 @@
         Sound.ensure();
         startGame(b.dataset.mode);
     }));
-    $('againBtn').addEventListener('click', () => startGame(mode));
-    $('menuBtn').addEventListener('click', showMenu);
+    // keyboard presses (detail 0) right as the results appear are leftover jump presses: ignore them
+    $('againBtn').addEventListener('click', e => { if (e.detail === 0 && resultsJustOpened()) return; startGame(mode); });
+    $('menuBtn').addEventListener('click', e => { if (e.detail === 0 && resultsJustOpened()) return; showMenu(); });
     $('pauseBtn').addEventListener('click', pause);
     $('resumeBtn').addEventListener('click', resume);
     $('quitBtn').addEventListener('click', showMenu);

@@ -102,7 +102,7 @@
         /* ---------- touch controls ---------- */
         .pad {
             position: fixed;
-            bottom: max(14px, env(safe-area-inset-bottom));
+            bottom: calc(max(10px, env(safe-area-inset-bottom)) + 40px);
             z-index: 30;
             display: flex;
             gap: 10px;
@@ -314,6 +314,10 @@
             .pad-btn { width: 66px; height: 66px; font-size: 1.7rem; }
             .pad-btn.jump { width: 92px; }
         }
+        @media (max-width: 680px) and (min-width: 561px) {
+            .hud { top: calc(max(12px, env(safe-area-inset-top)) + 56px); }
+            .pill { height: 40px; padding: 0 11px; font-size: 1.15rem; }
+        }
         @media (hover: hover) and (pointer: fine) { .pad { display: none; } }
         @media (hover: none) and (pointer: coarse) { .keys-hint { display: none; } }
         @media (max-height: 520px) {
@@ -346,8 +350,8 @@
     <button id="pauseBtn" class="chip round-btn pause-btn" type="button" aria-label="Pause" hidden>⏸</button>
     <button id="soundBtn" class="chip round-btn sound-btn" type="button" aria-label="Sound on">🔊</button>
 
-    <div id="hud" class="hud hidden" aria-live="polite">
-        <div id="heartPill" class="pill hearts" aria-label="Hearts"></div>
+    <div id="hud" class="hud hidden">
+        <div id="heartPill" class="pill hearts" aria-label="Hearts" aria-live="polite"></div>
         <div id="fishPill" class="pill"><span class="icon">🐟</span><span id="fish">0</span></div>
         <div id="distPill" class="pill dist"><span id="dist">0</span>&nbsp;m</div>
     </div>
