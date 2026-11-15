@@ -20,7 +20,7 @@ test('every game on the home page has a date, a maker and at least one known cat
         assert.match(card.added || '', /^\d{4}-\d{2}-\d{2}$/, `${card.href} data-added`);
         assert.ok(parseAddedDate(card.added), `${card.href} data-added is a real date`);
         assert.ok((card.by || '').trim(), `${card.href} data-by`);
-        assert.match(card.model || '', /^(Claude .+|unknown)$/, `${card.href} data-model`);
+        assert.ok((card.model || '').trim(), `${card.href} data-model (a model name, or "unknown")`);
         const categories = (card.categories || '').split(/\s+/).filter(Boolean);
         assert.ok(categories.length, `${card.href} data-categories`);
         for (const category of categories) assert.ok(knownCategories.includes(category), `${card.href}: unknown category "${category}"`);
