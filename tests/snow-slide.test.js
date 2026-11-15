@@ -171,3 +171,36 @@ test('page loads its scripts and the home page links to it', () => {
     const index = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
     assert.match(index, /href="snow-slide\.html"/);
 });
+
+test('holding left or right slides smoothly and stops at the snow banks; letting go stops you', () => {
+    let s = { x: 0, vx: 0 };
+    for (let i = 0; i < 60; i++) s = L.steerStep(s.x, s.vx, -1, 1 / 60);
+    assert.ok(s.x < -0.8, `held left for a second: ${s.x.toFixed(2)}`);
+    assert.ok(s.x >= -L.X_LIMIT);
+    for (let i = 0; i < 120; i++) s = L.steerStep(s.x, s.vx, -1, 1 / 60);
+    assert.equal(s.x, -L.X_LIMIT, 'stops at the bank');
+    s = { x: 0, vx: 0 };
+    for (let i = 0; i < 12; i++) s = L.steerStep(s.x, s.vx, 1, 1 / 60);
+    const atRelease = s.x;
+    for (let i = 0; i < 30; i++) s = L.steerStep(s.x, s.vx, 0, 1 / 60);
+    assert.ok(s.x - atRelease < 0.2, 'stops soon after letting go');
+    assert.ok(Math.abs(s.vx) < 0.05);
+});
+
+test('a quick tap glides to the next lane over', () => {
+    const [left, mid, right] = L.LANES;
+    assert.equal(L.nextLaneX(mid, 1), right);
+    assert.equal(L.nextLaneX(mid, -1), left);
+    assert.equal(L.nextLaneX(mid + 0.1, -1), mid, 'nudged a little right, tap left goes back to the middle');
+    assert.equal(L.nextLaneX(right, 1), right, 'already in the last lane');
+    let s = { x: mid, vx: 0, done: false }, t = 0;
+    while (!s.done && t < 2) { s = L.steerToward(s.x, s.vx, right, 1 / 60); t += 1 / 60; }
+    assert.equal(s.x, right);
+    assert.ok(t < 0.45, `took ${t.toFixed(2)}s`);
+});
+
+test('there is always time to steer all the way across between two rows', () => {
+    let s = { x: L.LANES[0], vx: 0 }, t = 0;
+    while (s.x < L.LANES[2] && t < 2) { s = L.steerStep(s.x, s.vx, 1, 1 / 60); t += 1 / 60; }
+    for (const mode of Object.keys(L.MODES)) assert.ok(t < L.gapSecondsFor(99, mode), `${mode}: ${t.toFixed(2)}s`);
+});

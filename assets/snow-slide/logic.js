@@ -15,6 +15,9 @@
     const CLEAR_HEIGHT = 90;   // higher than this and you sail over the low things
     const PLAYER_HALF_W = 0.17;
     const SEAL_LEAD = 1.6;     // a seal starts sliding across this many seconds before it reaches you
+    const STEER_SPEED = 2.2;   // road-units per second while you hold left or right
+    const STEER_ACCEL = 14;    // how quickly steering gets up to speed (and stops when you let go)
+    const X_LIMIT = 0.84;      // the slider's centre can't go past this (the snow banks)
 
     const MODES = {
         easy: { name: 'Gentle Glide', hearts: 5, speed: 2600, maxSpeed: 5000, gap: 1.35 },
@@ -219,6 +222,29 @@
 
     function nextLane(lane, dir) { return clamp(lane + dir, 0, 2); }
 
+    // Holding left (-1) or right (1) slides you smoothly across the slide; letting go (0) stops you.
+    function steerStep(x, vx, dir, dt) {
+        vx += (dir * STEER_SPEED - vx) * Math.min(1, dt * STEER_ACCEL);
+        x += vx * dt;
+        if (x > X_LIMIT) { x = X_LIMIT; vx = Math.min(0, vx); }
+        if (x < -X_LIMIT) { x = -X_LIMIT; vx = Math.max(0, vx); }
+        return { x, vx };
+    }
+
+    // A quick tap of left or right glides to the next lane in that direction.
+    function nextLaneX(x, dir) {
+        if (dir > 0) return LANES.find(l => l > x + 0.05) ?? LANES[LANES.length - 1];
+        return [...LANES].reverse().find(l => l < x - 0.05) ?? LANES[0];
+    }
+
+    // Glide toward a lane; done once you're there.
+    function steerToward(x, vx, targetX, dt) {
+        const dir = Math.sign(targetX - x);
+        const r = steerStep(x, vx, dir, dt);
+        if (dir === 0 || Math.sign(targetX - r.x) !== dir) return { x: targetX, vx: 0, done: true };
+        return { ...r, done: false };
+    }
+
     function resultTitle(meters) {
         if (meters >= 5000) return 'Snow Slide Legend!';
         if (meters >= 2500) return 'Super Slider!';
@@ -228,6 +254,7 @@
 
     return {
         SEG, UNITS_PER_METER, LEVEL_METERS, LANES, JUMP_SPEED, GRAVITY, CLEAR_HEIGHT, PLAYER_HALF_W, SEAL_LEAD,
+        STEER_SPEED, STEER_ACCEL, X_LIMIT, steerStep, nextLaneX, steerToward,
         MODES, SCENES, OBSTACLES, LOW_KINDS, TALL_KINDS, ANIMALS,
         clamp, easeIn, easeInOut, metersFor, levelFor, sceneFor, speedFor, gapSecondsFor,
         rowGapUnits, itemX, makeSection, sectionProfile, makeRow, rowOpenLane, rowIsPassable, overlaps, collides, catches,
