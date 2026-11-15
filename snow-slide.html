@@ -125,7 +125,9 @@
             -webkit-backdrop-filter: blur(3px);
         }
         .pad-btn.jump { width: 104px; border-radius: 40px; background: rgba(255, 140, 50, 0.6); font-size: 1.3rem; }
-        .pad-btn.pressed { transform: translateY(4px); box-shadow: 0 1px 0 rgba(10, 40, 80, 0.35); }
+        .pad-btn.pressed { transform: translateY(4px) scale(0.96); background: rgba(31, 95, 168, 0.7); box-shadow: 0 1px 0 rgba(10, 40, 80, 0.35); }
+        .pad-btn.jump.pressed { background: rgba(255, 140, 50, 0.85); }
+        .pad-btn { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
 
         /* ---------- banner ---------- */
         .banner {
@@ -318,7 +320,6 @@
             .hud { top: calc(max(12px, env(safe-area-inset-top)) + 56px); }
             .pill { height: 40px; padding: 0 11px; font-size: 1.15rem; }
         }
-        @media (hover: hover) and (pointer: fine) { .pad { display: none; } }
         @media (hover: none) and (pointer: coarse) { .keys-hint { display: none; } }
         @media (max-height: 520px) {
             .overlay { padding-top: calc(max(8px, env(safe-area-inset-top)) + 56px); padding-bottom: 8px; }
@@ -386,9 +387,9 @@
             </div>
             <p id="bestLine" class="best-line"></p>
             <div class="how">
-                <span>⬅️ ➡️ Swipe or tap the arrows to steer</span>
-                <span>⬆️ Swipe up or tap to jump</span>
-                <span class="keys-hint"><kbd>←</kbd> <kbd>→</kbd> steer · <kbd>Space</kbd> jump · <kbd>P</kbd> pause</span>
+                <span>◀ ▶ Hold to steer · tap to hop a lane</span>
+                <span>👆 Drag on the snow to steer · tap to jump</span>
+                <span class="keys-hint">hold <kbd>←</kbd> <kbd>→</kbd> steer · <kbd>Space</kbd> jump · <kbd>P</kbd> pause</span>
                 <span>🪵 Jump low things · ⛄ go around tall things</span>
                 <span>🐟 Catch fish</span>
             </div>
