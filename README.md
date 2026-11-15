@@ -30,6 +30,7 @@ This repo features interactive games created by my kids Penny and Theo. Every ga
 - **Unicorn Number Magic** - Two unicorns each hold a number: are they the same or different? Count stars (1–5), match stars to numbers (1–10), check sums with Plus Magic (2 + 3 = 5?) and, in the Rainbow Challenge, pick who has more. Seven right answers paint a rainbow, and rainbows bring new unicorn friends. Questions are read aloud for little ones who can't read yet.
 - **Ptero Dash** - Fly a pterodactyl through the sky, dodging flapping birds, swooping grumpy birds and the swinging wrecking balls of crane trucks. Grab golden eggs (counted in fives at the end), hearts and bubble shields. Three speeds: Easy Breezy, Sky Zoom and Super Swoop.
 - **Penguin Snow Slide** - Belly-slide down a winding 3D snow slide as Pebble the penguin, Bo the polar bear, Fern the arctic fox or Mo the seal. Jump logs, sleepy walruses and snow drifts, steer around snowmen, ice blocks and polar bears, and catch fish. The goal is distance: see how many meters you can slide. Three speeds: Gentle Glide, Snow Zoom and Blizzard Blast.
+- **Siren Street** - Pick the zippy Chief Truck, the big Fire Engine or the tall Ladder Truck and race to the call. Change lanes to grab stars and dodge cones, spray sidewalk fires on the way, then put out a burning house, bakery, barn or clock tower, or raise the ladder to rescue kittens stuck in a tree. Auto-drive and an aim helper make it easy for little ones; answered calls earn badges from Rookie to Fire Chief.
 
 ## How to Play
 
