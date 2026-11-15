@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Siren Street - Drive the Fire Truck!</title>
+    <meta name="description" content="Pick a fire truck and race down Siren Street! Change lanes, grab stars, spray water on fires and rescue kitties stuck in trees.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bungee&family=Nunito:wght@600;800;900&display=swap">
+    <script defer src="assets/siren-street/logic.js"></script>
+    <script defer src="assets/siren-street/game.js"></script>
+<style>
+/* Layout: one full-bleed canvas street; chunky toy-like HTML panels float over it for the garage, pause and results. */
+:root {
+  --sky: #8fd3ff;
+  --ink: #1d2b53;
+  --red: #e63b2e;
+  --red-deep: #b8241b;
+  --sun: #ffd23f;
+  --grass: #5cc35a;
+  --panel: #fffaf2;
+  --panel-2: #eef6ff;
+  --muted: #55638a;
+  --scrim: rgba(29, 43, 83, .42);
+  --display: "Bungee", "Arial Black", Impact, sans-serif;
+  --body: "Nunito", "Trebuchet MS", system-ui, sans-serif;
+  color-scheme: light;
+}
+html, body { height: 100%; }
+body { margin: 0; }
+[hidden] { display: none !important; }
+body {
+  background: var(--sky); color: var(--ink); font-family: var(--body);
+  overflow: hidden; touch-action: none; user-select: none; -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+#cv { position: fixed; inset: 0; width: 100%; height: 100%; display: block; }
+button { font: inherit; color: inherit; cursor: pointer; }
+button:focus-visible { outline: 4px solid var(--sun); outline-offset: 3px; }
+
+/* HUD */
+.hud-top {
+  position: fixed; left: 0; right: 0; top: 0; z-index: 5; pointer-events: none;
+  display: flex; justify-content: space-between; align-items: flex-start; gap: 8px;
+  padding-top: calc(env(safe-area-inset-top, 0px) + 10px);
+  padding-left: max(12px, env(safe-area-inset-left, 0px));
+  padding-right: max(12px, env(safe-area-inset-right, 0px));
+}
+.hud-top > div { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+.chip {
+  pointer-events: auto; background: var(--panel); border: 3px solid var(--ink); border-radius: 999px;
+  padding: 6px 14px; font-family: var(--display); font-size: 15px; letter-spacing: .02em;
+  box-shadow: 0 3px 0 var(--ink); white-space: nowrap;
+}
+.chip.star { background: var(--sun); }
+.home-btn {
+  position: fixed; z-index: 20; text-decoration: none; color: var(--ink);
+  top: calc(env(safe-area-inset-top, 0px) + 10px); left: max(12px, env(safe-area-inset-left, 0px));
+}
+.hud-top { padding-left: calc(max(12px, env(safe-area-inset-left, 0px)) + 118px) !important; }
+@media (max-width: 520px) { .home-btn .label { display: none; } .hud-top { padding-left: calc(max(12px, env(safe-area-inset-left, 0px)) + 62px) !important; } }
+.chip.on { background: var(--grass); color: #fff; text-shadow: 0 1px 0 var(--ink); }
+.chip:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--ink); }
+.lanes {
+  position: fixed; z-index: 5; display: flex; flex-direction: column; gap: 12px;
+  left: max(14px, calc(env(safe-area-inset-left, 0px) + 10px));
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 56px);
+}
+.lane-btn {
+  width: 62px; height: 62px; border-radius: 50%; border: 3px solid var(--ink);
+  background: var(--panel); font-size: 26px; line-height: 1; box-shadow: 0 4px 0 var(--ink);
+  display: grid; place-items: center; touch-action: none;
+}
+.lane-btn:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--ink); }
+.banner {
+  position: fixed; z-index: 4; left: 50%; transform: translateX(-50%);
+  top: calc(env(safe-area-inset-top, 0px) + 58px); width: min(560px, calc(100% - 32px));
+  background: var(--ink); color: #fff; border-radius: 16px; padding: 10px 16px;
+  text-align: center; font-weight: 900; font-size: 17px; line-height: 1.3; pointer-events: none;
+  box-shadow: 0 4px 0 rgba(0,0,0,.18); text-wrap: balance;
+}
+.banner b { font-family: var(--display); font-weight: 400; color: var(--sun); letter-spacing: .04em; margin-right: 6px; }
+
+/* Screens */
+.screen {
+  position: fixed; inset: 0; z-index: 10; background: var(--scrim);
+  display: flex; align-items: center; justify-content: center;
+  padding-block: calc(env(safe-area-inset-top, 0px) + 66px) calc(env(safe-area-inset-bottom, 0px) + 14px);
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.panel {
+  width: 100%; max-width: 780px; max-height: 100%; overflow: auto; touch-action: pan-y;
+  background: var(--panel); border: 4px solid var(--ink); border-radius: 24px;
+  box-shadow: 0 8px 0 var(--ink); padding: 20px clamp(16px, 3vw, 28px);
+  display: flex; flex-direction: column; gap: 16px;
+}
+.panel.small { max-width: 460px; text-align: center; }
+.title-row { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+h1, h2 { font-family: var(--display); font-weight: 400; margin: 0; line-height: 1; text-wrap: balance; }
+h1 { font-size: clamp(32px, 6vw, 50px); color: var(--red); letter-spacing: .01em;
+  text-shadow: 3px 3px 0 var(--ink); }
+h2 { font-size: clamp(26px, 5vw, 38px); color: var(--red); text-shadow: 2px 2px 0 var(--ink); }
+.sub { margin: 4px 0 0; font-weight: 800; color: var(--muted); font-size: 16px; }
+.record { font-weight: 900; font-size: 14px; background: var(--panel-2); border-radius: 999px; padding: 6px 12px;
+  border: 2px solid var(--ink); white-space: nowrap; }
+.label { font-family: var(--display); font-size: 13px; letter-spacing: .08em; color: var(--muted); margin: 0; }
+.trucks { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.truck-card {
+  border: 3px solid var(--ink); border-radius: 18px; background: #fff; padding: 10px 12px 12px;
+  text-align: left; display: flex; flex-direction: column; gap: 4px; box-shadow: 0 4px 0 var(--ink);
+}
+.truck-card[aria-pressed="true"] { background: #fff1c2; box-shadow: 0 4px 0 var(--red-deep); border-color: var(--red-deep); }
+.truck-card canvas { width: 100%; height: auto; aspect-ratio: 2 / 1; max-width: 100%; }
+.truck-card .name { font-family: var(--display); font-size: 17px; }
+.truck-card .desc { font-size: 14px; font-weight: 700; color: var(--muted); min-height: 2.6em; line-height: 1.3; }
+.stats { display: grid; grid-template-columns: auto 1fr; gap: 2px 10px; font-size: 12px; font-weight: 900; align-items: center; }
+.pips { display: flex; gap: 3px; }
+.pips i { width: 16px; height: 8px; border-radius: 4px; background: #dfe6f0; }
+.pips i.f { background: var(--red); }
+.settings { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.toggle {
+  display: flex; align-items: center; gap: 12px; text-align: left; border: 3px solid var(--ink);
+  border-radius: 16px; background: #fff; padding: 10px 12px; min-width: 0;
+}
+.toggle .sw { flex: none; width: 46px; height: 26px; border-radius: 999px; background: #c9d2de; position: relative; border: 2px solid var(--ink); }
+.toggle .sw::after { content: ""; position: absolute; top: 2px; left: 2px; width: 18px; height: 18px; border-radius: 50%; background: #fff; border: 2px solid var(--ink); transition: left .15s; }
+.toggle[aria-pressed="true"] .sw { background: var(--grass); }
+.toggle[aria-pressed="true"] .sw::after { left: 20px; }
+.toggle .t { font-weight: 900; font-size: 15px; display: block; }
+.toggle .d { font-weight: 700; font-size: 12.5px; color: var(--muted); display: block; line-height: 1.25; }
+.toggle > span:last-child { min-width: 0; }
+.go {
+  font-family: var(--display); font-size: clamp(20px, 4vw, 26px); background: var(--red); color: #fff;
+  border: 4px solid var(--ink); border-radius: 18px; padding: 14px 18px; box-shadow: 0 6px 0 var(--ink);
+  text-shadow: 2px 2px 0 var(--red-deep);
+}
+.go:active { transform: translateY(4px); box-shadow: 0 2px 0 var(--ink); }
+.go.alt { background: #fff; color: var(--ink); text-shadow: none; font-size: 18px; }
+.btn-row { display: flex; gap: 10px; flex-wrap: wrap; }
+.btn-row > * { flex: 1 1 160px; }
+.how { margin: 0; font-size: 14px; font-weight: 700; color: var(--muted); line-height: 1.45; }
+.how kbd { font-family: var(--body); font-weight: 900; background: var(--panel-2); border: 2px solid var(--ink); border-radius: 6px; padding: 0 5px; color: var(--ink); }
+.big-stars { font-family: var(--display); font-size: 44px; color: var(--ink); }
+.big-stars span { color: #f2a900; text-shadow: 2px 2px 0 var(--ink); }
+.result-lines { display: grid; gap: 6px; font-weight: 800; font-size: 16px; }
+.rank { font-family: var(--display); font-size: 18px; color: var(--red-deep); }
+@media (max-width: 620px) {
+  .trucks { grid-template-columns: minmax(0, 1fr); gap: 8px; }
+  .truck-card { display: grid; grid-template-columns: 112px minmax(0, 1fr); column-gap: 12px; align-items: center; padding: 8px 10px; }
+  .truck-card canvas { grid-row: span 3; }
+  .truck-card .desc { min-height: 0; font-size: 13px; }
+  .stats { grid-column: 2; }
+  .settings { grid-template-columns: minmax(0, 1fr); }
+  .panel { padding-block: 16px; gap: 12px; }
+}
+@media (prefers-reduced-motion: reduce) { .toggle .sw::after { transition: none; } }
+</style>
+    <script src="assets/parental-lock/parental-lock.js"></script>
+</head>
+<body>
+<canvas id="cv" aria-label="A fire truck driving down Siren Street"></canvas>
+
+<a href="index.html" class="chip home-btn" aria-label="Back to all games">🏠 <span class="label">Games</span></a>
+
+<div class="hud-top" id="hud" hidden>
+  <span class="chip star" id="starChip">★ 0</span>
+  <div>
+    <button class="chip" id="sirenBtn" type="button">Siren</button>
+    <button class="chip" id="autoBtn" type="button">Auto-drive</button>
+    <button class="chip" id="pauseBtn" type="button">Pause</button>
+  </div>
+</div>
+<div class="lanes" id="lanes" hidden>
+  <button class="lane-btn" id="laneUp" type="button" aria-label="Move up a lane">▲</button>
+  <button class="lane-btn" id="laneDown" type="button" aria-label="Move down a lane">▼</button>
+</div>
+<div class="banner" id="banner" hidden></div>
+
+<section class="screen" id="menu">
+  <div class="panel">
+    <div class="title-row">
+      <div>
+        <h1>Siren Street</h1>
+        <p class="sub">Pick your truck. Answer the call!</p>
+      </div>
+      <span class="record" id="record">★ 0 · 0 calls · Rookie</span>
+    </div>
+    <p class="label">Your truck</p>
+    <div class="trucks" id="trucks"></div>
+    <p class="label">Settings</p>
+    <div class="settings" id="settingsMount">
+      <div id="settings" class="settings" style="display:contents">
+        <button class="toggle" id="optAuto" type="button" aria-pressed="false"><span class="sw"></span><span><span class="t">Auto-drive</span><span class="d">The truck steers itself. You just spray!</span></span></button>
+        <button class="toggle" id="optHelper" type="button" aria-pressed="true"><span class="sw"></span><span><span class="t">Aim helper</span><span class="d">Water zooms to the closest fire.</span></span></button>
+        <button class="toggle" id="optSound" type="button" aria-pressed="true"><span class="sw"></span><span><span class="t">Sound</span><span class="d">Sirens, splashes and meows.</span></span></button>
+        <button class="toggle" id="optTrip" type="button" aria-pressed="false"><span class="sw"></span><span><span class="t">Long drive</span><span class="d">More road, more stars to grab.</span></span></button>
+      </div>
+    </div>
+    <button class="go" id="goBtn" type="button">Answer the call!</button>
+    <p class="how"><kbd>▲</kbd> <kbd>▼</kbd> or arrow keys change lanes. Hold anywhere (or <kbd>Space</kbd>) to spray water. Grab stars, bump past cones, and put out fires on the way.</p>
+  </div>
+</section>
+
+<section class="screen" id="pause" hidden>
+  <div class="panel small">
+    <h2>Paused</h2>
+    <div class="settings" id="pauseMount" style="grid-template-columns:minmax(0,1fr)"></div>
+    <div class="btn-row">
+      <button class="go" id="resumeBtn" type="button">Keep going</button>
+      <button class="go alt" id="quitBtn" type="button">Back to garage</button>
+    </div>
+  </div>
+</section>
+
+<section class="screen" id="results" hidden>
+  <div class="panel small">
+    <h2 id="resTitle">Fire's out!</h2>
+    <div class="big-stars"><span>★</span> +<span id="resStars" style="color:inherit;text-shadow:none">0</span></div>
+    <div class="result-lines">
+      <div id="resLine1"></div>
+      <div id="resLine2"></div>
+      <div class="rank" id="resRank"></div>
+    </div>
+    <div class="btn-row">
+      <button class="go" id="nextBtn" type="button">Next call!</button>
+      <button class="go alt" id="garageBtn" type="button">Change truck</button>
+    </div>
+  </div>
+</section>
+
+<noscript><p style="position:fixed;inset:auto 0 40%;text-align:center;font-weight:900">Turn on JavaScript to drive the fire truck!</p></noscript>
+</body>
+</html>
