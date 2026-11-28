@@ -1,0 +1,1123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Word Express — Reading Fluency Dash!</title>
+    <meta name="description" content="Read words fast to power up the Word Express train! Pick 3-, 4- or 5-letter words, set a timer, earn streak combos and climb the leaderboard.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@600;700&family=Nunito:wght@700;800;900&display=swap" media="print" onload="this.media='all'">
+    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@600;700&family=Nunito:wght@700;800;900&display=swap"></noscript>
+    <script src="assets/parental-lock/parental-lock.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+        :root {
+            --ink: #25204a;
+            --ink-soft: #5f5a87;
+            --sky-top: #4b7bec;
+            --sky-mid: #74b9ff;
+            --sky-bot: #a8e6cf;
+            --accent: #ff6b4a;
+            --accent-dark: #d9482a;
+            --gold: #ffcf3a;
+            --green: #2ecc71;
+            --green-dark: #1f9d55;
+            --amber: #ff9f43;
+            --amber-dark: #d97706;
+            --purple: #7c5cff;
+            --card: #ffffff;
+        }
+
+        [hidden] { display: none !important; }
+
+        html, body {
+            min-height: 100%;
+            font-family: 'Nunito', system-ui, sans-serif;
+            color: var(--ink);
+            background: linear-gradient(160deg, #4b7bec 0%, #6c5ce7 45%, #ff85a1 100%);
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: manipulation;
+        }
+
+        .screen {
+            min-height: 100dvh;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: max(14px, env(safe-area-inset-top)) max(14px, env(safe-area-inset-right)) max(22px, env(safe-area-inset-bottom)) max(14px, env(safe-area-inset-left));
+        }
+
+        /* ---------- Top bar ---------- */
+        .top-bar {
+            width: 100%;
+            max-width: 820px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
+        .chip-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            min-height: 44px;
+            padding: 0 16px;
+            border-radius: 999px;
+            border: 3px solid rgba(255,255,255,0.9);
+            background: rgba(255,255,255,0.92);
+            color: var(--ink);
+            font: 900 0.95rem 'Nunito', sans-serif;
+            text-decoration: none;
+            box-shadow: 0 4px 14px rgba(25, 18, 70, 0.2);
+            cursor: pointer;
+            transition: transform 0.14s ease;
+        }
+        .chip-btn:active { transform: scale(0.95); }
+        .chip-icon { min-width: 44px; padding: 0; font-size: 1.25rem; }
+
+        /* ---------- Menu card ---------- */
+        .menu-shell {
+            width: 100%;
+            max-width: 820px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .hero-banner {
+            text-align: center;
+            color: #fff;
+            padding: 6px 10px 4px;
+        }
+        .hero-title {
+            font-family: 'Fredoka', 'Nunito', sans-serif;
+            font-size: clamp(2rem, 6vw, 3.2rem);
+            font-weight: 700;
+            line-height: 1.05;
+            text-shadow: 0 4px 0 rgba(35, 22, 95, 0.35);
+            letter-spacing: 0.5px;
+        }
+        .hero-sub {
+            margin-top: 6px;
+            font-size: clamp(0.95rem, 2.4vw, 1.12rem);
+            font-weight: 800;
+            color: rgba(255,255,255,0.94);
+        }
+        .best-banner {
+            margin: 10px auto 0;
+            display: inline-block;
+            padding: 5px 14px;
+            border-radius: 999px;
+            background: rgba(255,255,255,0.22);
+            color: #fff;
+            font-size: 0.88rem;
+            font-weight: 800;
+        }
+
+        .panel {
+            background: rgba(255,255,255,0.96);
+            border-radius: 24px;
+            padding: 16px 18px;
+            box-shadow: 0 12px 30px rgba(25, 18, 75, 0.22);
+        }
+
+        .section-label {
+            font-size: 0.85rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: var(--ink-soft);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+        }
+
+        /* Player pills */
+        .pill-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .pill-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            min-height: 42px;
+            padding: 6px 14px;
+            border-radius: 999px;
+            border: 2.5px solid #e2e0f5;
+            background: #f7f6ff;
+            color: var(--ink);
+            font: 800 0.95rem 'Nunito', sans-serif;
+            cursor: pointer;
+            transition: transform 0.14s ease, border-color 0.15s ease, background 0.15s ease;
+        }
+        .pill-btn:active { transform: scale(0.96); }
+        .pill-btn.active {
+            border-color: var(--purple);
+            background: #ebe6ff;
+            color: #4625b8;
+            box-shadow: 0 3px 10px rgba(124, 92, 255, 0.22);
+        }
+        .pill-add {
+            border-style: dashed;
+            background: #fff;
+            color: var(--ink-soft);
+        }
+
+        .custom-player-wrap {
+            margin-top: 10px;
+            padding: 12px;
+            border-radius: 16px;
+            background: #f5f3ff;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .custom-player-row {
+            display: flex;
+            gap: 8px;
+        }
+        .text-input {
+            flex: 1;
+            min-width: 0;
+            height: 42px;
+            padding: 0 14px;
+            border-radius: 12px;
+            border: 2px solid #d5cef7;
+            font: 800 1rem 'Nunito', sans-serif;
+            color: var(--ink);
+            background: #fff;
+            user-select: text;
+            -webkit-user-select: text;
+        }
+        .avatar-picker {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+        .avatar-opt {
+            width: 38px;
+            height: 38px;
+            border-radius: 12px;
+            border: 2px solid transparent;
+            background: #fff;
+            font-size: 1.25rem;
+            cursor: pointer;
+        }
+        .avatar-opt.active {
+            border-color: var(--purple);
+            background: #e6dfff;
+            transform: scale(1.08);
+        }
+
+        /* Mode cards */
+        .mode-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(138px, 1fr));
+            gap: 10px;
+        }
+        .mode-card {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 4px;
+            padding: 12px;
+            border-radius: 18px;
+            border: 3px solid #e6e4f7;
+            background: #faf9ff;
+            color: var(--ink);
+            text-align: left;
+            cursor: pointer;
+            transition: transform 0.14s ease, border-color 0.15s ease, background 0.15s ease;
+        }
+        .mode-card:active { transform: scale(0.97); }
+        .mode-card.active {
+            border-color: var(--accent);
+            background: linear-gradient(135deg, #fff5f0 0%, #fff0f6 100%);
+            box-shadow: 0 6px 16px rgba(255, 107, 74, 0.22);
+        }
+        .mode-top {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .mode-icon { font-size: 1.5rem; }
+        .mode-level {
+            padding: 2px 8px;
+            border-radius: 999px;
+            font-size: 0.72rem;
+            font-weight: 900;
+            background: #ece9ff;
+            color: #4f3cc9;
+        }
+        .mode-card.active .mode-level {
+            background: var(--accent);
+            color: #fff;
+        }
+        .mode-title {
+            font-family: 'Fredoka', 'Nunito', sans-serif;
+            font-size: 1.05rem;
+            font-weight: 700;
+        }
+        .mode-meta {
+            font-size: 0.78rem;
+            font-weight: 800;
+            color: var(--ink-soft);
+        }
+
+        .order-row {
+            margin-top: 10px;
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+            font-size: 0.85rem;
+            font-weight: 800;
+            color: var(--ink-soft);
+        }
+
+        /* Duration chips */
+        .duration-chips {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(96px, 1fr));
+            gap: 8px;
+        }
+        .dur-chip {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 9px 8px;
+            border-radius: 16px;
+            border: 2.5px solid #e6e4f7;
+            background: #faf9ff;
+            color: var(--ink);
+            cursor: pointer;
+            transition: transform 0.14s ease, border-color 0.15s ease;
+        }
+        .dur-chip strong { font-size: 1rem; font-weight: 900; }
+        .dur-chip span { font-size: 0.74rem; font-weight: 800; color: var(--ink-soft); }
+        .dur-chip.active {
+            border-color: #2f80ed;
+            background: #eaf4ff;
+            color: #1659b5;
+        }
+        .dur-chip.active span { color: #1d69d1; }
+
+        .custom-dur-row {
+            margin-top: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            padding: 10px;
+            border-radius: 14px;
+            background: #eef6ff;
+        }
+        .step-btn {
+            min-width: 52px;
+            height: 40px;
+            border-radius: 12px;
+            border: 2px solid #9dc5ff;
+            background: #fff;
+            color: #1659b5;
+            font: 900 1rem 'Nunito', sans-serif;
+            cursor: pointer;
+        }
+        .dur-display {
+            min-width: 90px;
+            text-align: center;
+            font-family: 'Fredoka', 'Nunito', sans-serif;
+            font-size: 1.3rem;
+            color: #1659b5;
+        }
+
+        /* Mon-Fri weekly strip */
+        .weekly-strip {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(64px, 1fr));
+            gap: 8px;
+        }
+        .week-day {
+            border-radius: 14px;
+            border: 2.5px solid #e6e4f7;
+            background: #faf9ff;
+            padding: 8px 6px;
+            text-align: center;
+        }
+        .week-day.is-today {
+            border-color: var(--gold);
+            background: #fffbeb;
+            box-shadow: 0 3px 10px rgba(255, 193, 7, 0.25);
+        }
+        .week-day.has-score .week-score {
+            color: #1b8a4b;
+        }
+        .week-label {
+            font-size: 0.72rem;
+            font-weight: 900;
+            color: var(--ink-soft);
+            letter-spacing: 0.5px;
+        }
+        .week-score {
+            margin-top: 3px;
+            font-family: 'Fredoka', 'Nunito', sans-serif;
+            font-size: 1.35rem;
+            font-weight: 700;
+            color: #b4b0d0;
+        }
+        .weekly-sub {
+            margin-top: 8px;
+            font-size: 0.84rem;
+            font-weight: 800;
+            color: var(--ink-soft);
+            text-align: center;
+        }
+
+        /* Primary CTA */
+        .cta-row {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .big-btn {
+            flex: 1;
+            min-width: 190px;
+            min-height: 58px;
+            padding: 12px 24px;
+            border-radius: 20px;
+            border: 0;
+            font-family: 'Fredoka', 'Nunito', sans-serif;
+            font-size: 1.35rem;
+            font-weight: 700;
+            color: #fff;
+            cursor: pointer;
+            box-shadow: 0 6px 0 rgba(0,0,0,0.18), 0 10px 24px rgba(25, 18, 75, 0.24);
+            transition: transform 0.12s ease;
+        }
+        .big-btn:active { transform: translateY(3px); }
+        .btn-go {
+            background: linear-gradient(135deg, #2ecc71 0%, #20bf6b 100%);
+            box-shadow: 0 6px 0 #168649, 0 10px 24px rgba(25, 18, 75, 0.24);
+        }
+        .btn-secondary {
+            background: linear-gradient(135deg, #ff9f43 0%, #ff6b4a 100%);
+            box-shadow: 0 6px 0 #c44123, 0 10px 24px rgba(25, 18, 75, 0.2);
+        }
+
+        /* ---------- Play screen ---------- */
+        #screen-play {
+            justify-content: flex-start;
+            gap: 12px;
+        }
+
+        .hud-bar {
+            width: 100%;
+            max-width: 820px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .hud-stats {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+            justify-content: center;
+            flex: 1;
+        }
+
+        .hud-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            min-height: 44px;
+            padding: 6px 14px;
+            border-radius: 999px;
+            background: rgba(255,255,255,0.95);
+            color: var(--ink);
+            font: 900 1.05rem 'Nunito', sans-serif;
+            box-shadow: 0 4px 12px rgba(25, 18, 75, 0.18);
+        }
+        .hud-timer {
+            background: #fffbeb;
+            border: 3px solid var(--gold);
+            font-family: 'Fredoka', 'Nunito', sans-serif;
+            font-size: 1.25rem;
+            min-width: 96px;
+            justify-content: center;
+        }
+        .hud-timer.is-urgent {
+            background: #ffe4e6;
+            border-color: #ff4757;
+            color: #c9182b;
+            animation: pulseUrgent 0.6s ease-in-out infinite alternate;
+        }
+        @keyframes pulseUrgent {
+            from { transform: scale(1); }
+            to { transform: scale(1.07); }
+        }
+        .hud-streak {
+            background: linear-gradient(135deg, #ff9f43, #ff5a6e);
+            color: #fff;
+        }
+
+        .track-wrap {
+            position: relative;
+            width: 100%;
+            max-width: 820px;
+            height: 112px;
+            border-radius: 22px;
+            overflow: hidden;
+            border: 4px solid rgba(255,255,255,0.9);
+            box-shadow: 0 10px 26px rgba(25, 18, 75, 0.24);
+            background: #8fd3ff;
+        }
+        #track-canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        .milestone-toast {
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 6px 16px;
+            border-radius: 999px;
+            background: linear-gradient(135deg, #ffcf3a, #ff9f43);
+            color: #3d1d00;
+            font-family: 'Fredoka', 'Nunito', sans-serif;
+            font-size: 1rem;
+            font-weight: 700;
+            white-space: nowrap;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            pointer-events: none;
+        }
+        .milestone-toast.show {
+            animation: toastPop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        @keyframes toastPop {
+            from { opacity: 0; transform: translate(-50%, -12px) scale(0.8); }
+            to { opacity: 1; transform: translate(-50%, 0) scale(1); }
+        }
+
+        /* Hero Word Card */
+        .word-stage {
+            position: relative;
+            width: 100%;
+            max-width: 820px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 14px;
+        }
+
+        .word-card {
+            width: 100%;
+            min-height: 220px;
+            background: #ffffff;
+            border-radius: 30px;
+            border: 5px solid rgba(255,255,255,0.95);
+            box-shadow: 0 16px 38px rgba(25, 18, 75, 0.26);
+            padding: 18px 24px 26px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            transition: transform 0.16s ease, box-shadow 0.16s ease;
+        }
+        .word-card.card-enter {
+            animation: cardPop 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        @keyframes cardPop {
+            from { opacity: 0.4; transform: scale(0.92) translateY(8px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        .word-card.card-yes {
+            box-shadow: 0 0 0 6px rgba(46, 204, 113, 0.5), 0 16px 38px rgba(25, 18, 75, 0.26);
+        }
+        .word-card.card-no {
+            box-shadow: 0 0 0 6px rgba(255, 159, 67, 0.5), 0 16px 38px rgba(25, 18, 75, 0.26);
+        }
+
+        .word-top-meta {
+            position: absolute;
+            top: 14px;
+            left: 18px;
+            right: 18px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.84rem;
+            font-weight: 800;
+            color: var(--ink-soft);
+        }
+
+        .word-text {
+            font-family: 'Fredoka', 'Century Gothic', 'Nunito', sans-serif;
+            font-size: clamp(4.2rem, 16vw, 7.6rem);
+            font-weight: 700;
+            line-height: 1.08;
+            letter-spacing: 0.04em;
+            color: #1f1b3d;
+            margin-top: 16px;
+        }
+        .word-text[data-len="5"] {
+            font-size: clamp(3.3rem, 13vw, 6.4rem);
+        }
+
+        .word-dots {
+            display: flex;
+            gap: 18px;
+            margin-top: 10px;
+        }
+        .reading-dot {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #cfd5eb;
+            box-shadow: inset 0 2px 3px rgba(0,0,0,0.12);
+        }
+
+        /* Judge buttons */
+        .judge-row {
+            width: 100%;
+            display: grid;
+            grid-template-columns: 1fr auto 1.35fr;
+            gap: 12px;
+            align-items: stretch;
+        }
+
+        .judge-btn {
+            min-height: 76px;
+            padding: 12px 18px;
+            border-radius: 22px;
+            border: 0;
+            font-family: 'Fredoka', 'Nunito', sans-serif;
+            font-size: clamp(1.15rem, 3.4vw, 1.55rem);
+            font-weight: 700;
+            color: #fff;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 2px;
+            transition: transform 0.1s ease;
+        }
+        .judge-btn:active { transform: translateY(3px) scale(0.98); }
+        .judge-hint {
+            font-family: 'Nunito', sans-serif;
+            font-size: 0.74rem;
+            font-weight: 800;
+            opacity: 0.9;
+        }
+
+        .btn-yes {
+            background: linear-gradient(135deg, #2ecc71, #1eb864);
+            box-shadow: 0 7px 0 #158044, 0 10px 22px rgba(25, 18, 75, 0.24);
+        }
+        .btn-no {
+            background: linear-gradient(135deg, #ffa94d, #ff7b3a);
+            box-shadow: 0 7px 0 #c4541a, 0 10px 22px rgba(25, 18, 75, 0.2);
+        }
+        .btn-speak {
+            min-width: 72px;
+            background: #ffffff;
+            color: var(--ink);
+            border: 3px solid #e2e0f5;
+            box-shadow: 0 6px 0 #d0cde8;
+            font-size: 1.5rem;
+        }
+
+        .play-sub-controls {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .tiny-btn {
+            min-height: 38px;
+            padding: 6px 14px;
+            border-radius: 999px;
+            border: 2px solid rgba(255,255,255,0.65);
+            background: rgba(255,255,255,0.2);
+            color: #fff;
+            font: 800 0.86rem 'Nunito', sans-serif;
+            cursor: pointer;
+        }
+        .tiny-btn:disabled { opacity: 0.45; cursor: default; }
+        .tiny-finish {
+            background: #ffcf3a;
+            border-color: #fff;
+            color: #422200;
+        }
+
+        .kbd-note {
+            font-size: 0.8rem;
+            font-weight: 800;
+            color: rgba(255,255,255,0.88);
+        }
+
+        /* Countdown overlay */
+        .countdown-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 60;
+            background: rgba(34, 24, 82, 0.72);
+            display: grid;
+            place-items: center;
+            backdrop-filter: blur(4px);
+        }
+        .countdown-num {
+            font-family: 'Fredoka', 'Nunito', sans-serif;
+            font-size: clamp(5rem, 20vw, 9rem);
+            color: #ffcf3a;
+            text-shadow: 0 8px 0 #c96a00, 0 16px 36px rgba(0,0,0,0.4);
+        }
+        .countdown-num.pop {
+            animation: countPop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        @keyframes countPop {
+            from { opacity: 0; transform: scale(0.45); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        /* ---------- Summary screen ---------- */
+        .summary-shell {
+            width: 100%;
+            max-width: 760px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+        .summary-hero {
+            text-align: center;
+            padding: 20px 18px;
+        }
+        .summary-medal {
+            font-size: 4rem;
+            line-height: 1;
+            margin-bottom: 6px;
+        }
+        .summary-title {
+            font-family: 'Fredoka', 'Nunito', sans-serif;
+            font-size: clamp(1.8rem, 5vw, 2.5rem);
+            color: var(--ink);
+        }
+        .summary-sub {
+            margin-top: 4px;
+            font-weight: 800;
+            color: var(--ink-soft);
+        }
+        .record-badge {
+            display: inline-block;
+            margin-top: 10px;
+            padding: 6px 16px;
+            border-radius: 999px;
+            background: linear-gradient(135deg, #ffcf3a, #ff9f43);
+            color: #421d00;
+            font-weight: 900;
+            font-size: 0.92rem;
+        }
+        .rank-text {
+            margin-top: 8px;
+            font-weight: 900;
+            color: #5b3fd6;
+        }
+
+        .stats-grid {
+            margin-top: 16px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+            gap: 10px;
+        }
+        .stat-box {
+            border-radius: 18px;
+            background: #f6f5ff;
+            padding: 12px 8px;
+            text-align: center;
+        }
+        .stat-val {
+            font-family: 'Fredoka', 'Nunito', sans-serif;
+            font-size: 1.8rem;
+            color: var(--ink);
+        }
+        .stat-lbl {
+            font-size: 0.76rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            color: var(--ink-soft);
+        }
+
+        .missed-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+        .missed-chip {
+            padding: 8px 14px;
+            border-radius: 14px;
+            border: 2.5px solid #ffd4a8;
+            background: #fff8f0;
+            color: var(--ink);
+            font-family: 'Fredoka', 'Nunito', sans-serif;
+            font-size: 1.2rem;
+            cursor: pointer;
+        }
+        .missed-chip:active { transform: scale(0.95); }
+
+        /* ---------- Leaderboard Modal ---------- */
+        .modal-backdrop {
+            position: fixed;
+            inset: 0;
+            z-index: 80;
+            background: rgba(25, 18, 70, 0.65);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+            backdrop-filter: blur(4px);
+        }
+        .modal-card {
+            width: 100%;
+            max-width: 640px;
+            max-height: 86dvh;
+            background: #fff;
+            border-radius: 26px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.35);
+        }
+        .modal-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+        }
+        .modal-title {
+            font-family: 'Fredoka', 'Nunito', sans-serif;
+            font-size: 1.6rem;
+        }
+        .lb-filters {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .select-input {
+            flex: 1;
+            min-width: 140px;
+            height: 40px;
+            padding: 0 12px;
+            border-radius: 12px;
+            border: 2px solid #dcd8f5;
+            background: #f8f7ff;
+            font: 800 0.9rem 'Nunito', sans-serif;
+            color: var(--ink);
+        }
+        .lb-list {
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            padding-right: 4px;
+        }
+        .lb-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 12px;
+            border-radius: 16px;
+            background: #f8f7ff;
+            border: 2px solid #ece9fa;
+        }
+        .lb-top-1 { background: #fffbeb; border-color: #ffcf3a; }
+        .lb-top-2 { background: #f8fafc; border-color: #cbd5e1; }
+        .lb-top-3 { background: #fff7ed; border-color: #fdba74; }
+        .lb-rank {
+            min-width: 34px;
+            text-align: center;
+            font-family: 'Fredoka', 'Nunito', sans-serif;
+            font-size: 1.2rem;
+        }
+        .lb-player {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            min-width: 0;
+        }
+        .lb-avatar { font-size: 1.5rem; }
+        .lb-name { font-weight: 900; font-size: 1rem; }
+        .lb-meta { font-size: 0.78rem; font-weight: 800; color: var(--ink-soft); }
+        .lb-scores { text-align: right; }
+        .lb-pts { font-family: 'Fredoka', 'Nunito', sans-serif; font-size: 1.15rem; color: #4f3cc9; }
+        .lb-words { font-size: 0.78rem; font-weight: 800; color: var(--ink-soft); }
+        .lb-empty {
+            text-align: center;
+            padding: 28px 12px;
+            font-weight: 800;
+            color: var(--ink-soft);
+        }
+        .modal-foot {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+        }
+        .danger-link {
+            border: 0;
+            background: transparent;
+            color: #c94040;
+            font: 800 0.82rem 'Nunito', sans-serif;
+            cursor: pointer;
+            text-decoration: underline;
+        }
+
+        @media (max-width: 600px) {
+            .judge-row {
+                grid-template-columns: 1fr 1.25fr;
+            }
+            .btn-speak {
+                grid-column: 1 / -1;
+                min-height: 48px;
+                flex-direction: row;
+                gap: 8px;
+                font-size: 1rem;
+            }
+            .kbd-note { display: none; }
+            .track-wrap { height: 92px; }
+        }
+    </style>
+</head>
+<body>
+    <!-- ================= MENU SCREEN ================= -->
+    <main id="screen-menu" class="screen">
+        <div class="top-bar">
+            <a href="index.html" class="chip-btn">← Games</a>
+            <button type="button" id="open-leaderboard-btn" class="chip-btn">🏆 Leaderboard</button>
+        </div>
+
+        <div class="menu-shell">
+            <header class="hero-banner">
+                <h1 class="hero-title">🚄 Word Express</h1>
+                <p class="hero-sub">Read words out loud to power the train! How many can you beat before time runs out?</p>
+                <div id="menu-best-banner" class="best-banner">🏆 Set the first record!</div>
+            </header>
+
+            <!-- Reader picker -->
+            <section class="panel" aria-label="Choose reader">
+                <div class="section-label"><span>1. Who is reading?</span></div>
+                <div id="player-chips" class="pill-row"></div>
+                <div id="custom-player-wrap" class="custom-player-wrap" hidden>
+                    <div class="custom-player-row">
+                        <input id="player-name-input" class="text-input" type="text" maxlength="18" placeholder="Type reader name...">
+                        <button type="button" id="save-player-btn" class="pill-btn active">Save</button>
+                    </div>
+                    <div id="avatar-picker" class="avatar-picker" aria-label="Choose avatar"></div>
+                </div>
+            </section>
+
+            <!-- Word set / difficulty -->
+            <section class="panel" aria-label="Word difficulty and length">
+                <div class="section-label"><span>2. Pick Word Level & Length</span></div>
+                <div id="mode-grid" class="mode-grid"></div>
+                <div id="sheet-order-row" class="order-row">
+                    <span>Word order:</span>
+                    <button type="button" id="order-shuffle" class="pill-btn active">🔀 Shuffled</button>
+                    <button type="button" id="order-sheet" class="pill-btn">📄 Exact Sheet Order</button>
+                </div>
+            </section>
+
+            <!-- Duration -->
+            <section class="panel" aria-label="Timer duration">
+                <div class="section-label"><span>3. Timer Duration</span><span>Default: 1 minute</span></div>
+                <div id="duration-chips" class="duration-chips"></div>
+                <div id="custom-duration-row" class="custom-dur-row" hidden>
+                    <button type="button" id="dur-minus" class="step-btn">−15s</button>
+                    <span id="dur-display" class="dur-display">1:30</span>
+                    <button type="button" id="dur-plus" class="step-btn">+15s</button>
+                </div>
+            </section>
+
+            <!-- Weekly Mon-Fri tracker -->
+            <section class="panel" aria-label="Weekly reading scores">
+                <div class="section-label"><span>📅 This Week's Best Score</span><span>Mon–Fri Challenge</span></div>
+                <div id="weekly-strip" class="weekly-strip"></div>
+                <p id="weekly-subtitle" class="weekly-sub"></p>
+            </section>
+
+            <div class="cta-row">
+                <button type="button" id="start-btn" class="big-btn btn-go">🚄 All Aboard! Start!</button>
+            </div>
+        </div>
+    </main>
+
+    <!-- ================= PLAY SCREEN ================= -->
+    <section id="screen-play" class="screen" hidden>
+        <div class="hud-bar">
+            <button type="button" id="quit-btn" class="chip-btn">✕ Back</button>
+            <div class="hud-stats">
+                <div id="hud-timer-pill" class="hud-pill hud-timer">⏱️ <span id="hud-timer">1:00</span></div>
+                <div class="hud-pill">⭐ <span id="hud-words">0</span></div>
+                <div class="hud-pill">🏆 <span id="hud-points">0</span></div>
+                <div id="hud-streak" class="hud-pill hud-streak" hidden>🔥 2</div>
+            </div>
+            <button type="button" id="sound-toggle-btn" class="chip-btn chip-icon" aria-label="Toggle sound" aria-pressed="false">🔊</button>
+        </div>
+
+        <div class="track-wrap">
+            <canvas id="track-canvas" aria-hidden="true"></canvas>
+            <div id="milestone-toast" class="milestone-toast" hidden></div>
+        </div>
+
+        <div class="word-stage">
+            <div id="word-card" class="word-card">
+                <div class="word-top-meta">
+                    <span id="word-badge">📄 Short-A Sheet</span>
+                    <span id="word-counter">Word #1</span>
+                </div>
+                <div id="word-text" class="word-text" aria-live="polite">bat</div>
+                <div id="word-dots" class="word-dots" aria-hidden="true"></div>
+            </div>
+
+            <div class="judge-row">
+                <button type="button" id="btn-no" class="judge-btn btn-no">
+                    <span>↻ Not Yet</span>
+                    <span class="judge-hint">Skip / Save for later</span>
+                </button>
+                <button type="button" id="btn-speak" class="judge-btn btn-speak" aria-label="Hear this word aloud">
+                    <span>🔊</span>
+                    <span class="judge-hint">Hear</span>
+                </button>
+                <button type="button" id="btn-yes" class="judge-btn btn-yes">
+                    <span>✓ Yes! Got It!</span>
+                    <span class="judge-hint">Power up the train!</span>
+                </button>
+            </div>
+
+            <div class="play-sub-controls">
+                <button type="button" id="btn-undo" class="tiny-btn" disabled>↩ Undo Last</button>
+                <span class="kbd-note">Keys: Space / → = Yes · ← = Not Yet · S = Hear · Z = Undo</span>
+                <button type="button" id="btn-finish-practice" class="tiny-btn tiny-finish" hidden>🏁 Finish & See Score</button>
+            </div>
+        </div>
+
+        <div id="countdown-overlay" class="countdown-overlay" hidden>
+            <div id="countdown-num" class="countdown-num">3</div>
+        </div>
+    </section>
+
+    <!-- ================= SUMMARY SCREEN ================= -->
+    <section id="screen-summary" class="screen" hidden>
+        <div class="summary-shell">
+            <div class="panel summary-hero">
+                <div id="summary-medal" class="summary-medal">🏆</div>
+                <h2 id="summary-title" class="summary-title">Gold Express!</h2>
+                <p id="summary-subtitle" class="summary-sub"></p>
+                <div id="summary-record-badge" class="record-badge" hidden></div>
+                <div id="summary-rank-text" class="rank-text" hidden></div>
+
+                <div class="stats-grid">
+                    <div class="stat-box">
+                        <div id="stat-words" class="stat-val">0</div>
+                        <div class="stat-lbl">Words Read</div>
+                    </div>
+                    <div class="stat-box">
+                        <div id="stat-points" class="stat-val">0</div>
+                        <div class="stat-lbl">Points</div>
+                    </div>
+                    <div class="stat-box">
+                        <div id="stat-wpm" class="stat-val">0</div>
+                        <div class="stat-lbl">Words / Min</div>
+                    </div>
+                    <div class="stat-box">
+                        <div id="stat-streak" class="stat-val">0</div>
+                        <div class="stat-lbl">Best Streak</div>
+                    </div>
+                    <div class="stat-box">
+                        <div id="stat-accuracy" class="stat-val">0%</div>
+                        <div class="stat-lbl">Accuracy</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel">
+                <div class="section-label"><span>📅 This Week's Scoreboard</span><span>Mon–Fri</span></div>
+                <div id="summary-weekly-strip" class="weekly-strip"></div>
+            </div>
+
+            <div id="missed-section" class="panel" hidden>
+                <div class="section-label"><span>✨ Tricky Words to Practice</span><span>Tap any word to hear it</span></div>
+                <div id="missed-chips" class="missed-chips"></div>
+                <button type="button" id="practice-missed-btn" class="pill-btn active">🔁 Practice Just These Words</button>
+            </div>
+
+            <div class="cta-row">
+                <button type="button" id="play-again-btn" class="big-btn btn-go">🚄 Play Again!</button>
+                <button type="button" id="change-options-btn" class="big-btn btn-secondary">⚙️ Change Options</button>
+            </div>
+            <div style="text-align:center;">
+                <button type="button" id="summary-leaderboard-btn" class="chip-btn">🏆 View Full Leaderboard</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- ================= LEADERBOARD MODAL ================= -->
+    <div id="modal-leaderboard" class="modal-backdrop" hidden role="dialog" aria-modal="true" aria-labelledby="lb-title">
+        <div class="modal-card">
+            <div class="modal-head">
+                <h2 id="lb-title" class="modal-title">🏆 Word Express Leaderboard</h2>
+                <button type="button" id="close-leaderboard-btn" class="chip-btn chip-icon" aria-label="Close leaderboard">✕</button>
+            </div>
+            <div class="lb-filters">
+                <select id="lb-mode-filter" class="select-input" aria-label="Filter by word level">
+                    <option value="all">All Word Levels</option>
+                    <option value="sheet3">📄 Short-A Sheet (3L)</option>
+                    <option value="cvc3">🔤 3-Letter Mix (3L)</option>
+                    <option value="medium4">⚡ 4-Letter Dash (4L)</option>
+                    <option value="hard5">🚀 5-Letter Pro (5L)</option>
+                    <option value="mixed">🌈 All-Star Mix (3–5L)</option>
+                </select>
+                <select id="lb-sort-select" class="select-input" aria-label="Sort leaderboard">
+                    <option value="points">Sort by Points</option>
+                    <option value="correct">Sort by Words Read</option>
+                    <option value="wpm">Sort by Speed (WPM)</option>
+                </select>
+            </div>
+            <div id="lb-list" class="lb-list"></div>
+            <div id="lb-empty" class="lb-empty" hidden>No runs recorded for this level yet. Hop aboard and set the first score! 🚄</div>
+            <div class="modal-foot">
+                <button type="button" id="lb-reset-btn" class="danger-link">Clear saved scores</button>
+                <button type="button" class="pill-btn active" onclick="document.getElementById('close-leaderboard-btn').click()">Done</button>
+            </div>
+        </div>
+    </div>
+    <script src="assets/word-express/logic.js"></script>
+    <script src="assets/word-express/game.js"></script>
+</body>
+</html>
